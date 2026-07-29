@@ -1,0 +1,354 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		37A350250C3540B983B17A7C /* TimelyUNAApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1BA77E9A9C745A9B8CEFAF3 /* TimelyUNAApp.swift */; };
+		6F5F157557E540C888A18402 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3411C322674949F9AD8459CE /* ContentView.swift */; };
+		949D2001B4C0406CB59F9C50 /* TimelyUNATheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07E219CC715B417F9089CAD0 /* TimelyUNATheme.swift */; };
+		EF71F2E0E8384D9A848B7D5B /* LightTimeConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76ACA30747814220AEDA0E17 /* LightTimeConstants.swift */; };
+		712AF0534F794DEAA6F5CDF5 /* SimulationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A219F1BF0F004D31B0999F03 /* SimulationState.swift */; };
+		8DDCAC6EEF25482F9D10BC7F /* SunSextantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6A792A6E2243ACBE314077 /* SunSextantView.swift */; };
+		88A97B433C51458A849366AD /* SunCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6806B646ED4F95AB19EDDB /* SunCanvasView.swift */; };
+		148A150E023A4882A2B9337C /* ChronosModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17ACC55BC47844B9B660D08B /* ChronosModeView.swift */; };
+		20CA6F03B52D48FB9CE5DE15 /* ChronosCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED8C1E728DD84453A8E41D2D /* ChronosCanvasView.swift */; };
+		69C606ADAB274899BA1A67EF /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E3F2C79966A4B26A0BE6A3D /* AboutView.swift */; };
+		8A12C255CE314AD6AAA00CC0 /* InfoCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784E667D00F746AC8AD8ED72 /* InfoCards.swift */; };
+		212AC45B314B4363A075E02A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF428BF3B1394AB6927D5FAC /* Assets.xcassets */; };
+		0E39C053B7D444228EABB683 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CE6A45433D5E4AF89E89C591 /* PrivacyInfo.xcprivacy */; };
+		C684FBC42F2E4CF6B167B047 /* PhotonLabyrinthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5439159981D8417DAB2EF8C8 /* PhotonLabyrinthView.swift */; };
+		6A0E7AC2B4A94F9AA1EB1EF4 /* ARSunRocketView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5189249DD8EC419AAF61E278 /* ARSunRocketView.swift */; };
+		7BD73D89A83243D98CF21E6D /* PhotonLabyrinthPuzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD91C46B8144AFB8F7E2B79 /* PhotonLabyrinthPuzzle.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AED3AF2E7FC1418187E00AAE /* TimelyUNA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimelyUNA.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1BA77E9A9C745A9B8CEFAF3 /* TimelyUNAApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelyUNAApp.swift; sourceTree = "<group>"; };
+		3411C322674949F9AD8459CE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		07E219CC715B417F9089CAD0 /* TimelyUNATheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelyUNATheme.swift; sourceTree = "<group>"; };
+		76ACA30747814220AEDA0E17 /* LightTimeConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightTimeConstants.swift; sourceTree = "<group>"; };
+		A219F1BF0F004D31B0999F03 /* SimulationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationState.swift; sourceTree = "<group>"; };
+		1C6A792A6E2243ACBE314077 /* SunSextantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunSextantView.swift; sourceTree = "<group>"; };
+		8D6806B646ED4F95AB19EDDB /* SunCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunCanvasView.swift; sourceTree = "<group>"; };
+		17ACC55BC47844B9B660D08B /* ChronosModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronosModeView.swift; sourceTree = "<group>"; };
+		ED8C1E728DD84453A8E41D2D /* ChronosCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronosCanvasView.swift; sourceTree = "<group>"; };
+		9E3F2C79966A4B26A0BE6A3D /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		784E667D00F746AC8AD8ED72 /* InfoCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoCards.swift; sourceTree = "<group>"; };
+		BF428BF3B1394AB6927D5FAC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CE6A45433D5E4AF89E89C591 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		095D061E4269402BA35A6162 /* TimelyUNA.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TimelyUNA.entitlements; sourceTree = "<group>"; };
+		5439159981D8417DAB2EF8C8 /* PhotonLabyrinthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotonLabyrinthView.swift; sourceTree = "<group>"; };
+		5189249DD8EC419AAF61E278 /* ARSunRocketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARSunRocketView.swift; sourceTree = "<group>"; };
+		6FD91C46B8144AFB8F7E2B79 /* PhotonLabyrinthPuzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotonLabyrinthPuzzle.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7AB2CD20331E473BBF332259 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A2A860E1404D4B37B59F998B = {
+			isa = PBXGroup;
+			children = (
+				9550BD44B8F44418BED4B0AD /* TimelyUNA */,
+				7E7975BB40B94B70947CF317 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7E7975BB40B94B70947CF317 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AED3AF2E7FC1418187E00AAE /* TimelyUNA.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9550BD44B8F44418BED4B0AD /* TimelyUNA */ = {
+			isa = PBXGroup;
+			children = (
+				B1BA77E9A9C745A9B8CEFAF3 /* TimelyUNAApp.swift */,
+				095D061E4269402BA35A6162 /* TimelyUNA.entitlements */,
+				B0333DFA2D404492AFBE8C2A /* Models */,
+				7BCA35F03A04496989964CD4 /* Theme */,
+				E7DBCC475959481B89C217CF /* Views */,
+				17F5CF28AFCB46D9B59926CF /* Resources */,
+			);
+			path = TimelyUNA;
+			sourceTree = "<group>";
+		};
+		B0333DFA2D404492AFBE8C2A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				76ACA30747814220AEDA0E17 /* LightTimeConstants.swift */,
+				A219F1BF0F004D31B0999F03 /* SimulationState.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		7BCA35F03A04496989964CD4 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				07E219CC715B417F9089CAD0 /* TimelyUNATheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		E7DBCC475959481B89C217CF /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3411C322674949F9AD8459CE /* ContentView.swift */,
+				784E667D00F746AC8AD8ED72 /* InfoCards.swift */,
+				1C6A792A6E2243ACBE314077 /* SunSextantView.swift */,
+				8D6806B646ED4F95AB19EDDB /* SunCanvasView.swift */,
+				17ACC55BC47844B9B660D08B /* ChronosModeView.swift */,
+				ED8C1E728DD84453A8E41D2D /* ChronosCanvasView.swift */,
+				9E3F2C79966A4B26A0BE6A3D /* AboutView.swift */,
+				5439159981D8417DAB2EF8C8 /* PhotonLabyrinthView.swift */,
+				5189249DD8EC419AAF61E278 /* ARSunRocketView.swift */,
+				6FD91C46B8144AFB8F7E2B79 /* PhotonLabyrinthPuzzle.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		17F5CF28AFCB46D9B59926CF /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				BF428BF3B1394AB6927D5FAC /* Assets.xcassets */,
+				CE6A45433D5E4AF89E89C591 /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		51176D9009E2448C9185A33A /* TimelyUNA */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 092C9D4DBE8442A597BB412B /* Build configuration list for PBXNativeTarget "TimelyUNA" */;
+			buildPhases = (
+				E54C5BE6035E456B8C92AC8F /* Sources */,
+				7AB2CD20331E473BBF332259 /* Frameworks */,
+				D62E4CF8A16B411F84F356E3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TimelyUNA;
+			productName = TimelyUNA;
+			productReference = AED3AF2E7FC1418187E00AAE /* TimelyUNA.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9B74C93D2F934D2BAE8D56E4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					51176D9009E2448C9185A33A = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = D5BA64D04EED4282A8E254B2 /* Build configuration list for PBXProject "TimelyUNA" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A2A860E1404D4B37B59F998B;
+			productRefGroup = 7E7975BB40B94B70947CF317 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				51176D9009E2448C9185A33A /* TimelyUNA */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D62E4CF8A16B411F84F356E3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				212AC45B314B4363A075E02A /* Assets.xcassets in Resources */,
+				0E39C053B7D444228EABB683 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E54C5BE6035E456B8C92AC8F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				37A350250C3540B983B17A7C /* TimelyUNAApp.swift in Sources */,
+				6F5F157557E540C888A18402 /* ContentView.swift in Sources */,
+				949D2001B4C0406CB59F9C50 /* TimelyUNATheme.swift in Sources */,
+				EF71F2E0E8384D9A848B7D5B /* LightTimeConstants.swift in Sources */,
+				712AF0534F794DEAA6F5CDF5 /* SimulationState.swift in Sources */,
+				8DDCAC6EEF25482F9D10BC7F /* SunSextantView.swift in Sources */,
+				88A97B433C51458A849366AD /* SunCanvasView.swift in Sources */,
+				148A150E023A4882A2B9337C /* ChronosModeView.swift in Sources */,
+				20CA6F03B52D48FB9CE5DE15 /* ChronosCanvasView.swift in Sources */,
+				69C606ADAB274899BA1A67EF /* AboutView.swift in Sources */,
+				8A12C255CE314AD6AAA00CC0 /* InfoCards.swift in Sources */,
+				C684FBC42F2E4CF6B167B047 /* PhotonLabyrinthView.swift in Sources */,
+				6A0E7AC2B4A94F9AA1EB1EF4 /* ARSunRocketView.swift in Sources */,
+				7BD73D89A83243D98CF21E6D /* PhotonLabyrinthPuzzle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A46E59778DA847CAB1F43282 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		6DA780ACF0EA42CBAC49FB0D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		EA88862C08254D1999E65FF4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TimelyUNA/TimelyUNA.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TimelyUNA;
+				INFOPLIST_KEY_NSCameraUsageDescription = "TimelyUNA uses the camera for AR light-time navigation: place the Sun proxy and launch the Baby X rocket toward its true position.";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © QuantumPlethora. All rights reserved.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.macsafedevelopersapple.TimelyUNA;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+
+			};
+			name = Debug;
+		};
+		528C9F456C494660B6A2F0A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TimelyUNA/TimelyUNA.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TimelyUNA;
+				INFOPLIST_KEY_NSCameraUsageDescription = "TimelyUNA uses the camera for AR light-time navigation: place the Sun proxy and launch the Baby X rocket toward its true position.";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © QuantumPlethora. All rights reserved.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.macsafedevelopersapple.TimelyUNA;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D5BA64D04EED4282A8E254B2 /* Build configuration list for PBXProject "TimelyUNA" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A46E59778DA847CAB1F43282 /* Debug */,
+				6DA780ACF0EA42CBAC49FB0D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		092C9D4DBE8442A597BB412B /* Build configuration list for PBXNativeTarget "TimelyUNA" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EA88862C08254D1999E65FF4 /* Debug */,
+				528C9F456C494660B6A2F0A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9B74C93D2F934D2BAE8D56E4 /* Project object */;
+}
