@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#090d18" />
+  <title>Timely Una — Light-Time Navigation</title>
+  <style>
+    :root {
+      --bg: #090d18;
+      --bg-deep: #05070d;
+      --surface: rgba(20, 27, 45, 0.82);
+      --surface-strong: #141b2d;
+      --surface-soft: #0d1322;
+      --gold: #f4d35e;
+      --gold-soft: rgba(244, 211, 94, 0.14);
+      --orange: #f7931e;
+      --text: #f5f1df;
+      --muted: #b7b3a4;
+      --green: #68d391;
+      --red: #ff7b72;
+      --focus: #fff3b0;
+      --radius-lg: 24px;
+      --radius-md: 14px;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% -10%, rgba(70, 91, 154, 0.45), transparent 42%),
+        radial-gradient(circle at 12% 22%, rgba(244, 211, 94, 0.07), transparent 28%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+      font-family: Papyrus, "Segoe Print", "Bradley Hand", cursive;
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.42;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,.75) 0 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(244,211,94,.55) 0 1px, transparent 1.5px);
+      background-size: 96px 96px, 143px 143px;
+      background-position: 12px 18px, 56px 72px;
+      mask-image: linear-gradient(to bottom, black, transparent 72%);
+    }
+
+    button, input { font: inherit; }
+
+    button:focus-visible,
+    input:focus-visible,
+    .cell:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .app-shell {
+      position: relative;
+      width: min(100% - 28px, 640px);
+      margin: 0 auto;
+      padding: max(28px, env(safe-area-inset-top)) 0 max(34px, env(safe-area-inset-bottom));
+    }
+
+    .hero {
+      text-align: center;
+      padding: 22px 8px 30px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+      padding: 7px 12px;
+      border: 1px solid rgba(244, 211, 94, 0.28);
+      border-radius: 999px;
+      color: var(--gold);
+      background: rgba(244, 211, 94, 0.07);
+      font-size: .78rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--gold);
+      font-size: clamp(3rem, 13vw, 5.1rem);
+      line-height: .95;
+      letter-spacing: .02em;
+      text-shadow: 0 0 34px rgba(244, 211, 94, 0.34);
+    }
+
+    .tagline {
+      max-width: 520px;
+      margin: 18px auto 8px;
+      color: #f7eaa9;
+      font-size: clamp(1.05rem, 4vw, 1.35rem);
+      font-style: italic;
+    }
+
+    .intro {
+      max-width: 520px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: .98rem;
+    }
+
+    .progress {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 0 0 14px;
+      padding: 0 2px;
+      list-style: none;
+    }
+
+    .progress li {
+      position: relative;
+      text-align: center;
+      color: #777a84;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: .74rem;
+      font-weight: 700;
+    }
+
+    .progress li::before {
+      content: attr(data-step);
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      margin: 0 auto 6px;
+      border-radius: 50%;
+      border: 1px solid #444958;
+      background: #111625;
+    }
+
+    .progress li.active,
+    .progress li.complete { color: var(--gold); }
+
+    .progress li.active::before,
+    .progress li.complete::before {
+      color: #171105;
+      border-color: var(--gold);
+      background: var(--gold);
+      box-shadow: 0 0 20px rgba(244, 211, 94, .28);
+    }
+
+    .card {
+      width: 100%;
+      margin: 0 0 16px;
+      padding: clamp(20px, 5vw, 30px);
+      border: 1px solid rgba(244, 211, 94, 0.2);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(145deg, rgba(25, 33, 54, .94), rgba(13, 18, 32, .94));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .card[hidden] { display: none; }
+
+    .section-heading {
+      margin: 0 0 5px;
+      color: var(--gold);
+      font-size: 1.45rem;
+      line-height: 1.2;
+    }
+
+    .section-copy {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: .94rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: .88rem;
+      font-weight: 750;
+    }
+
+    .input-wrap { position: relative; margin-bottom: 12px; }
+
+    input[type="datetime-local"] {
+      width: 100%;
+      min-height: 54px;
+      padding: 12px 14px;
+      color: var(--text);
+      color-scheme: dark;
+      border: 1px solid rgba(244, 211, 94, 0.34);
+      border-radius: 12px;
+      background: var(--surface-soft);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 1rem;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input[type="datetime-local"]:hover {
+      border-color: rgba(244, 211, 94, .65);
+    }
+
+    .quick-action {
+      display: inline-flex;
+      margin: 0 0 20px;
+      padding: 4px 0;
+      border: 0;
+      color: var(--gold);
+      background: transparent;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: .87rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    button.action {
+      min-height: 54px;
+      width: 100%;
+      padding: 13px 18px;
+      border-radius: 13px;
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, opacity .16s ease;
+    }
+
+    button.action:hover { transform: translateY(-1px); }
+    button.action:active { transform: translateY(1px) scale(.99); }
+
+    .btn-primary {
+      border: 0;
+      color: #1c1402;
+      background: linear-gradient(135deg, #ffe681, var(--gold) 42%, var(--orange));
+      box-shadow: 0 9px 24px rgba(244, 211, 94, .24);
+      font-weight: 800;
+    }
+
+    .btn-primary:hover { box-shadow: 0 12px 30px rgba(244, 211, 94, .34); }
+
+    .btn-secondary {
+      border: 1px solid rgba(244, 211, 94, .55);
+      color: var(--gold);
+      background: rgba(244, 211, 94, .04);
+      font-weight: 750;
+    }
+
+    .puzzle-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: .83rem;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: clamp(5px, 1.4vw, 8px);
+      width: min(100%, 360px);
+      margin: 0 auto 18px;
+      padding: 10px;
+      border: 1px solid rgba(244, 211, 94, .15);
+      border-radius: 18px;
+      background: rgba(4, 7, 13, .44);
+    }
+
+    .cell {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1;
+      min-width: 0;
+      padding: 0;
+      border: 1px solid rgba(244, 211, 94, 0.18);
+      border-radius: 10px;
+      color: var(--gold);
+      background: #0c1220;
+      font-size: clamp(1.15rem, 6vw, 1.8rem);
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      transition: transform .14s, background .14s, border-color .14s, box-shadow .2s;
+    }
+
+    .cell:hover { background: #172137; border-color: rgba(244, 211, 94, .42); }
+    .cell:active { transform: scale(.95); }
+
+    .cell.mirror {
+      color: var(--gold);
+      border-color: rgba(244, 211, 94, .78);
+      background: linear-gradient(145deg, #382d05, #191502);
+      text-shadow: 0 0 12px rgba(244,211,94,.8);
+    }
+
+    .cell.start {
+      color: var(--green);
+      border-color: rgba(104, 211, 145, .7);
+      background: rgba(32, 81, 55, .38);
+      cursor: default;
+      font-size: clamp(.78rem, 3vw, 1rem);
+      font-family: system-ui, sans-serif;
+      font-weight: 800;
+    }
+
+    .cell.end {
+      color: var(--red);
+      border-color: rgba(255, 123, 114, .7);
+      background: rgba(94, 38, 40, .38);
+      cursor: default;
+      font-size: clamp(.78rem, 3vw, 1rem);
+      font-family: system-ui, sans-serif;
+      font-weight: 800;
+    }
+
+    .cell.path {
+      box-shadow: inset 0 0 18px rgba(244, 211, 94, .85), 0 0 12px rgba(244, 211, 94, .2);
+      animation: pulse-path .55s ease both;
+    }
+
+    @keyframes pulse-path {
+      from { transform: scale(.88); opacity: .68; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .status {
+      min-height: 48px;
+      margin: 0 0 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(244, 211, 94, .15);
+      border-radius: 12px;
+      color: var(--muted);
+      background: rgba(244, 211, 94, .05);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: .9rem;
+    }
+
+    .status.success {
+      color: #c6f6d5;
+      border-color: rgba(104,211,145,.42);
+      background: rgba(104,211,145,.09);
+    }
+
+    .status.error {
+      color: #ffd0cc;
+      border-color: rgba(255,123,114,.42);
+      background: rgba(255,123,114,.08);
+    }
+
+    #sky {
+      position: relative;
+      width: 100%;
+      height: clamp(280px, 62vw, 355px);
+      margin: 0 0 18px;
+      overflow: hidden;
+      border: 1px solid rgba(244, 211, 94, .22);
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 50% 19%, rgba(247,147,30,.18), transparent 25%),
+        linear-gradient(180deg, #182039 0%, #0a0e1a 62%, #11151c 100%);
+    }
+
+    #sky::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,.8) 0 1px, transparent 1.5px);
+      background-size: 48px 48px;
+      opacity: .35;
+    }
+
+    .horizon {
+      position: absolute;
+      left: -10%;
+      right: -10%;
+      bottom: -32px;
+      height: 112px;
+      border-radius: 50% 50% 0 0;
+      background: linear-gradient(180deg, #242a31, #0b0f14);
+      box-shadow: 0 -8px 30px rgba(247,147,30,.08);
+    }
+
+    #sun {
+      position: absolute;
+      top: 28px;
+      left: 50%;
+      width: 88px;
+      height: 88px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle at 34% 32%, #fffde7 0 9%, #fff176 24%, #ffca28 50%, #f7931e 82%);
+      box-shadow: 0 0 52px 16px rgba(255, 193, 7, .48);
+      transition: box-shadow .45s, transform .45s;
+    }
+
+    #sun.hit {
+      transform: translateX(-50%) scale(1.08);
+      box-shadow: 0 0 84px 30px rgba(255, 230, 100, .88);
+    }
+
+    #rocket {
+      position: absolute;
+      left: 50%;
+      bottom: 36px;
+      z-index: 3;
+      transform: translateX(-50%);
+      font-size: 3rem;
+      filter: drop-shadow(0 0 12px rgba(255, 140, 0, .7));
+      transition: bottom 3.7s cubic-bezier(.2,.7,.3,1), transform 3.7s cubic-bezier(.2,.7,.3,1), opacity 3.7s ease;
+    }
+
+    #rocket::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 75%;
+      width: 12px;
+      height: 0;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: linear-gradient(#fff7b2, #f7931e, transparent);
+      opacity: 0;
+      transition: height .2s, opacity .2s;
+    }
+
+    #rocket.launched {
+      bottom: calc(100% - 105px);
+      transform: translateX(-50%) scale(.38) rotate(-7deg);
+      opacity: .18;
+    }
+
+    #rocket.launched::after { height: 92px; opacity: 1; }
+
+    .result {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid rgba(244, 211, 94, .23);
+      border-radius: 14px;
+      background: rgba(244, 211, 94, .07);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-align: left;
+    }
+
+    .result[hidden] { display: none; }
+    .result strong { color: var(--gold); }
+    .result p { margin: 0; color: var(--muted); }
+
+    footer {
+      padding: 20px 8px 0;
+      color: #7f8290;
+      text-align: center;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: .8rem;
+    }
+
+    .fade-in { animation: fade-in .35s ease both; }
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (min-width: 560px) {
+      .button-row.two { grid-template-columns: 1.35fr .85fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <p class="eyebrow">☀ Light-Time Navigation</p>
+      <h1>Timely Una</h1>
+      <p class="tagline">Because the Sun is always late to its own horizon.</p>
+      <p class="intro">Choose a moment, redirect a photon, then launch toward the sunlight you are seeing now.</p>
+    </header>
+
+    <ol class="progress" aria-label="Experience progress">
+      <li class="active" id="step-1" data-step="1">Choose</li>
+      <li id="step-2" data-step="2">Solve</li>
+      <li id="step-3" data-step="3">Launch</li>
+    </ol>
+
+    <section class="card" id="time-section" aria-labelledby="time-heading">
+      <h2 class="section-heading" id="time-heading">Choose a moment</h2>
+      <p class="section-copy">This becomes the reference time for the light-time calculation.</p>
+
+      <label for="datetime">Date and local time</label>
+      <div class="input-wrap">
+        <input type="datetime-local" id="datetime" required />
+      </div>
+      <button class="quick-action" type="button" id="now-btn">Use right now</button>
+
+      <button class="action btn-primary" id="start-btn" type="button">Enter Photon Labyrinth →</button>
+    </section>
+
+    <section class="card" id="puzzle-section" aria-labelledby="puzzle-heading" hidden>
+      <h2 class="section-heading" id="puzzle-heading">Photon Labyrinth</h2>
+      <p class="section-copy">Tap a square to place a mirror. Guide the photon from <strong style="color:var(--green)">START</strong> to <strong style="color:var(--red)">EXIT</strong>.</p>
+
+      <div class="puzzle-meta">
+        <span id="mirror-count">0 mirrors placed</span>
+        <span>Mirror angle: /</span>
+      </div>
+
+      <div id="grid" role="grid" aria-label="Five by five photon mirror puzzle"></div>
+
+      <div class="status" id="puzzle-status" role="status" aria-live="polite">Place one or more mirrors, then check the photon path.</div>
+
+      <div class="button-row two">
+        <button class="action btn-primary" id="check-btn" type="button">Check Photon Path</button>
+        <button class="action btn-secondary" id="reset-btn" type="button">Reset</button>
+      </div>
+    </section>
+
+    <section class="card" id="launch-section" aria-labelledby="launch-heading" hidden>
+      <h2 class="section-heading" id="launch-heading">Launch window unlocked</h2>
+      <p class="section-copy">Your photon reached the exit. The rocket is synchronized to the selected moment.</p>
+
+      <div id="sky" aria-label="Animated rocket launch toward the Sun">
+        <div id="sun" aria-hidden="true"></div>
+        <div id="rocket" aria-hidden="true">🚀</div>
+        <div class="horizon" aria-hidden="true"></div>
+      </div>
+
+      <button class="action btn-primary" id="launch-btn" type="button">Launch Baby X Rocket</button>
+
+      <div class="result" id="result" role="status" aria-live="polite" hidden>
+        <strong id="result-heading">Rocket synchronized.</strong>
+        <p id="result-copy"></p>
+      </div>
+
+      <button class="quick-action" type="button" id="restart-btn" style="margin:16px auto 0; display:block;">Start a new moment</button>
+    </section>
+
+    <footer>Timely Una · Light-time navigation</footer>
+  </main>
+
+  <script>
+    const GRID_SIZE = 5;
+    const LIGHT_DELAY_SECONDS = 8 * 60 + 19;
+
+    let grid = Array(GRID_SIZE * GRID_SIZE).fill(0);
+    let pathCells = [];
+    let puzzleSolved = false;
+
+    const elements = {
+      datetime: document.getElementById("datetime"),
+      timeSection: document.getElementById("time-section"),
+      puzzleSection: document.getElementById("puzzle-section"),
+      launchSection: document.getElementById("launch-section"),
+      grid: document.getElementById("grid"),
+      puzzleStatus: document.getElementById("puzzle-status"),
+      mirrorCount: document.getElementById("mirror-count"),
+      result: document.getElementById("result"),
+      resultCopy: document.getElementById("result-copy"),
+      rocket: document.getElementById("rocket"),
+      sun: document.getElementById("sun")
+    };
+
+    function localDateTimeValue(date = new Date()) {
+      const adjusted = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return adjusted.toISOString().slice(0, 16);
+    }
+
+    function setNow() {
+      elements.datetime.value = localDateTimeValue();
+    }
+
+    function setStep(step) {
+      for (let i = 1; i <= 3; i++) {
+        const item = document.getElementById(`step-${i}`);
+        item.classList.toggle("active", i === step);
+        item.classList.toggle("complete", i < step);
+      }
+    }
+
+    function showSection(section) {
+      section.hidden = false;
+      section.classList.remove("fade-in");
+      void section.offsetWidth;
+      section.classList.add("fade-in");
+      requestAnimationFrame(() => section.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+
+    function updateStatus(message, type = "neutral") {
+      elements.puzzleStatus.textContent = message;
+      elements.puzzleStatus.className = `status${type === "neutral" ? "" : ` ${type}`}`;
+    }
+
+    function buildGrid() {
+      elements.grid.innerHTML = "";
+
+      for (let i = 0; i < grid.length; i++) {
+        const cell = document.createElement("button");
+        cell.type = "button";
+        cell.className = "cell";
+        cell.dataset.index = i;
+        cell.setAttribute("role", "gridcell");
+
+        if (i === 0) {
+          cell.classList.add("start");
+          cell.textContent = "START →";
+          cell.setAttribute("aria-label", "Photon start");
+          cell.disabled = true;
+        } else if (i === grid.length - 1) {
+          cell.classList.add("end");
+          cell.textContent = "EXIT";
+          cell.setAttribute("aria-label", "Photon exit");
+          cell.disabled = true;
+        } else {
+          cell.setAttribute("aria-label", `Empty cell ${i + 1}. Tap to place a mirror.`);
+          cell.addEventListener("click", () => toggleMirror(i));
+        }
+
+        elements.grid.appendChild(cell);
+      }
+
+      renderGrid();
+    }
+
+    function toggleMirror(index) {
+      grid[index] = grid[index] ? 0 : 1;
+      pathCells = [];
+      puzzleSolved = false;
+      updateStatus("Mirror changed. Check the photon path when ready.");
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const cells = elements.grid.querySelectorAll(".cell");
+      const mirrorTotal = grid.reduce((total, cell) => total + cell, 0);
+
+      cells.forEach((cell, index) => {
+        cell.classList.remove("mirror", "path");
+
+        if (index !== 0 && index !== grid.length - 1) {
+          cell.textContent = "";
+          cell.setAttribute("aria-pressed", grid[index] === 1 ? "true" : "false");
+          cell.setAttribute("aria-label", grid[index] === 1
+            ? `Mirror in cell ${index + 1}. Tap to remove it.`
+            : `Empty cell ${index + 1}. Tap to place a mirror.`);
+        }
+
+        if (grid[index] === 1) {
+          cell.classList.add("mirror");
+          cell.textContent = "/";
+        }
+
+        if (pathCells.includes(index)) cell.classList.add("path");
+      });
+
+      elements.mirrorCount.textContent = `${mirrorTotal} mirror${mirrorTotal === 1 ? "" : "s"} placed`;
+    }
+
+    function resetPuzzle() {
+      grid = Array(GRID_SIZE * GRID_SIZE).fill(0);
+      pathCells = [];
+      puzzleSolved = false;
+      updateStatus("Puzzle reset. Place one or more mirrors, then check the photon path.");
+      renderGrid();
+    }
+
+    function startPuzzle() {
+      if (!elements.datetime.value) {
+        elements.datetime.focus();
+        return;
+      }
+
+      resetPuzzle();
+      elements.launchSection.hidden = true;
+      elements.result.hidden = true;
+      elements.rocket.classList.remove("launched");
+      elements.sun.classList.remove("hit");
+      setStep(2);
+      showSection(elements.puzzleSection);
+    }
+
+    function checkPath() {
+      pathCells = [];
+      let row = 0;
+      let column = 0;
+      let direction = "right";
+      const visited = new Set();
+      const maxSteps = 60;
+
+      for (let steps = 0; steps < maxSteps; steps++) {
+        const index = row * GRID_SIZE + column;
+        pathCells.push(index);
+
+        if (row === GRID_SIZE - 1 && column === GRID_SIZE - 1) {
+          renderGrid();
+          puzzleSolved = true;
+          updateStatus("Photon locked onto the exit. Launch window unlocked!", "success");
+
+          setTimeout(() => {
+            setStep(3);
+            showSection(elements.launchSection);
+          }, 650);
+          return;
+        }
+
+        const stateKey = `${row},${column},${direction}`;
+        if (visited.has(stateKey)) break;
+        visited.add(stateKey);
+
+        let nextRow = row;
+        let nextColumn = column;
+
+        if (direction === "right") nextColumn++;
+        else if (direction === "left") nextColumn--;
+        else if (direction === "down") nextRow++;
+        else nextRow--;
+
+        if (
+          nextRow < 0 || nextRow >= GRID_SIZE ||
+          nextColumn < 0 || nextColumn >= GRID_SIZE
+        ) break;
+
+        row = nextRow;
+        column = nextColumn;
+        const nextIndex = row * GRID_SIZE + column;
+
+        if (grid[nextIndex] === 1) {
+          if (direction === "right") direction = "down";
+          else if (direction === "down") direction = "right";
+          else if (direction === "left") direction = "up";
+          else direction = "left";
+        }
+      }
+
+      renderGrid();
+      updateStatus("The photon left the grid before reaching the exit. Adjust a mirror and try again.", "error");
+    }
+
+    function launchRocket() {
+      if (!puzzleSolved) return;
+
+      elements.result.hidden = true;
+      elements.rocket.classList.remove("launched");
+      elements.sun.classList.remove("hit");
+      void elements.rocket.offsetWidth;
+
+      elements.rocket.classList.add("launched");
+      setTimeout(() => elements.sun.classList.add("hit"), 2900);
+
+      const selected = new Date(elements.datetime.value);
+      const lightDeparture = new Date(selected.getTime() - LIGHT_DELAY_SECONDS * 1000);
+      const options = {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit"
+      };
+
+      setTimeout(() => {
+        elements.resultCopy.textContent = `At the selected moment, the sunlight reaching you began its trip at approximately ${lightDeparture.toLocaleString(undefined, options)} — 8 minutes and 19 seconds earlier.`;
+        elements.result.hidden = false;
+        elements.result.classList.add("fade-in");
+      }, 3300);
+    }
+
+    function restartExperience() {
+      setNow();
+      resetPuzzle();
+      elements.puzzleSection.hidden = true;
+      elements.launchSection.hidden = true;
+      elements.result.hidden = true;
+      elements.rocket.classList.remove("launched");
+      elements.sun.classList.remove("hit");
+      setStep(1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    document.getElementById("now-btn").addEventListener("click", setNow);
+    document.getElementById("start-btn").addEventListener("click", startPuzzle);
+    document.getElementById("check-btn").addEventListener("click", checkPath);
+    document.getElementById("reset-btn").addEventListener("click", resetPuzzle);
+    document.getElementById("launch-btn").addEventListener("click", launchRocket);
+    document.getElementById("restart-btn").addEventListener("click", restartExperience);
+
+    setNow();
+    buildGrid();
+  </script>
+</body>
+</html>
