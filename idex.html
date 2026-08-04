@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimelyUNA • Light-Time Sextant (macsafedevelopersapple.io)</title>
+    <meta name="description" content="TimelyUNA: light-time sextant that shows the Sun where it actually is, launches rockets on true trajectories, jumps 65 million years with a quantum telescope, answers science questions, and dreams of AR overlays across deep time.">
+    <meta name="theme-color" content="#0a0a0f">
+    <link rel="canonical" href="https://macsafedevelopersapple.io/">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap');
+        
+        :root {
+            --papyrus: "Papyrus", "Papyrus Linotype", "Segoe Print", fantasy, serif;
+        }
+        
+        body {
+            font-family: "Papyrus", "Papyrus Linotype", fantasy, serif;
+            background: #0a0a0f;
+            color: #f5e8c7;
+        }
+        
+        .papyrus { font-family: "Papyrus", "Papyrus Linotype", fantasy, serif; letter-spacing: 0.5px; }
+        .section-header { font-family: "Papyrus", "Papyrus Linotype", fantasy, serif; color: #f4d9a0; text-shadow: 0 0 10px rgba(244, 217, 160, 0.3); }
+        .ancient-border { border: 3px solid #c9a46e; box-shadow: 0 0 15px rgba(201, 164, 110, 0.2); }
+        .info-box { background: rgba(30, 25, 20, 0.85); border: 2px solid #c9a46e; }
+        .golden-text { color: #f4d9a0; }
+        .demo-btn { font-family: "Papyrus", "Papyrus Linotype", fantasy, serif; transition: all 0.2s ease; border: 2px solid #c9a46e; }
+        .demo-btn:hover { background-color: #c9a46e; color: #0a0a0f; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(201, 164, 110, 0.4); }
+        
+        canvas {
+            border: 2px solid #c9a46e;
+            border-radius: 8px;
+            background: #000000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+        
+        .chat-bubble { background: rgba(40, 32, 22, 0.9); border: 1px solid #c9a46e; }
+        .chat-user { border-color: #8b6f47; }
+        
+        input, select, textarea {
+            font-family: "Papyrus", "Papyrus Linotype", fantasy, serif;
+            background: #1a1510;
+            border: 1px solid #c9a46e;
+            color: #f5e8c7;
+        }
+        
+        .timeline-track {
+            background: linear-gradient(to right, #3a2f1f, #c9a46e, #3a2f1f);
+            height: 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="papyrus min-h-screen text-[#f5e8c7]">
+
+    <!-- Header -->
+    <header class="border-b border-[#c9a46e]/40 bg-[#0a0a0f]">
+        <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-x-4">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-[#c9a46e] to-[#8b6f47] flex items-center justify-center shadow-inner">
+                    <span class="text-3xl">☉</span>
+                </div>
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold tracking-wider section-header">TIMELYUNA</h1>
+                    <p class="text-[#c9a46e] text-sm tracking-[3px] -mt-1">LIGHT-TIME SEXTANT • SCIENCE LITERACY ENGINE</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-xs text-[#c9a46e]/70">WEB DEMO v1.1 • NATIVE SWIFTUI IN REPO</div>
+                <div class="text-sm">Because the stars are always late to the party.</div>
+                <div class="text-sm golden-text mt-1">And the Sun is late to its own Dawn — from our perspective.</div>
+                <a href="https://github.com/QuantumPlethora/TimelyUNA" class="inline-block mt-2 text-xs tracking-widest text-[#c9a46e] hover:text-[#f4d9a0] underline underline-offset-4">
+                    GITHUB · SWIFTUI · ARKIT
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-6xl mx-auto px-6 py-10 space-y-16">
+
+        <!-- Banner -->
+        <div class="info-box ancient-border rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <div class="text-xs tracking-[2px] text-[#c9a46e] mb-1">APPLE ECOSYSTEM + BIG IDEAS</div>
+                <p class="text-lg leading-snug">
+                    Native <span class="golden-text font-semibold">SwiftUI + ARKit</span> app lives in the repo.  
+                    This expanded web demo explores light-time, deep time, solar-system delays, Andromeda correlation, a science oracle, and the dream of AR overlays that show any place as it was at any moment.
+                </p>
+            </div>
+            <a href="https://github.com/QuantumPlethora/TimelyUNA" class="demo-btn shrink-0 px-6 py-3 bg-[#c9a46e] text-[#0a0a0f] font-bold rounded-xl text-center">
+                VIEW ON GITHUB
+            </a>
+        </div>
+
+        <!-- Core Premise -->
+        <div class="text-center max-w-3xl mx-auto">
+            <p class="text-2xl leading-tight">
+                See the cosmos <span class="golden-text">as it truly is</span> — not as its light claims it was.<br>
+                Correct for the speed of light. Launch rockets on true trajectories.<br>
+                Then jump across 65 million years… and ask the universe questions.
+            </p>
+            <p class="mt-4 text-lg italic text-[#c9a46e]">
+                “A black hole is a star so bright, it forgot to let go of its light.”
+            </p>
+        </div>
+
+        <!-- DEMO 1: Sun -->
+        <section>
+            <div class="flex items-end justify-between mb-4 flex-wrap gap-2">
+                <div>
+                    <div class="inline-block px-4 py-1 bg-[#c9a46e]/10 text-[#c9a46e] text-xs tracking-widest rounded">DEMONSTRATION ONE</div>
+                    <h2 class="text-3xl md:text-4xl section-header tracking-wide">The Sun We See vs. The Sun That Is</h2>
+                </div>
+                <div class="text-right text-sm text-[#c9a46e]/70">
+                    Light travel time Sun → Earth<br>
+                    <span class="text-2xl font-bold text-[#f4d9a0]">8 min 19 s</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div class="lg:col-span-3">
+                    <div class="relative">
+                        <canvas id="sun-canvas" width="720" height="420" class="w-full max-w-[720px]"></canvas>
+                        <div class="absolute top-3 right-3 bg-black/70 px-3 py-1 text-xs rounded border border-[#c9a46e]/50">LIVE SIMULATION</div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="info-box p-5 rounded-xl ancient-border">
+                        <div class="flex items-center gap-x-3 mb-2">
+                            <div class="w-3 h-3 rounded-full bg-[#f4d9a0]"></div>
+                            <span class="font-semibold">APPARENT POSITION</span>
+                        </div>
+                        <p class="text-sm">Where the Sun <strong>appears</strong> to be. This is light that left 8 minutes and 19 seconds ago.</p>
+                    </div>
+                    <div class="info-box p-5 rounded-xl ancient-border">
+                        <div class="flex items-center gap-x-3 mb-2">
+                            <div class="w-3 h-3 rounded-full bg-[#ffcc66]"></div>
+                            <span class="font-semibold">ACTUAL POSITION</span>
+                        </div>
+                        <p class="text-sm">Where the Sun <strong>actually is</strong> right now. TimelyUNA shows the truth the naked eye cannot.</p>
+                    </div>
+                    <div class="info-box p-4 rounded-xl text-sm">
+                        Because Earth is moving, by the time sunlight arrives the Sun has already moved ~2°. Small… but real.
+                    </div>
+                    <button onclick="launchBabyRocket()" class="demo-btn w-full py-4 px-6 bg-[#0a0a0f] hover:bg-[#c9a46e] text-[#f4d9a0] hover:text-[#0a0a0f] font-bold text-xl rounded-xl flex items-center justify-center gap-x-3">
+                        <span>🚀</span> LAUNCH BABY SPCX ROCKET
+                    </button>
+                    <p class="text-center text-xs text-[#c9a46e]/60">Rocket flies to the <strong>actual</strong> position — light-delay corrected.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEMO 2: Chronos -->
+        <section>
+            <div class="flex items-end justify-between mb-4 flex-wrap gap-2">
+                <div>
+                    <div class="inline-block px-4 py-1 bg-[#c9a46e]/10 text-[#c9a46e] text-xs tracking-widest rounded">DEMONSTRATION TWO</div>
+                    <h2 class="text-3xl md:text-4xl section-header tracking-wide">Chronos Mode • Quantum Telescope</h2>
+                </div>
+                <div class="text-right text-sm text-[#c9a46e]/70">
+                    65,000,000 light-years<br>
+                    <span class="text-[#f4d9a0]">= 65 million years ago</span>
+                </div>
+            </div>
+
+            <div class="info-box p-6 rounded-2xl ancient-border mb-6">
+                <p class="text-lg">Theoretically relocate your vantage point 65 million light-years away via quantum entanglement. The light leaving Earth then is only arriving “now” at that distant point. A sufficiently advanced quantum telescope could watch the Cretaceous unfold.</p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="flex-1 space-y-4">
+                    <button onclick="engageQuantumJump()" class="demo-btn w-full py-5 px-8 bg-gradient-to-r from-[#3a2f1f] to-[#1f1810] hover:from-[#c9a46e] hover:to-[#8b6f47] text-[#f4d9a0] hover:text-[#0a0a0f] font-bold text-2xl rounded-2xl flex items-center justify-center gap-x-4">
+                        <span class="text-3xl">⚛︎</span> ENGAGE QUANTUM JUMP
+                    </button>
+                    <div id="quantum-status" class="hidden info-box p-4 rounded-xl text-center">
+                        <div class="text-[#c9a46e] text-sm tracking-widest">QUANTUM ENTANGLEMENT STABLE</div>
+                        <div class="text-xl font-bold">65,000,000 ly from Earth</div>
+                        <div class="text-xs mt-1 opacity-75">Cretaceous perspective active</div>
+                    </div>
+                    <button onclick="deployQuantumTelescope()" id="telescope-btn" class="demo-btn hidden w-full py-4 px-8 bg-[#0a0a0f] text-[#f4d9a0] font-bold text-xl rounded-xl items-center justify-center gap-x-3">
+                        <span>🔭</span> DEPLOY IMPROBABLE QUANTUM TELESCOPE
+                    </button>
+                </div>
+                <div class="flex-1">
+                    <canvas id="chrono-canvas" width="640" height="380" class="w-full max-w-[640px]"></canvas>
+                    <div id="chrono-label" class="text-center mt-2 text-sm text-[#c9a46e]/70 hidden">Looking back through 65 million years of light…</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW: Solar System & Galaxy Light-Time -->
+        <section>
+            <div class="inline-block px-4 py-1 bg-[#c9a46e]/10 text-[#c9a46e] text-xs tracking-widest rounded mb-2">DEMONSTRATION THREE</div>
+            <h2 class="text-3xl md:text-4xl section-header mb-4">Solar System Delays • Milky Way • Andromeda</h2>
+            <p class="mb-6 text-lg max-w-3xl">Every photon is a time machine. Select a body and see how “late” its light is when it reaches Earth — and how that correlates across the Local Group.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="info-box ancient-border rounded-2xl p-6">
+                    <label class="block text-sm text-[#c9a46e] mb-2">Choose a light source</label>
+                    <select id="body-select" onchange="updateLightDelay()" class="w-full p-3 rounded-lg mb-4">
+                        <option value="moon">Moon (~1.3 light-seconds)</option>
+                        <option value="sun" selected>Sun (8 min 19 s)</option>
+                        <option value="mars">Mars (3–22 min)</option>
+                        <option value="jupiter">Jupiter (~35–52 min)</option>
+                        <option value="saturn">Saturn (~1.2–1.5 hours)</option>
+                        <option value="neptune">Neptune (~4 hours)</option>
+                        <option value="proxima">Proxima Centauri (~4.2 years)</option>
+                        <option value="milky">Galactic Center (~26,000 years)</option>
+                        <option value="andromeda">Andromeda Galaxy (~2.5 million years)</option>
+                    </select>
+                    <div id="delay-display" class="text-2xl golden-text font-bold mb-2">8 minutes 19 seconds</div>
+                    <p id="delay-note" class="text-sm leading-relaxed">The Sun is always late to its own Dawn from our perspective. We live in a continuous “yesterday” of sunlight.</p>
+                </div>
+
+                <div class="info-box ancient-border rounded-2xl p-6">
+                    <h3 class="text-xl golden-text mb-3">Andromeda Correlation</h3>
+                    <p class="text-sm leading-relaxed mb-3">
+                        Light leaving Andromeda right now will arrive at Earth in ~2.5 million years.  
+                        Light that left Andromeda when early hominins were walking is arriving tonight.  
+                        When we look at Andromeda we are looking at a version of the universe that existed while our ancestors still shared the planet with other human species.
+                    </p>
+                    <p class="text-sm italic text-[#c9a46e]">
+                        TimelyUNA’s long-term vision: AR overlays that can project any sky object’s light-travel time and the corresponding Earth history epoch.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW: Conceptual AR Overlay / Time Slider -->
+        <section>
+            <div class="inline-block px-4 py-1 bg-[#c9a46e]/10 text-[#c9a46e] text-xs tracking-widest rounded mb-2">CONCEPT • AR OVERLAY</div>
+            <h2 class="text-3xl md:text-4xl section-header mb-4">See the Surroundings as They Were</h2>
+            <p class="mb-6 max-w-3xl text-lg">
+                Imagine pointing your phone at any landscape and sliding through time. Forests appear and vanish, coastlines shift, ice ages roll in, cities rise and fall — all corrected for the light-time of the stars overhead. This is the ARKit destination of TimelyUNA.
+            </p>
+
+            <div class="info-box ancient-border rounded-2xl p-6">
+                <label class="block text-sm text-[#c9a46e] mb-3">Conceptual timeline (demo only)</label>
+                <input type="range" id="time-slider" min="0" max="100" value="100" class="w-full mb-4" oninput="updateTimeline(this.value)">
+                <div class="flex justify-between text-xs text-[#c9a46e]/70 mb-4">
+                    <span>4.5 Ga</span>
+                    <span>65 Ma (dinos)</span>
+                    <span>10 ka</span>
+                    <span>Now</span>
+                </div>
+                <div id="timeline-desc" class="text-lg golden-text">Present day — light from the Sun is 8 min 19 s old. The sky is a mosaic of different pasts.</div>
+                <p class="mt-4 text-sm opacity-80">Full implementation lives in the SwiftUI + ARKit native app. The web demo is the storyboard.</p>
+            </div>
+        </section>
+
+        <!-- NEW: Science / History Oracle (ChatGPT-style mock) -->
+        <section>
+            <div class="inline-block px-4 py-1 bg-[#c9a46e]/10 text-[#c9a46e] text-xs tracking-widest rounded mb-2">SCIENCE LITERACY ENGINE</div>
+            <h2 class="text-3xl md:text-4xl section-header mb-4">Ask TimelyUNA (ChatGPT-style Oracle)</h2>
+            <p class="mb-6 max-w-3xl">Prototype of the conversational layer being built into the app. Ask about light-time, black holes, dinosaurs, history, or the Sun being late to its own Dawn.</p>
+
+            <div class="info-box ancient-border rounded-2xl p-5 max-w-3xl">
+                <div id="chat-log" class="space-y-3 mb-4 max-h-80 overflow-y-auto text-sm">
+                    <div class="chat-bubble p-3 rounded-lg">
+                        <strong class="text-[#c9a46e]">TimelyUNA:</strong> Ready. Try “Why is the Sun late to its own Dawn?” or “What is a black hole?” or “How far back can light take us?”
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <input id="chat-input" type="text" placeholder="Ask a science or history question…" class="flex-1 p-3 rounded-lg" onkeydown="if(event.key==='Enter') askOracle()">
+                    <button onclick="askOracle()" class="demo-btn px-5 py-3 bg-[#c9a46e] text-[#0a0a0f] font-bold rounded-lg">ASK</button>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                    <button onclick="quickAsk('Why is the Sun late to its own Dawn?')" class="px-3 py-1 border border-[#c9a46e]/50 rounded hover:bg-[#c9a46e]/20">Sun late to Dawn</button>
+                    <button onclick="quickAsk('What is a black hole?')" class="px-3 py-1 border border-[#c9a46e]/50 rounded hover:bg-[#c9a46e]/20">Black hole</button>
+                    <button onclick="quickAsk('How does light-time work?')" class="px-3 py-1 border border-[#c9a46e]/50 rounded hover:bg-[#c9a46e]/20">Light-time</button>
+                    <button onclick="quickAsk('What would we see at 65 million light years?')" class="px-3 py-1 border border-[#c9a46e]/50 rounded hover:bg-[#c9a46e]/20">65 Ma view</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Closing -->
+        <div class="max-w-3xl mx-auto text-center pt-8 border-t border-[#c9a46e]/30">
+            <div class="text-2xl mb-3">This is only the beginning.</div>
+            <p class="text-lg leading-relaxed">
+                TimelyUNA remains a living concept: a light-time sextant that reveals true positions of stars and planets, launches playful rockets on corrected trajectories, jumps across deep time with a quantum telescope, answers science questions, and points toward AR overlays that let anyone stand in any place and see it as it was — while the stars overhead remain honestly late.
+            </p>
+            <p class="mt-4 italic text-[#c9a46e]">
+                A black hole is a star so bright it forgot to let go of its light.<br>
+                Our Sun is late to its own Dawn — from our perspective.
+            </p>
+
+            <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="copyShareText()" class="demo-btn px-8 py-3 bg-[#0a0a0f] text-[#f4d9a0] rounded-xl border-2 border-[#c9a46e]">
+                    📤 COPY X POST TEXT
+                </button>
+                <a href="https://github.com/QuantumPlethora/TimelyUNA" target="_blank" rel="noopener" class="demo-btn px-8 py-3 bg-[#c9a46e] text-[#0a0a0f] hover:bg-[#f4d9a0] rounded-xl font-bold">
+                    BUILD WITH US · GITHUB
+                </a>
+            </div>
+
+            <p class="mt-6 text-sm text-[#c9a46e]/60">
+                Made with curiosity • Papyrus font mandated by royal decree • Web demo v1.1 · SwiftUI + ARKit companion in repo<br>
+                Creator: Craig (QuantumCentz) · <a href="https://macsafedevelopersapple.io" class="underline hover:text-[#f4d9a0]">macsafedevelopersapple.io</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ========== SUN CANVAS (preserved & slightly refined) ==========
+        let sunCanvas, sunCtx;
+        let earthX = 220, earthY = 210;
+        let apparentSunX = 520, apparentSunY = 160;
+        let actualSunX = 580, actualSunY = 210;
+        let stars = [];
+        let rocketAnim = null;
+
+        function initSunCanvas() {
+            sunCanvas = document.getElementById('sun-canvas');
+            sunCtx = sunCanvas.getContext('2d');
+            stars = [];
+            for (let i = 0; i < 180; i++) {
+                stars.push({ x: Math.random() * sunCanvas.width, y: Math.random() * sunCanvas.height, size: Math.random() * 1.8 + 0.6, alpha: Math.random() * 0.6 + 0.4 });
+            }
+            drawSunScene();
+        }
+
+        function drawSunScene(showRocket = false, rocketProgress = 0) {
+            const ctx = sunCtx;
+            const w = sunCanvas.width, h = sunCanvas.height;
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#fff';
+            for (let s of stars) { ctx.globalAlpha = s.alpha; ctx.fillRect(s.x, s.y, s.size, s.size); }
+            ctx.globalAlpha = 1;
+
+            // orbital hint
+            ctx.strokeStyle = 'rgba(201,164,110,0.15)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(400, 210, 280, 0, Math.PI * 2); ctx.stroke();
+
+            // Actual Sun
+            let g = ctx.createRadialGradient(actualSunX, actualSunY, 8, actualSunX, actualSunY, 55);
+            g.addColorStop(0, '#fff7cc'); g.addColorStop(0.3, '#ffcc66'); g.addColorStop(1, 'rgba(255,180,40,0)');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(actualSunX, actualSunY, 52, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffcc66'; ctx.beginPath(); ctx.arc(actualSunX, actualSunY, 28, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff7cc'; ctx.beginPath(); ctx.arc(actualSunX - 6, actualSunY - 6, 12, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#f4d9a0'; ctx.font = 'bold 15px Papyrus, fantasy';
+            ctx.fillText('ACTUAL SUN', actualSunX - 52, actualSunY + 48);
+            ctx.font = '12px Papyrus, fantasy'; ctx.fillText('(where it is RIGHT NOW)', actualSunX - 68, actualSunY + 63);
+
+            // Apparent Sun
+            g = ctx.createRadialGradient(apparentSunX, apparentSunY, 8, apparentSunX, apparentSunY, 48);
+            g.addColorStop(0, '#fff7cc'); g.addColorStop(0.4, '#ffaa33'); g.addColorStop(1, 'rgba(255,140,30,0)');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(apparentSunX, apparentSunY, 45, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffaa33'; ctx.beginPath(); ctx.arc(apparentSunX, apparentSunY, 24, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#e8d4a3'; ctx.font = 'bold 15px Papyrus, fantasy';
+            ctx.fillText('APPARENT SUN', apparentSunX - 58, apparentSunY + 42);
+            ctx.font = '12px Papyrus, fantasy'; ctx.fillText('(light left 8min 19s ago)', apparentSunX - 72, apparentSunY + 57);
+
+            // Earth
+            g = ctx.createRadialGradient(earthX, earthY, 22, earthX, earthY, 38);
+            g.addColorStop(0, 'rgba(100,160,255,0.4)'); g.addColorStop(1, 'rgba(60,110,220,0)');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(earthX, earthY, 38, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#3a7bd5'; ctx.beginPath(); ctx.arc(earthX, earthY, 24, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#2a5a2a';
+            ctx.beginPath(); ctx.ellipse(earthX - 6, earthY - 4, 11, 7, 0.6, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(earthX + 8, earthY + 7, 8, 5, -0.8, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#a8d4ff'; ctx.font = 'bold 16px Papyrus, fantasy'; ctx.fillText('EARTH', earthX - 28, earthY + 42);
+
+            // light path (dashed)
+            ctx.strokeStyle = '#ffcc66'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 4]);
+            ctx.beginPath(); ctx.moveTo(earthX + 20, earthY - 8); ctx.lineTo(apparentSunX - 18, apparentSunY + 5); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#ffdd88'; ctx.font = '11px Papyrus, fantasy';
+            ctx.fillText('☉ photons (8min 19s)', earthX + 55, earthY - 22);
+
+            // true direction
+            ctx.strokeStyle = '#f4d9a0'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(earthX + 20, earthY + 10); ctx.lineTo(actualSunX - 25, actualSunY); ctx.stroke();
+            ctx.fillStyle = '#f4d9a0';
+            ctx.beginPath(); ctx.moveTo(actualSunX - 25, actualSunY); ctx.lineTo(actualSunX - 38, actualSunY - 8); ctx.lineTo(actualSunX - 38, actualSunY + 8); ctx.fill();
+            ctx.font = '11px Papyrus, fantasy'; ctx.fillText('True current direction', earthX + 70, earthY + 28);
+
+            if (showRocket && rocketProgress > 0) {
+                const startX = earthX + 25, startY = earthY + 5;
+                const endX = actualSunX - 30, endY = actualSunY;
+                const rx = startX + (endX - startX) * rocketProgress;
+                const ry = startY + (endY - startY) * rocketProgress;
+                ctx.save(); ctx.translate(rx, ry);
+                ctx.fillStyle = '#e0e0e0';
+                ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(14, 0); ctx.lineTo(0, 6); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#c9a46e'; ctx.fillRect(-4, -3, 8, 6);
+                if (rocketProgress < 0.95) {
+                    ctx.fillStyle = '#ff8800';
+                    ctx.beginPath(); ctx.moveTo(-4, -2); ctx.lineTo(-14 - Math.random()*4, 0); ctx.lineTo(-4, 2); ctx.fill();
+                }
+                ctx.restore();
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 9px Papyrus, fantasy'; ctx.fillText('SPCX', rx + 18, ry + 3);
+            }
+
+            ctx.fillStyle = '#f4d9a0'; ctx.font = 'bold 18px Papyrus, fantasy';
+            ctx.fillText('TIMELYUNA LIGHT-TIME SEXTANT', 20, 28);
+            ctx.font = '12px Papyrus, fantasy'; ctx.fillText('Correcting for the finite speed of light', 20, 45);
+        }
+
+        function launchBabyRocket() {
+            if (rocketAnim) cancelAnimationFrame(rocketAnim);
+            let progress = 0;
+            const duration = 1450, startTime = Date.now();
+            function animate() {
+                progress = Math.min((Date.now() - startTime) / duration, 1);
+                drawSunScene(true, progress);
+                if (progress < 1) rocketAnim = requestAnimationFrame(animate);
+                else {
+                    setTimeout(() => {
+                        drawSunScene(true, 1);
+                        const ctx = sunCtx;
+                        ctx.fillStyle = '#f4d9a0'; ctx.font = 'bold 22px Papyrus, fantasy';
+                        ctx.fillText('DIRECT HIT ON TRUE POSITION!', 160, 95);
+                        ctx.font = '14px Papyrus, fantasy'; ctx.fillStyle = '#ffdd88';
+                        ctx.fillText('Light-delay navigation successful ★', 195, 115);
+                    }, 120);
+                }
+            }
+            animate();
+        }
+
+        // ========== CHRONOS ==========
+        let chronoCanvas, chronoCtx, chronoStars = [], dinos = [], chronoMode = 'space';
+
+        function initChronoCanvas() {
+            chronoCanvas = document.getElementById('chrono-canvas');
+            chronoCtx = chronoCanvas.getContext('2d');
+            for (let i = 0; i < 220; i++) {
+                chronoStars.push({ x: Math.random() * chronoCanvas.width, y: Math.random() * chronoCanvas.height, size: Math.random() * 1.6 + 0.5, alpha: Math.random() * 0.7 + 0.3 });
+            }
+            drawChronoSpace();
+        }
+
+        function drawChronoSpace() {
+            const ctx = chronoCtx, w = chronoCanvas.width, h = chronoCanvas.height;
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#fff';
+            for (let s of chronoStars) { ctx.globalAlpha = s.alpha; ctx.fillRect(s.x, s.y, s.size, s.size); }
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = 'rgba(180,160,220,0.08)';
+            ctx.beginPath(); ctx.ellipse(w * 0.65, h * 0.35, 180, 55, 0.6, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#4a9cff'; ctx.beginPath(); ctx.arc(w * 0.72, h * 0.42, 7, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(w * 0.72, h * 0.42, 9, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = '#c9a46e'; ctx.font = 'bold 13px Papyrus, fantasy';
+            ctx.fillText('EARTH (65,000,000 ly away)', w * 0.55, h * 0.42 - 18);
+            ctx.font = '11px Papyrus, fantasy';
+            ctx.fillText('You are looking at light that left during the age of dinosaurs', w * 0.38, h * 0.42 + 22);
+            ctx.fillStyle = '#8b6f47'; ctx.font = '12px Papyrus, fantasy'; ctx.fillText('QUANTUM VANTAGE POINT', 25, 30);
+        }
+
+        function drawDinoEra() {
+            const ctx = chronoCtx, w = chronoCanvas.width, h = chronoCanvas.height;
+            const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55);
+            sky.addColorStop(0, '#3a5f8a'); sky.addColorStop(1, '#5a8f6a');
+            ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h * 0.55);
+            ctx.fillStyle = '#3a5a2a'; ctx.fillRect(0, h * 0.5, w, h * 0.5);
+            ctx.fillStyle = '#2a4a1f';
+            ctx.beginPath(); ctx.ellipse(w * 0.3, h * 0.58, 140, 45, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(w * 0.75, h * 0.62, 160, 55, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffdd77'; ctx.beginPath(); ctx.arc(w * 0.2, h * 0.22, 22, 0, Math.PI * 2); ctx.fill();
+
+            for (let d of dinos) {
+                ctx.save(); ctx.translate(d.x, d.y);
+                if (d.type === 'trex') {
+                    ctx.fillStyle = '#4a7a3a';
+                    ctx.fillRect(-18, -8, 32, 16); ctx.fillRect(10, -14, 14, 12); ctx.fillRect(-32, -3, 16, 8);
+                    ctx.fillRect(-8, 4, 6, 14); ctx.fillRect(6, 4, 6, 14);
+                    ctx.fillStyle = '#111'; ctx.fillRect(18, -10, 4, 4);
+                } else {
+                    ctx.fillStyle = '#3a6a4a';
+                    ctx.fillRect(-22, -10, 38, 18); ctx.fillRect(12, -16, 12, 12);
+                    ctx.fillStyle = '#2a5a3a'; ctx.fillRect(20, -18, 5, 5); ctx.fillRect(20, -10, 5, 5);
+                    ctx.fillRect(-35, -5, 15, 8); ctx.fillRect(-14, 4, 7, 12); ctx.fillRect(8, 4, 7, 12);
+                }
+                ctx.restore();
+                d.x += d.speed;
+                if (d.x > w + 40) d.x = -50;
+                if (d.x < -50) d.x = w + 30;
+            }
+
+            ctx.fillStyle = '#f4d9a0'; ctx.font = 'bold 16px Papyrus, fantasy';
+            ctx.fillText('CRETACEOUS EARTH • 65 MILLION YEARS AGO', 30, 35);
+            ctx.font = '13px Papyrus, fantasy'; ctx.fillStyle = '#ffdd88';
+            ctx.fillText('You are seeing Earth as it was when T. rex walked', 30, 55);
+            ctx.fillStyle = 'rgba(244,217,160,0.7)'; ctx.font = '11px Papyrus, fantasy';
+            ctx.fillText('🦖 "Rawr… the light finally arrived"', 380, 95);
+            ctx.fillText('🦕 "Took you long enough"', 120, 280);
+        }
+
+        function engageQuantumJump() {
+            const status = document.getElementById('quantum-status');
+            const telescopeBtn = document.getElementById('telescope-btn');
+            const label = document.getElementById('chrono-label');
+            chronoCtx.fillStyle = 'rgba(255,255,255,0.9)';
+            chronoCtx.fillRect(0, 0, chronoCanvas.width, chronoCanvas.height);
+            setTimeout(() => {
+                drawChronoSpace();
+                status.classList.remove('hidden');
+                telescopeBtn.classList.remove('hidden');
+                telescopeBtn.classList.add('flex');
+                label.classList.remove('hidden');
+            }, 280);
+        }
+
+        function deployQuantumTelescope() {
+            chronoMode = 'dino';
+            if (dinos.length === 0) {
+                dinos = [
+                    { x: 80, y: 195, type: 'trex', speed: 0.9 },
+                    { x: 220, y: 260, type: 'sauropod', speed: 0.55 },
+                    { x: 450, y: 210, type: 'trex', speed: 1.1 },
+                    { x: 580, y: 275, type: 'sauropod', speed: 0.7 }
+                ];
+            }
+            function loop() {
+                if (chronoMode !== 'dino') return;
+                drawDinoEra();
+                requestAnimationFrame(loop);
+            }
+            loop();
+            const btn = document.getElementById('telescope-btn');
+            btn.innerHTML = '<span>🔭</span> <span>TELESCOPE LOCKED • DINOSAUR ERA ACTIVE</span>';
+            btn.disabled = true;
+            btn.style.opacity = '0.85';
+        }
+
+        // ========== NEW: Light-delay selector ==========
+        const delays = {
+            moon: { t: '~1.3 light-seconds', note: 'Even the Moon is slightly in the past. Laser ranging confirms it.' },
+            sun: { t: '8 minutes 19 seconds', note: 'The Sun is always late to its own Dawn from our perspective. We live in continuous sunlight-yesterday.' },
+            mars: { t: '3–22 minutes (varies)', note: 'Mars light delay changes with orbital positions. Critical for real-time rover ops.' },
+            jupiter: { t: '~35–52 minutes', note: 'Jupiter’s moons were Galileo’s clock. Their light is already old when we see them.' },
+            saturn: { t: '~1.2–1.5 hours', note: 'Cassini images arrived after the photons had already spent over an hour traveling.' },
+            neptune: { t: '~4 hours', note: 'Neptune is so far that a radio signal takes longer than a long lunch to arrive.' },
+            proxima: { t: '~4.2 years', note: 'The nearest star beyond the Sun. Its light left when you were still a few years younger (or not yet born).' },
+            milky: { t: '~26,000 years', note: 'Looking toward the galactic center is looking at the late Paleolithic. Human culture was already ancient when that light left.' },
+            andromeda: { t: '~2.5 million years', note: 'Andromeda’s light left when early Homo was just emerging in Africa. We see a galaxy as it was while our genus was young.' }
+        };
+
+        function updateLightDelay() {
+            const key = document.getElementById('body-select').value;
+            const d = delays[key];
+            document.getElementById('delay-display').textContent = d.t;
+            document.getElementById('delay-note').textContent = d.note;
+        }
+
+        // ========== NEW: Timeline slider ==========
+        function updateTimeline(v) {
+            const desc = document.getElementById('timeline-desc');
+            if (v > 95) desc.textContent = 'Present day — light from the Sun is 8 min 19 s old. The sky is a mosaic of different pasts.';
+            else if (v > 80) desc.textContent = 'Last few thousand years — civilizations rise. The same stars we see tonight watched the first cities.';
+            else if (v > 60) desc.textContent = '~10,000 years ago — end of the last ice age. Coastlines still adjusting. Human bands still small.';
+            else if (v > 40) desc.textContent = '65 million years ago — non-avian dinosaurs gone. Mammals begin their long ascent. Light from that era is still traveling outward.';
+            else if (v > 20) desc.textContent = 'Hundreds of millions of years — supercontinents, different atmospheres, different stars in the sky.';
+            else desc.textContent = 'Deep time — Earth itself is young relative to the light still en route from distant galaxies.';
+        }
+
+        // ========== NEW: Oracle / Chat mock ==========
+        const replies = {
+            'sun': 'The Sun is late to its own Dawn from our perspective because light takes 8 minutes 19 seconds to reach us. Every sunrise we see is already history. TimelyUNA simply makes that delay visible and navigable.',
+            'black hole': 'A black hole is a star so bright, it forgot to let go of its light. Gravity wins so completely that not even photons can climb out. From the outside we see the last light that almost escaped — frozen near the event horizon.',
+            'light-time': 'Light-time is the delay between an event and our observation of it. The farther the source, the deeper into the past we look. TimelyUNA corrects for that delay so rockets, instruments, and curiosity can aim at where things actually are, not where their light pretends they are.',
+            '65': 'At 65 million light-years we would be seeing Earth as it was in the late Cretaceous. Non-avian dinosaurs still walked, the continents were closer to their modern shapes but not identical, and the Sun shone on a world without humans. That light is still traveling outward right now.',
+            'andromeda': 'Andromeda’s light takes about 2.5 million years to reach us. When we look at it we see the galaxy as it was while early members of our genus were learning to walk upright in Africa. The correlation is direct: sky distance = Earth history depth.',
+            'default': 'Interesting question. In TimelyUNA’s framework everything is light-time: the Sun’s delay, the Moon’s 1.3 seconds, Andromeda’s 2.5 million years, and the theoretical quantum jump that lets us watch dinosaurs. Keep asking — science literacy grows by chasing the photons.'
+        };
+
+        function askOracle() {
+            const input = document.getElementById('chat-input');
+            const q = input.value.trim();
+            if (!q) return;
+            appendChat('You', q);
+            input.value = '';
+            setTimeout(() => {
+                let ans = replies.default;
+                const lower = q.toLowerCase();
+                if (lower.includes('sun') && (lower.includes('dawn') || lower.includes('late'))) ans = replies.sun;
+                else if (lower.includes('black hole') || lower.includes('blackhole')) ans = replies['black hole'];
+                else if (lower.includes('light-time') || lower.includes('light time') || lower.includes('delay')) ans = replies['light-time'];
+                else if (lower.includes('65') || lower.includes('dinosaur') || lower.includes('cretaceous')) ans = replies['65'];
+                else if (lower.includes('andromeda')) ans = replies.andromeda;
+                appendChat('TimelyUNA', ans);
+            }, 600 + Math.random() * 400);
+        }
+
+        function quickAsk(text) {
+            document.getElementById('chat-input').value = text;
+            askOracle();
+        }
+
+        function appendChat(who, text) {
+            const log = document.getElementById('chat-log');
+            const div = document.createElement('div');
+            div.className = 'chat-bubble p-3 rounded-lg ' + (who === 'You' ? 'chat-user' : '');
+            div.innerHTML = `<strong class="text-[#c9a46e]">${who}:</strong> ${text}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // ========== Share ==========
+        function copyShareText() {
+            const text = `Just expanded TimelyUNA on macsafedevelopersapple.io — light-time sextant that shows the real Sun vs the 8min19s-old one, launches a Baby SPCX rocket to the true position, jumps 65 million years with a quantum telescope, maps solar-system & Andromeda delays, and has a science oracle that knows “a black hole is a star so bright it forgot to let go of its light.”
+
+Native SwiftUI + ARKit version lives in the repo.
+
+https://macsafedevelopersapple.io
+https://github.com/QuantumPlethora/TimelyUNA
+
+#TimelyUNA #LightTime #ScienceLiteracy #AR`;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const btn = event?.currentTarget;
+                    if (btn) { const old = btn.innerHTML; btn.innerHTML = '✅ COPIED'; setTimeout(() => btn.innerHTML = old, 2000); }
+                });
+            } else prompt('Copy this:', text);
+        }
+
+        // ========== Boot ==========
+        window.onload = function() {
+            initSunCanvas();
+            initChronoCanvas();
+            updateLightDelay();
+            console.log('%c[TimelyUNA] v1.1 loaded — light delay corrected, oracle online, AR dream active.', 'color:#c9a46e');
+        };
+    </script>
+</body>
+</html>
