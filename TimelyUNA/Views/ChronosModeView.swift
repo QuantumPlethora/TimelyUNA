@@ -5,54 +5,57 @@ struct ChronosModeView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 18) {
                 Text("DEMONSTRATION TWO")
-                    .font(.system(size: 11, weight: .semibold, design: .serif))
-                    .tracking(2)
+                    .font(TimelyUNATheme.smallCaptionFont)
+                    .tracking(1.5)
                     .foregroundStyle(TimelyUNATheme.accent)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(TimelyUNATheme.accent.opacity(0.12))
                     .clipShape(Capsule())
 
-                HStack(alignment: .firstTextBaseline) {
-                    Text("Chronos Mode • Quantum Telescope")
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Chronos Mode")
                         .font(TimelyUNATheme.sectionFont)
                         .foregroundStyle(TimelyUNATheme.gold)
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(LightTimeConstants.chronosDistanceLabel)
-                            .font(TimelyUNATheme.captionFont)
-                            .foregroundStyle(TimelyUNATheme.accent.opacity(0.85))
-                        Text("= \(LightTimeConstants.chronosEraLabel) on Earth")
-                            .font(TimelyUNATheme.captionFont.weight(.semibold))
-                            .foregroundStyle(TimelyUNATheme.gold)
-                    }
+
+                    Text("Quantum Telescope • \(LightTimeConstants.chronosDistanceLabel)")
+                        .font(TimelyUNATheme.captionFont)
+                        .foregroundStyle(TimelyUNATheme.accent)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text("That equals \(LightTimeConstants.chronosEraLabel) on Earth.")
+                        .font(TimelyUNATheme.captionFont)
+                        .foregroundStyle(TimelyUNATheme.papyrus)
                 }
 
-                Text("By using (theoretically) quantum entanglement to instantaneously relocate our vantage point 65 million light-years away, we can look back across the gulf of space and time. The light that left Earth 65 million years ago is only now reaching that distant point. A sufficiently advanced quantum telescope could therefore observe the dinosaurs in their own era.")
-                    .font(TimelyUNATheme.bodyFont)
-                    .foregroundStyle(TimelyUNATheme.papyrus)
-                    .padding(16)
-                    .background(TimelyUNATheme.panel)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(TimelyUNATheme.accent, lineWidth: 2)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                DisclosureGroup("How Chronos Mode works") {
+                    Text("By theoretically relocating our vantage point 65 million light-years away, we could look back across the gulf of SpaceTime. Light that left Earth 65 million years ago would only now be reaching that distant point.")
+                        .font(TimelyUNATheme.bodyFont)
+                        .foregroundStyle(TimelyUNATheme.papyrus)
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 10)
+                }
+                .font(TimelyUNATheme.headlineFont)
+                .foregroundStyle(TimelyUNATheme.accent)
+                .padding(16)
+                .background(TimelyUNATheme.panel)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(TimelyUNATheme.accent, lineWidth: 1.5))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
 
                 ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .top, spacing: 20) {
-                        controls
-                            .frame(maxWidth: 340)
+                    HStack(alignment: .top, spacing: 18) {
+                        controls.frame(maxWidth: 340)
                         canvas
                             .frame(minWidth: 300, maxWidth: .infinity)
                             .frame(height: 320)
                     }
+
                     VStack(alignment: .leading, spacing: 16) {
                         controls
-                        canvas
-                            .frame(height: 300)
+                        canvas.frame(height: 300)
                     }
                 }
 
@@ -64,7 +67,8 @@ struct ChronosModeView: View {
                     .accessibilityHint("Returns the quantum telescope demonstration to its starting state")
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
         }
         .background(TimelyUNATheme.background.ignoresSafeArea())
         .navigationTitle("Chronos Mode")
@@ -74,39 +78,44 @@ struct ChronosModeView: View {
     }
 
     private var controls: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 12) {
             Button {
                 simulation.engageQuantumJump()
             } label: {
                 Label("ENGAGE QUANTUM JUMP", systemImage: "atom")
                     .font(TimelyUNATheme.buttonFont)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .buttonStyle(AncientButtonStyle(filled: simulation.chronosPhase == .idle))
             .disabled(simulation.chronosPhase != .idle)
             .accessibilityHint("Jumps your vantage point 65 million light-years from Earth")
 
             if simulation.chronosPhase != .idle {
-                VStack(spacing: 6) {
+                VStack(spacing: 7) {
                     Text("QUANTUM ENTANGLEMENT STABLE")
-                        .font(.system(size: 11, weight: .semibold, design: .serif))
-                        .tracking(1.5)
+                        .font(TimelyUNATheme.smallCaptionFont)
+                        .tracking(1.2)
                         .foregroundStyle(TimelyUNATheme.accent)
+
                     Text("65,000,000 LIGHT YEARS FROM EARTH")
-                        .font(.system(.title3, design: .serif).weight(.bold))
+                        .font(TimelyUNATheme.subheadingFont)
                         .foregroundStyle(TimelyUNATheme.gold)
                         .multilineTextAlignment(.center)
-                    Text("You are now seeing the universe from the Cretaceous period’s perspective")
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text("You are now seeing the universe from the Cretaceous period’s perspective.")
                         .font(TimelyUNATheme.captionFont)
-                        .foregroundStyle(TimelyUNATheme.papyrus.opacity(0.8))
+                        .foregroundStyle(TimelyUNATheme.papyrus.opacity(0.84))
                         .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(14)
                 .frame(maxWidth: .infinity)
                 .background(TimelyUNATheme.panel)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(TimelyUNATheme.accent, lineWidth: 2)
-                )
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(TimelyUNATheme.accent, lineWidth: 1.5))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
             }
@@ -117,10 +126,13 @@ struct ChronosModeView: View {
                 } label: {
                     Label(
                         simulation.chronosPhase == .telescopeActive
-                            ? "TELESCOPE LOCKED • DINOSAUR ERA ACTIVE"
-                            : "DEPLOY IMPROBABLE QUANTUM TELESCOPE",
+                            ? "TELESCOPE LOCKED\nDINOSAUR ERA ACTIVE"
+                            : "DEPLOY IMPROBABLE\nQUANTUM TELESCOPE",
                         systemImage: "binoculars.fill"
                     )
+                    .font(TimelyUNATheme.buttonFont)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                 }
                 .buttonStyle(AncientButtonStyle())
                 .disabled(simulation.chronosPhase == .telescopeActive)
@@ -135,14 +147,9 @@ struct ChronosModeView: View {
         VStack(spacing: 8) {
             ChronosCanvasView(phase: simulation.chronosPhase)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(TimelyUNATheme.accent, lineWidth: 2)
-                )
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(TimelyUNATheme.accent, lineWidth: 2))
                 .shadow(
-                    color: simulation.chronosPhase != .idle
-                        ? TimelyUNATheme.accent.opacity(0.45)
-                        : .clear,
+                    color: simulation.chronosPhase != .idle ? TimelyUNATheme.accent.opacity(0.45) : .clear,
                     radius: 12
                 )
                 .accessibilityLabel(chronoAccessibilityLabel)
@@ -150,7 +157,10 @@ struct ChronosModeView: View {
             if simulation.chronosPhase != .idle {
                 Text("Looking back through 65 million years of light...")
                     .font(TimelyUNATheme.captionFont)
-                    .foregroundStyle(TimelyUNATheme.accent.opacity(0.75))
+                    .foregroundStyle(TimelyUNATheme.accent.opacity(0.78))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -168,8 +178,6 @@ struct ChronosModeView: View {
 }
 
 #Preview {
-    NavigationStack {
-        ChronosModeView()
-    }
-    .environmentObject(SimulationState())
+    NavigationStack { ChronosModeView() }
+        .environmentObject(SimulationState())
 }
