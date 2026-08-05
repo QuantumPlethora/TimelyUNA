@@ -6,10 +6,10 @@ struct ContentView: View {
 
     enum AppTab: String, CaseIterable, Identifiable {
         case dawn = "Dawn"
+        case finder = "Finder"
+        case jump = "Jump"
         case sextant = "Sextant"
-        case mars = "Mars"
         case cosmos = "Cosmos"
-        case chart = "Chart"
         case learn = "Learn"
         case about = "About"
 
@@ -18,10 +18,10 @@ struct ContentView: View {
         var symbol: String {
             switch self {
             case .dawn: "sun.max"
-            case .sextant: "scope"
-            case .mars: "circle.circle"
+            case .finder: "scope"
+            case .jump: "sparkles"
+            case .sextant: "location.viewfinder"
             case .cosmos: "hurricane"
-            case .chart: "chart.xyaxis.line"
             case .learn: "book.closed"
             case .about: "info.circle"
             }
@@ -40,22 +40,14 @@ struct ContentView: View {
                     switch selectedTab {
                     case .dawn:
                         DawnExperienceView()
+                    case .finder:
+                        PlanetFinderView()
+                    case .jump:
+                        QuantumJumpView()
                     case .sextant:
                         NavigationStack { SunSextantView() }
-                    case .mars:
-                        ComingSoonView(
-                            title: "Mars",
-                            symbol: "circle.circle",
-                            message: "See Mars where its light says it was—and where orbital motion says it is now."
-                        )
                     case .cosmos:
                         NavigationStack { ChronosModeView() }
-                    case .chart:
-                        ComingSoonView(
-                            title: "Light-Time Chart",
-                            symbol: "chart.xyaxis.line",
-                            message: "Compare the arrival time of light from the Sun, planets, stars, and galaxies."
-                        )
                     case .learn:
                         ScienceLiteracyView()
                     case .about:
@@ -82,23 +74,15 @@ private enum CosmicPalette {
 private struct CosmicBackground: View {
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [.black, CosmicPalette.deepNavy, .black],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            LinearGradient(colors: [.black, CosmicPalette.deepNavy, .black], startPoint: .topLeading, endPoint: .bottomTrailing)
+                .ignoresSafeArea()
 
             Canvas { context, size in
-                for index in 0..<95 {
-                    let x = pseudoRandom(index * 17) * size.width
-                    let y = pseudoRandom(index * 43 + 11) * size.height
-                    let diameter = 0.7 + pseudoRandom(index * 71 + 7) * 1.8
-                    let opacity = 0.18 + pseudoRandom(index * 29 + 3) * 0.62
-                    context.fill(
-                        Path(ellipseIn: CGRect(x: x, y: y, width: diameter, height: diameter)),
-                        with: .color(.white.opacity(opacity))
-                    )
+                for index in 0..<100 {
+                    let x = random(index * 17) * size.width
+                    let y = random(index * 43 + 11) * size.height
+                    let d = 0.7 + random(index * 71 + 7) * 1.8
+                    context.fill(Path(ellipseIn: CGRect(x: x, y: y, width: d, height: d)), with: .color(.white.opacity(0.2 + random(index * 29) * 0.6)))
                 }
             }
             .ignoresSafeArea()
@@ -106,7 +90,7 @@ private struct CosmicBackground: View {
         }
     }
 
-    private func pseudoRandom(_ seed: Int) -> CGFloat {
+    private func random(_ seed: Int) -> CGFloat {
         let value = sin(Double(seed) * 12.9898) * 43758.5453
         return CGFloat(value - floor(value))
     }
@@ -114,38 +98,32 @@ private struct CosmicBackground: View {
 
 private struct CosmicHeader: View {
     var body: some View {
-        VStack(spacing: 9) {
+        VStack(spacing: 7) {
             Text("TimelyUNA")
-                .font(.custom("Papyrus", size: 54))
+                .font(.custom("Papyrus", size: 48))
                 .foregroundStyle(CosmicPalette.paleGold)
-                .minimumScaleFactor(0.72)
                 .lineLimit(1)
-                .shadow(color: CosmicPalette.gold.opacity(0.25), radius: 10)
+                .minimumScaleFactor(0.7)
 
-            HStack(spacing: 10) {
+            HStack {
                 Rectangle().fill(CosmicPalette.line).frame(height: 1)
-                Image(systemName: "sparkle")
-                    .foregroundStyle(CosmicPalette.gold)
+                Image(systemName: "sparkle").foregroundStyle(CosmicPalette.gold)
                 Rectangle().fill(CosmicPalette.line).frame(height: 1)
             }
 
-            Text("Light-SpaceTime Sextant • Science Literacy Engine")
-                .font(.custom("Papyrus", size: 17))
+            Text("Light-SpaceTime Sextant • Planetary Perspective Engine")
+                .font(.custom("Papyrus", size: 15))
                 .foregroundStyle(CosmicPalette.gold)
                 .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.75)
-                .lineLimit(2)
 
-            Text("We do not see the universe as it is.\nWe see it as its light arrives.")
-                .font(.custom("Papyrus", size: 23))
+            Text("There it is. There it was. TimelyUNA shows you both.")
+                .font(.custom("Papyrus", size: 19))
                 .foregroundStyle(CosmicPalette.paleGold)
                 .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.72)
-                .padding(.top, 3)
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 10)
-        .padding(.bottom, 14)
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
     }
 }
 
@@ -154,411 +132,68 @@ private struct CosmicTabBar: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 2) {
+            HStack(spacing: 3) {
                 ForEach(ContentView.AppTab.allCases) { tab in
                     Button {
-                        withAnimation(.easeInOut(duration: 0.22)) {
-                            selection = tab
-                        }
+                        withAnimation(.easeInOut(duration: 0.2)) { selection = tab }
                     } label: {
-                        VStack(spacing: 5) {
+                        VStack(spacing: 4) {
                             Image(systemName: tab.symbol)
-                                .font(.system(size: 20, weight: .light))
-                            Text(tab.rawValue)
-                                .font(.custom("Papyrus", size: 14))
-                                .lineLimit(1)
+                            Text(tab.rawValue).font(.custom("Papyrus", size: 13))
                         }
-                        .foregroundStyle(selection == tab ? CosmicPalette.paleGold : CosmicPalette.gold.opacity(0.9))
-                        .frame(width: 72, height: 60)
-                        .background {
-                            if selection == tab {
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(CosmicPalette.gold.opacity(0.18))
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                            .stroke(CosmicPalette.line, lineWidth: 1)
-                                    }
-                            }
-                        }
+                        .foregroundStyle(selection == tab ? CosmicPalette.paleGold : CosmicPalette.gold)
+                        .frame(width: 70, height: 55)
+                        .background(selection == tab ? CosmicPalette.gold.opacity(0.18) : .clear, in: RoundedRectangle(cornerRadius: 16))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(tab.rawValue)
-                    .accessibilityAddTraits(selection == tab ? .isSelected : [])
                 }
             }
             .padding(5)
         }
-        .background(.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(CosmicPalette.line, lineWidth: 1)
-        }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 12)
+        .background(.black.opacity(0.45), in: RoundedRectangle(cornerRadius: 22))
+        .overlay(RoundedRectangle(cornerRadius: 22).stroke(CosmicPalette.line))
+        .padding(.horizontal, 14)
+        .padding(.bottom, 10)
     }
 }
 
 private struct DawnExperienceView: View {
-    @State private var apparentOffset = 0.42
-    @State private var showActualPosition = true
+    @State private var showActual = true
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 18) {
-                ApparentActualCard(
-                    apparentOffset: apparentOffset,
-                    showActualPosition: showActualPosition
-                )
-
-                QuoteCard()
-
-                SunControlCard(
-                    apparentOffset: $apparentOffset,
-                    showActualPosition: $showActualPosition
-                )
-
-                TodayLightFactCard()
-            }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 34)
-        }
-        .scrollIndicators(.hidden)
-    }
-}
-
-private struct ApparentActualCard: View {
-    let apparentOffset: Double
-    let showActualPosition: Bool
-
-    var body: some View {
-        VStack(spacing: 0) {
-            ZStack {
-                LinearGradient(
-                    colors: [Color.indigo.opacity(0.30), Color.orange.opacity(0.17), .black.opacity(0.08)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-
-                Canvas { context, size in
-                    let horizon = size.height * 0.72
-                    var mountains = Path()
-                    mountains.move(to: CGPoint(x: 0, y: horizon))
-                    mountains.addLine(to: CGPoint(x: size.width * 0.16, y: horizon - 22))
-                    mountains.addLine(to: CGPoint(x: size.width * 0.34, y: horizon - 7))
-                    mountains.addLine(to: CGPoint(x: size.width * 0.55, y: horizon - 38))
-                    mountains.addLine(to: CGPoint(x: size.width * 0.76, y: horizon - 14))
-                    mountains.addLine(to: CGPoint(x: size.width, y: horizon - 27))
-                    mountains.addLine(to: CGPoint(x: size.width, y: size.height))
-                    mountains.addLine(to: CGPoint(x: 0, y: size.height))
-                    mountains.closeSubpath()
-                    context.fill(mountains, with: .linearGradient(
-                        Gradient(colors: [.black.opacity(0.72), .black]),
-                        startPoint: CGPoint(x: 0, y: horizon),
-                        endPoint: CGPoint(x: 0, y: size.height)
-                    ))
-                }
-
-                GeometryReader { proxy in
-                    let width = proxy.size.width
-                    let apparentX = 72 + CGFloat(apparentOffset) * 34
-                    let actualX = width - 76
-
-                    Path { path in
-                        path.move(to: CGPoint(x: apparentX, y: 118))
-                        path.addLine(to: CGPoint(x: width / 2, y: 250))
-                        if showActualPosition {
-                            path.move(to: CGPoint(x: actualX, y: 118))
-                            path.addLine(to: CGPoint(x: width / 2, y: 250))
-                        }
-                    }
-                    .stroke(CosmicPalette.gold, style: StrokeStyle(lineWidth: 1.5, dash: [7, 6]))
-
-                    VStack(spacing: 8) {
-                        Text("APPARENT SUN")
+            VStack(spacing: 16) {
+                CosmicCard {
+                    VStack(spacing: 14) {
+                        Text("THE SUN IS LATE TO ITS OWN DAWN")
                             .font(.custom("Papyrus", size: 20))
-                        SunGlyph()
-                        Text("WHERE WE SEE IT")
-                            .font(.custom("Papyrus", size: 15))
-                        Text("Light that left 8m 19s ago")
-                            .font(.custom("Papyrus", size: 13))
-                    }
-                    .foregroundStyle(CosmicPalette.paleGold)
-                    .position(x: apparentX, y: 102)
+                            .foregroundStyle(CosmicPalette.gold)
 
-                    if showActualPosition {
-                        VStack(spacing: 8) {
-                            Text("ACTUAL SUN")
-                                .font(.custom("Papyrus", size: 20))
-                            TargetGlyph()
-                            Text("WHERE IT REALLY IS")
-                                .font(.custom("Papyrus", size: 15))
-                            Text("~4 Sun diameters ahead")
-                                .font(.custom("Papyrus", size: 13))
+                        HStack {
+                            PositionBadge(title: "VISIBLE", detail: "Light from 8m 19s ago", symbol: "sun.max.fill")
+                            Image(systemName: "arrow.right").foregroundStyle(CosmicPalette.gold)
+                            if showActual {
+                                PositionBadge(title: "ACTUAL", detail: "Already ahead", symbol: "scope")
+                            }
                         }
-                        .foregroundStyle(CosmicPalette.paleGold)
-                        .position(x: actualX, y: 102)
-                        .transition(.opacity.combined(with: .scale))
-                    }
 
-                    Image(systemName: "figure.stand")
-                        .font(.system(size: 25))
-                        .foregroundStyle(.black)
-                        .position(x: width / 2, y: 246)
+                        Text("At sunrise, we see the past. The true Sun is already ahead.")
+                            .font(.custom("Papyrus", size: 22))
+                            .foregroundStyle(CosmicPalette.paleGold)
+                            .multilineTextAlignment(.center)
+
+                        Button(showActual ? "Hide Actual Position" : "Show Actual Position") {
+                            withAnimation { showActual.toggle() }
+                        }
+                        .buttonStyle(CosmicButtonStyle())
+                    }
                 }
 
-                VStack {
-                    Spacer()
-                    Text("At sunrise, we see the past.\nThe true Sun is already ahead.")
-                        .font(.custom("Papyrus", size: 20))
+                CosmicCard {
+                    Text("A black hole is a star so bright it forgot to let go of its light.")
+                        .font(.custom("Papyrus", size: 23))
                         .foregroundStyle(CosmicPalette.paleGold)
                         .multilineTextAlignment(.center)
-                        .padding(.bottom, 20)
-                }
-            }
-            .frame(height: 340)
-
-            Divider().overlay(CosmicPalette.line)
-
-            HStack(spacing: 0) {
-                MetricView(
-                    symbol: "stopwatch",
-                    title: "LIGHT-TIME DELAY",
-                    value: "8m 19s",
-                    detail: "From Sun to Earth"
-                )
-
-                Rectangle()
-                    .fill(CosmicPalette.line)
-                    .frame(width: 1, height: 92)
-
-                MetricView(
-                    symbol: "globe.americas.fill",
-                    title: "EARTH’S ORBIT",
-                    value: "≈ 30 km/s",
-                    detail: "Vastly differing motion"
-                )
-            }
-            .padding(.vertical, 12)
-        }
-        .background(CosmicPalette.panel.opacity(0.88))
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(CosmicPalette.line, lineWidth: 1)
-        }
-    }
-}
-
-private struct SunGlyph: View {
-    var body: some View {
-        Image(systemName: "sun.max.fill")
-            .font(.system(size: 52, weight: .light))
-            .foregroundStyle(.yellow)
-            .shadow(color: .yellow.opacity(0.7), radius: 12)
-    }
-}
-
-private struct TargetGlyph: View {
-    var body: some View {
-        Image(systemName: "scope")
-            .font(.system(size: 54, weight: .thin))
-            .foregroundStyle(CosmicPalette.gold)
-            .shadow(color: CosmicPalette.gold.opacity(0.7), radius: 10)
-    }
-}
-
-private struct MetricView: View {
-    let symbol: String
-    let title: String
-    let value: String
-    let detail: String
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: symbol)
-                .font(.system(size: 38, weight: .light))
-                .foregroundStyle(CosmicPalette.gold)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.custom("Papyrus", size: 13))
-                Text(value)
-                    .font(.custom("Papyrus", size: 25))
-                Text(detail)
-                    .font(.custom("Papyrus", size: 12))
-                    .foregroundStyle(CosmicPalette.paleGold.opacity(0.78))
-            }
-        }
-        .foregroundStyle(CosmicPalette.paleGold)
-        .frame(maxWidth: .infinity)
-        .minimumScaleFactor(0.72)
-    }
-}
-
-private struct QuoteCard: View {
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: "quote.opening")
-                .font(.system(size: 29))
-                .foregroundStyle(CosmicPalette.gold.opacity(0.75))
-
-            Text("A black hole is a star so bright\nit forgot to let go of its light.")
-                .font(.custom("Papyrus", size: 22))
-                .foregroundStyle(CosmicPalette.paleGold)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            ZStack {
-                Circle()
-                    .fill(.black)
-                    .frame(width: 56, height: 56)
-                    .shadow(color: CosmicPalette.gold.opacity(0.75), radius: 15)
-                Circle()
-                    .stroke(CosmicPalette.gold.opacity(0.72), lineWidth: 3)
-                    .frame(width: 62, height: 34)
-                    .rotationEffect(.degrees(-25))
-            }
-        }
-        .padding(22)
-        .background(CosmicPalette.panel.opacity(0.9))
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .stroke(CosmicPalette.line, lineWidth: 1)
-        }
-        .accessibilityElement(children: .combine)
-    }
-}
-
-private struct SunControlCard: View {
-    @Binding var apparentOffset: Double
-    @Binding var showActualPosition: Bool
-
-    var body: some View {
-        VStack(spacing: 18) {
-            Text("Move the apparent Sun")
-                .font(.custom("Papyrus", size: 24))
-                .foregroundStyle(CosmicPalette.paleGold)
-
-            HStack(spacing: 14) {
-                stepButton(symbol: "chevron.left", delta: -0.05)
-
-                Slider(value: $apparentOffset, in: 0...1)
-                    .tint(CosmicPalette.gold)
-                    .accessibilityLabel("Apparent Sun position")
-
-                stepButton(symbol: "chevron.right", delta: 0.05)
-            }
-
-            Button {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
-                    showActualPosition.toggle()
-                }
-            } label: {
-                Label(
-                    showActualPosition ? "Hide Actual Position" : "Show Actual Position",
-                    systemImage: showActualPosition ? "scope" : "scope"
-                )
-                .font(.custom("Papyrus", size: 22))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    LinearGradient(
-                        colors: [CosmicPalette.gold.opacity(0.95), Color.brown.opacity(0.92)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    in: Capsule()
-                )
-                .overlay { Capsule().stroke(CosmicPalette.paleGold.opacity(0.65), lineWidth: 1) }
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(22)
-        .background(CosmicPalette.panel.opacity(0.9))
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .stroke(CosmicPalette.line, lineWidth: 1)
-        }
-    }
-
-    private func stepButton(symbol: String, delta: Double) -> some View {
-        Button {
-            apparentOffset = min(1, max(0, apparentOffset + delta))
-        } label: {
-            Image(systemName: symbol)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(CosmicPalette.paleGold)
-                .frame(width: 50, height: 50)
-                .background(.black.opacity(0.45), in: RoundedRectangle(cornerRadius: 13))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 13)
-                        .stroke(CosmicPalette.line, lineWidth: 1)
-                }
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct TodayLightFactCard: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Today’s Light Fact", systemImage: "sparkles")
-                .font(.custom("Papyrus", size: 21))
-                .foregroundStyle(CosmicPalette.gold)
-
-            Text("The sunlight touching your face left the Sun about 8 minutes and 19 seconds ago.")
-                .font(.custom("Papyrus", size: 18))
-                .foregroundStyle(CosmicPalette.paleGold)
-
-            Text("Because the Sun is always late to its own Dawn!")
-                .font(.custom("Papyrus", size: 17))
-                .foregroundStyle(CosmicPalette.gold)
-                .padding(.top, 2)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(22)
-        .background(CosmicPalette.panel.opacity(0.84))
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .stroke(CosmicPalette.line, lineWidth: 1)
-        }
-    }
-}
-
-private struct ScienceLiteracyView: View {
-    private let facts = [
-        ("Sunlight", "8m 19s", "The Sun we see is already in the past."),
-        ("Moonlight", "≈ 1.3s", "Even the Moon arrives slightly late."),
-        ("Mars", "3–22 min", "Its light-time changes as both worlds orbit."),
-        ("Andromeda", "≈ 2.5M years", "Its light began traveling before modern humans existed.")
-    ]
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                ForEach(facts, id: \.0) { fact in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text(fact.0)
-                                .font(.custom("Papyrus", size: 23))
-                            Spacer()
-                            Text(fact.1)
-                                .font(.custom("Papyrus", size: 20))
-                                .foregroundStyle(CosmicPalette.gold)
-                        }
-                        Text(fact.2)
-                            .font(.custom("Papyrus", size: 17))
-                            .foregroundStyle(CosmicPalette.paleGold.opacity(0.84))
-                    }
-                    .foregroundStyle(CosmicPalette.paleGold)
-                    .padding(20)
-                    .background(CosmicPalette.panel.opacity(0.9))
-                    .clipShape(RoundedRectangle(cornerRadius: 22))
-                    .overlay { RoundedRectangle(cornerRadius: 22).stroke(CosmicPalette.line, lineWidth: 1) }
                 }
             }
             .padding(.horizontal, 16)
@@ -567,31 +202,300 @@ private struct ScienceLiteracyView: View {
     }
 }
 
-private struct ComingSoonView: View {
-    let title: String
-    let symbol: String
-    let message: String
+private enum ObserverWorld: String, CaseIterable, Identifiable {
+    case earth = "Earth"
+    case mars = "Mars"
+    var id: Self { self }
+    var symbol: String { self == .earth ? "globe.americas.fill" : "circle.circle.fill" }
+}
+
+private enum TargetWorld: String, CaseIterable, Identifiable {
+    case mercury = "Mercury"
+    case venus = "Venus"
+    case earth = "Earth"
+    case mars = "Mars"
+    case jupiter = "Jupiter"
+    case saturn = "Saturn"
+
+    var id: Self { self }
+    var symbol: String {
+        switch self {
+        case .mercury: "circle.fill"
+        case .venus: "circle.fill"
+        case .earth: "globe.americas.fill"
+        case .mars: "circle.circle.fill"
+        case .jupiter: "circle.grid.cross.fill"
+        case .saturn: "circle.dotted.circle.fill"
+        }
+    }
+}
+
+private struct PlanetFinderView: View {
+    @State private var observer: ObserverWorld = .earth
+    @State private var target: TargetWorld = .saturn
+    @State private var showActual = true
+
+    private var availableTargets: [TargetWorld] {
+        TargetWorld.allCases.filter { !($0.rawValue == observer.rawValue) }
+    }
 
     var body: some View {
-        VStack(spacing: 18) {
-            Spacer()
-            Image(systemName: symbol)
-                .font(.system(size: 72, weight: .ultraLight))
-                .foregroundStyle(CosmicPalette.gold)
-                .shadow(color: CosmicPalette.gold.opacity(0.4), radius: 15)
-            Text(title)
-                .font(.custom("Papyrus", size: 36))
-                .foregroundStyle(CosmicPalette.paleGold)
-            Text(message)
-                .font(.custom("Papyrus", size: 20))
-                .foregroundStyle(CosmicPalette.paleGold.opacity(0.82))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 36)
-            Text("Coming into view.")
-                .font(.custom("Papyrus", size: 18))
-                .foregroundStyle(CosmicPalette.gold)
-            Spacer()
+        ScrollView {
+            VStack(spacing: 16) {
+                CosmicCard {
+                    VStack(spacing: 16) {
+                        Text("PLANET FINDER")
+                            .font(.custom("Papyrus", size: 27))
+                            .foregroundStyle(CosmicPalette.paleGold)
+
+                        Picker("Observer", selection: $observer) {
+                            ForEach(ObserverWorld.allCases) { world in Text("From \(world.rawValue)").tag(world) }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: observer) { _, newValue in
+                            if target.rawValue == newValue.rawValue { target = newValue == .earth ? .mars : .earth }
+                        }
+
+                        Picker("Target", selection: $target) {
+                            ForEach(availableTargets) { planet in Text(planet.rawValue).tag(planet) }
+                        }
+                        .pickerStyle(.menu)
+
+                        SkyPositionCanvas(observer: observer, target: target, showActual: showActual)
+                            .frame(height: 300)
+
+                        Text("Aim at the VISIBLE marker to find \(target.rawValue) in the sky. The ACTUAL marker represents its modeled present position after light-travel delay.")
+                            .font(.custom("Papyrus", size: 18))
+                            .foregroundStyle(CosmicPalette.paleGold)
+                            .multilineTextAlignment(.center)
+
+                        Toggle("Show modeled actual position", isOn: $showActual)
+                            .font(.custom("Papyrus", size: 17))
+                            .tint(CosmicPalette.gold)
+                    }
+                }
+
+                CosmicCard {
+                    VStack(spacing: 8) {
+                        Text("NIGHT-SKY MODE")
+                            .font(.custom("Papyrus", size: 18))
+                            .foregroundStyle(CosmicPalette.gold)
+                        Text("Camera + motion sensors can later place these markers over the real sky. This screen establishes the observer/target model and visible-versus-actual interface.")
+                            .font(.custom("Papyrus", size: 17))
+                            .foregroundStyle(CosmicPalette.paleGold)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 30)
         }
+    }
+}
+
+private struct SkyPositionCanvas: View {
+    let observer: ObserverWorld
+    let target: TargetWorld
+    let showActual: Bool
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(LinearGradient(colors: [.indigo.opacity(0.28), .black], startPoint: .top, endPoint: .bottom))
+
+                ForEach(0..<28, id: \.self) { i in
+                    Circle().fill(.white.opacity(0.55)).frame(width: i.isMultiple(of: 5) ? 2 : 1)
+                        .position(x: CGFloat((i * 47) % 310) / 310 * proxy.size.width, y: CGFloat((i * 79) % 230) / 230 * proxy.size.height)
+                }
+
+                VStack {
+                    HStack {
+                        Label("VIEWED FROM \(observer.rawValue.uppercased())", systemImage: observer.symbol)
+                        Spacer()
+                    }
+                    .font(.custom("Papyrus", size: 15))
+                    .foregroundStyle(CosmicPalette.gold)
+                    .padding()
+                    Spacer()
+                }
+
+                PositionMarker(title: "VISIBLE \(target.rawValue.uppercased())", symbol: target.symbol, filled: true)
+                    .position(x: proxy.size.width * 0.38, y: proxy.size.height * 0.55)
+
+                if showActual {
+                    Path { path in
+                        path.move(to: CGPoint(x: proxy.size.width * 0.43, y: proxy.size.height * 0.55))
+                        path.addLine(to: CGPoint(x: proxy.size.width * 0.70, y: proxy.size.height * 0.40))
+                    }
+                    .stroke(CosmicPalette.gold, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
+
+                    PositionMarker(title: "ACTUAL NOW", symbol: "scope", filled: false)
+                        .position(x: proxy.size.width * 0.72, y: proxy.size.height * 0.38)
+                }
+            }
+        }
+    }
+}
+
+private struct PositionMarker: View {
+    let title: String
+    let symbol: String
+    let filled: Bool
+
+    var body: some View {
+        VStack(spacing: 5) {
+            ZStack {
+                Circle().stroke(CosmicPalette.gold, lineWidth: 2).frame(width: 58, height: 58)
+                Image(systemName: symbol)
+                    .font(.system(size: 28, weight: .light))
+                    .foregroundStyle(filled ? CosmicPalette.paleGold : CosmicPalette.gold)
+            }
+            Text(title)
+                .font(.custom("Papyrus", size: 13))
+                .foregroundStyle(CosmicPalette.paleGold)
+        }
+    }
+}
+
+private struct QuantumJumpView: View {
+    @State private var observer: ObserverWorld = .earth
+    @State private var jumping = false
+    @State private var target: TargetWorld = .earth
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                CosmicCard {
+                    VStack(spacing: 18) {
+                        Text(observer == .earth ? "YOU ARE ON EARTH" : "YOU ARE STANDING ON MARS")
+                            .font(.custom("Papyrus", size: 26))
+                            .foregroundStyle(CosmicPalette.paleGold)
+
+                        Image(systemName: observer.symbol)
+                            .font(.system(size: 100, weight: .thin))
+                            .foregroundStyle(observer == .earth ? .cyan : .orange)
+                            .shadow(color: CosmicPalette.gold.opacity(0.5), radius: 18)
+                            .scaleEffect(jumping ? 0.15 : 1)
+                            .opacity(jumping ? 0.2 : 1)
+
+                        Text(observer == .earth
+                             ? "Quantum jump to Mars, then turn around and look home."
+                             : "Look back toward Earth, Venus, Mercury—and the Sun—from an entirely different sky.")
+                            .font(.custom("Papyrus", size: 21))
+                            .foregroundStyle(CosmicPalette.paleGold)
+                            .multilineTextAlignment(.center)
+
+                        Button(observer == .earth ? "Quantum Jump to Mars" : "Quantum Jump Home") {
+                            withAnimation(.easeInOut(duration: 0.8)) { jumping = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.82) {
+                                observer = observer == .earth ? .mars : .earth
+                                target = observer == .mars ? .earth : .mars
+                                withAnimation(.spring(response: 0.6, dampingFraction: 0.72)) { jumping = false }
+                            }
+                        }
+                        .buttonStyle(CosmicButtonStyle())
+                    }
+                }
+
+                if observer == .mars {
+                    CosmicCard {
+                        VStack(spacing: 15) {
+                            Text("MARTIAN SKY: LOOK INWARD")
+                                .font(.custom("Papyrus", size: 23))
+                                .foregroundStyle(CosmicPalette.gold)
+
+                            Picker("World", selection: $target) {
+                                Text("Earth").tag(TargetWorld.earth)
+                                Text("Venus").tag(TargetWorld.venus)
+                                Text("Mercury").tag(TargetWorld.mercury)
+                            }
+                            .pickerStyle(.segmented)
+
+                            SkyPositionCanvas(observer: .mars, target: target, showActual: true)
+                                .frame(height: 280)
+
+                            Text(target == .earth ? "Quantum jump complete. You are now looking home." : "Every planet owns a different sky—and every sky arrives late.")
+                                .font(.custom("Papyrus", size: 20))
+                                .foregroundStyle(CosmicPalette.paleGold)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 30)
+        }
+    }
+}
+
+private struct ScienceLiteracyView: View {
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                FactCard(title: "The Sun", body: "Sunlight reaches Earth in about 8 minutes 19 seconds.")
+                FactCard(title: "Planet Finder", body: "Visible position answers: where do I aim? Modeled actual position asks: where has it moved since that light left?")
+                FactCard(title: "Mars Perspective", body: "From Mars, Earth becomes a wandering planet. Venus and Mercury occupy a completely different apparent geometry.")
+                FactCard(title: "TimelyUNA", body: "Because every dawn is already history—and every world has its own delayed sky.")
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 30)
+        }
+    }
+}
+
+private struct FactCard: View {
+    let title: String
+    let body: String
+
+    var body: some View {
+        CosmicCard {
+            VStack(spacing: 8) {
+                Text(title).font(.custom("Papyrus", size: 24)).foregroundStyle(CosmicPalette.gold)
+                Text(body).font(.custom("Papyrus", size: 19)).foregroundStyle(CosmicPalette.paleGold).multilineTextAlignment(.center)
+            }
+        }
+    }
+}
+
+private struct PositionBadge: View {
+    let title: String
+    let detail: String
+    let symbol: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(title).font(.custom("Papyrus", size: 16))
+            Image(systemName: symbol).font(.system(size: 48, weight: .light))
+            Text(detail).font(.custom("Papyrus", size: 13)).multilineTextAlignment(.center)
+        }
+        .foregroundStyle(CosmicPalette.paleGold)
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private struct CosmicCard<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        content
+            .padding(20)
+            .frame(maxWidth: .infinity)
+            .background(CosmicPalette.panel.opacity(0.9), in: RoundedRectangle(cornerRadius: 26))
+            .overlay(RoundedRectangle(cornerRadius: 26).stroke(CosmicPalette.line))
+    }
+}
+
+private struct CosmicButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.custom("Papyrus", size: 20))
+            .foregroundStyle(.black)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(CosmicPalette.gold.opacity(configuration.isPressed ? 0.7 : 1), in: RoundedRectangle(cornerRadius: 18))
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
     }
 }
 
