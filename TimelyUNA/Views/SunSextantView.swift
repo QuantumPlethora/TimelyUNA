@@ -2,13 +2,14 @@ import SwiftUI
 
 struct SunSextantView: View {
     @EnvironmentObject private var simulation: SimulationState
+    @State private var showingARSunrise = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 header
 
-                Text("See the cosmos as it truly is — not as its light claims it was. Correct for the speed of light. Launch rockets on true trajectories.")
+                Text("We do not see the universe as it is — we see it as its light arrives. Correct for Light-SpaceTime. Reveal Apparent Now, Actual Position, and the Lightline between them.")
                     .font(TimelyUNATheme.bodyFont)
                     .foregroundStyle(TimelyUNATheme.papyrus)
                     .multilineTextAlignment(.center)
@@ -22,7 +23,7 @@ struct SunSextantView: View {
                         .foregroundStyle(TimelyUNATheme.gold)
                     Spacer(minLength: 8)
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text("Light travel time")
+                        Text("Light-SpaceTime")
                             .font(TimelyUNATheme.captionFont)
                             .foregroundStyle(TimelyUNATheme.accent.opacity(0.8))
                         Text(LightTimeConstants.sunLightTravelDescription)
@@ -53,6 +54,9 @@ struct SunSextantView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+        .sheet(isPresented: $showingARSunrise) {
+            ARSunRocketView(selectedDate: Date())
+        }
     }
 
     private var header: some View {
@@ -75,7 +79,7 @@ struct SunSextantView: View {
                     .font(TimelyUNATheme.titleFont)
                     .foregroundStyle(TimelyUNATheme.gold)
                     .tracking(2)
-                Text("LIGHT-TIME SEXTANT")
+                Text("LIGHT-SPACETIME SEXTANT")
                     .font(TimelyUNATheme.captionFont)
                     .foregroundStyle(TimelyUNATheme.accent)
                     .tracking(2)
@@ -86,11 +90,11 @@ struct SunSextantView: View {
                 .foregroundStyle(TimelyUNATheme.accent.opacity(0.7))
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("TimelyUNA light-time sextant, version \(LightTimeConstants.appVersionLabel)")
+        .accessibilityLabel("TimelyUNA Light-SpaceTime Sextant, version \(LightTimeConstants.appVersionLabel)")
     }
 
     private var demoLabel: some View {
-        Text("DEMONSTRATION ONE")
+        Text("DAWN-FIRST DEMONSTRATION")
             .font(.system(size: 11, weight: .semibold, design: .serif))
             .tracking(2)
             .foregroundStyle(TimelyUNATheme.accent)
@@ -112,7 +116,7 @@ struct SunSextantView: View {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(TimelyUNATheme.accent, lineWidth: 2)
             )
-            .accessibilityLabel("Sun light-time simulation showing Earth, apparent Sun, and actual Sun positions")
+            .accessibilityLabel("Sun Light-SpaceTime simulation showing Earth, Apparent Now, Actual Position, and the SpaceTime Offset")
 
             Text("LIVE SIMULATION")
                 .font(.system(size: 10, weight: .semibold, design: .monospaced))
@@ -132,21 +136,29 @@ struct SunSextantView: View {
         VStack(spacing: 14) {
             InfoCard(
                 indicator: TimelyUNATheme.gold,
-                title: "APPARENT POSITION",
-                body: "Where the Sun appears to be right now. This is the light that left the Sun \(LightTimeConstants.sunLightTravelDescription) ago.",
-                emphasis: "appears"
+                title: "APPARENT NOW",
+                body: "Where arriving light makes the Sun appear. This Photon Stamp left the Sun \(LightTimeConstants.sunLightTravelDescription) ago.",
+                emphasis: "appear"
             )
             InfoCard(
                 indicator: TimelyUNATheme.actualSun,
                 title: "ACTUAL POSITION",
-                body: "Where the Sun actually is at this very moment. TimelyUNA reveals the truth the naked eye cannot see.",
-                emphasis: "actually"
+                body: "A calculated later position after accounting for Light-SpaceTime. TimelyUNA reveals what direct sight cannot deliver live.",
+                emphasis: "calculated"
             )
             InfoCard(
                 indicator: TimelyUNATheme.accent,
-                title: "WHY IT MATTERS",
-                body: "Because Earth is moving in its orbit, by the time the Sun’s light reaches us, the Sun has already moved forward. The difference is small (~\(Int(LightTimeConstants.demoAngularOffsetDegrees))° in this demo), but it matters for precision navigation, astronomy, and truth."
+                title: "SPACETIME OFFSET",
+                body: "The difference between Apparent Now and Actual Position. The AR demonstration exaggerates the visual separation so learners can clearly see the concept."
             )
+
+            Button {
+                showingARSunrise = true
+            } label: {
+                Label("OPEN AR SUNRISE", systemImage: "arkit")
+            }
+            .buttonStyle(AncientButtonStyle())
+            .accessibilityHint("Opens the camera experience showing Apparent Now, Actual Position, and the Lightline")
 
             Button {
                 simulation.launchRocket()
@@ -155,9 +167,9 @@ struct SunSextantView: View {
             }
             .buttonStyle(AncientButtonStyle())
             .disabled(simulation.isRocketFlying)
-            .accessibilityHint("Launches a rocket toward the true current position of the Sun, correcting for light delay")
+            .accessibilityHint("Launches a rocket toward Actual Position, correcting for Light-SpaceTime")
 
-            Text("The rocket flies to the actual position — correcting for light delay in real time.")
+            Text("In AR, point toward the horizon and tap the scene to launch Baby X along the Lightline toward Actual Position.")
                 .font(TimelyUNATheme.captionFont)
                 .foregroundStyle(TimelyUNATheme.accent.opacity(0.7))
                 .multilineTextAlignment(.center)
