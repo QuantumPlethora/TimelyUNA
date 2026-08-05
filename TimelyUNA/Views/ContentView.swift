@@ -170,10 +170,10 @@ private struct DawnExperienceView: View {
                             .foregroundStyle(CosmicPalette.gold)
 
                         HStack {
-                            PositionBadge(title: "VISIBLE", detail: "Light from 8m 19s ago", symbol: "sun.max.fill")
+                            PositionBadge(title: "VISIBLE NOW", detail: "Light from 8m 19s ago", symbol: "sun.max.fill")
                             Image(systemName: "arrow.right").foregroundStyle(CosmicPalette.gold)
                             if showActual {
-                                PositionBadge(title: "ACTUAL", detail: "Already ahead", symbol: "scope")
+                                PositionBadge(title: "ACTUAL NOW", detail: "Already ahead", symbol: "scope")
                             }
                         }
 
@@ -182,7 +182,7 @@ private struct DawnExperienceView: View {
                             .foregroundStyle(CosmicPalette.paleGold)
                             .multilineTextAlignment(.center)
 
-                        Button(showActual ? "Hide Actual Position" : "Show Actual Position") {
+                        Button(showActual ? "Hide Actual Now" : "Show Actual Now") {
                             withAnimation { showActual.toggle() }
                         }
                         .buttonStyle(CosmicButtonStyle())
@@ -264,12 +264,12 @@ private struct PlanetFinderView: View {
                         SkyPositionCanvas(observer: observer, target: target, showActual: showActual)
                             .frame(height: 300)
 
-                        Text("Aim at the VISIBLE marker to find \(target.rawValue) in the sky. The ACTUAL marker represents its modeled present position after light-travel delay.")
+                        Text("Aim at the VISIBLE NOW marker to find \(target.rawValue) in the sky. ACTUAL NOW represents its modeled present location after accounting for light-travel delay.")
                             .font(.custom("Papyrus", size: 18))
                             .foregroundStyle(CosmicPalette.paleGold)
                             .multilineTextAlignment(.center)
 
-                        Toggle("Show modeled actual position", isOn: $showActual)
+                        Toggle("Show Actual Now", isOn: $showActual)
                             .font(.custom("Papyrus", size: 17))
                             .tint(CosmicPalette.gold)
                     }
@@ -280,7 +280,7 @@ private struct PlanetFinderView: View {
                         Text("NIGHT-SKY MODE")
                             .font(.custom("Papyrus", size: 18))
                             .foregroundStyle(CosmicPalette.gold)
-                        Text("Camera + motion sensors can later place these markers over the real sky. This screen establishes the observer/target model and visible-versus-actual interface.")
+                        Text("Camera + motion sensors can later place these markers over the real sky. This screen establishes the observer/target model and the Visible Now versus Actual Now interface.")
                             .font(.custom("Papyrus", size: 17))
                             .foregroundStyle(CosmicPalette.paleGold)
                             .multilineTextAlignment(.center)
@@ -320,7 +320,7 @@ private struct SkyPositionCanvas: View {
                     Spacer()
                 }
 
-                PositionMarker(title: "VISIBLE \(target.rawValue.uppercased())", symbol: target.symbol, filled: true)
+                PositionMarker(title: "VISIBLE NOW", symbol: target.symbol, filled: true)
                     .position(x: proxy.size.width * 0.38, y: proxy.size.height * 0.55)
 
                 if showActual {
@@ -335,6 +335,8 @@ private struct SkyPositionCanvas: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("\(target.rawValue) viewed from \(observer.rawValue). Visible Now shows where to look. Actual Now shows the modeled present location.")
     }
 }
 
@@ -435,7 +437,8 @@ private struct ScienceLiteracyView: View {
         ScrollView {
             VStack(spacing: 16) {
                 FactCard(title: "The Sun", body: "Sunlight reaches Earth in about 8 minutes 19 seconds.")
-                FactCard(title: "Planet Finder", body: "Visible position answers: where do I aim? Modeled actual position asks: where has it moved since that light left?")
+                FactCard(title: "Visible Now", body: "Visible Now answers the immediate human question: where do I aim to see it?")
+                FactCard(title: "Actual Now", body: "Actual Now represents the object's modeled present location after accounting for light-travel delay.")
                 FactCard(title: "Mars Perspective", body: "From Mars, Earth becomes a wandering planet. Venus and Mercury occupy a completely different apparent geometry.")
                 FactCard(title: "TimelyUNA", body: "Because every dawn is already history—and every world has its own delayed sky.")
             }
