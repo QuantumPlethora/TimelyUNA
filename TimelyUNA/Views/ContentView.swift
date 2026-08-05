@@ -7,7 +7,7 @@ struct ContentView: View {
     enum AppTab: String, CaseIterable, Identifiable {
         case dawn = "Dawn"
         case finder = "Finder"
-        case jump = "Jump"
+        case jump = "xSky"
         case sextant = "Sextant"
         case cosmos = "Cosmos"
         case learn = "Learn"
@@ -43,7 +43,7 @@ struct ContentView: View {
                     case .finder:
                         PlanetFinderView()
                     case .jump:
-                        QuantumJumpView()
+                        XSkyJumpView()
                     case .sextant:
                         NavigationStack { SunSextantView() }
                     case .cosmos:
@@ -74,15 +74,22 @@ private enum CosmicPalette {
 private struct CosmicBackground: View {
     var body: some View {
         ZStack {
-            LinearGradient(colors: [.black, CosmicPalette.deepNavy, .black], startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: [.black, CosmicPalette.deepNavy, .black],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
             Canvas { context, size in
                 for index in 0..<100 {
                     let x = random(index * 17) * size.width
                     let y = random(index * 43 + 11) * size.height
                     let d = 0.7 + random(index * 71 + 7) * 1.8
-                    context.fill(Path(ellipseIn: CGRect(x: x, y: y, width: d, height: d)), with: .color(.white.opacity(0.2 + random(index * 29) * 0.6)))
+                    context.fill(
+                        Path(ellipseIn: CGRect(x: x, y: y, width: d, height: d)),
+                        with: .color(.white.opacity(0.2 + random(index * 29) * 0.6))
+                    )
                 }
             }
             .ignoresSafeArea()
@@ -139,11 +146,15 @@ private struct CosmicTabBar: View {
                     } label: {
                         VStack(spacing: 4) {
                             Image(systemName: tab.symbol)
-                            Text(tab.rawValue).font(.custom("Papyrus", size: 13))
+                            Text(tab.rawValue)
+                                .font(.custom("Papyrus", size: 13))
                         }
                         .foregroundStyle(selection == tab ? CosmicPalette.paleGold : CosmicPalette.gold)
                         .frame(width: 70, height: 55)
-                        .background(selection == tab ? CosmicPalette.gold.opacity(0.18) : .clear, in: RoundedRectangle(cornerRadius: 16))
+                        .background(
+                            selection == tab ? CosmicPalette.gold.opacity(0.18) : .clear,
+                            in: RoundedRectangle(cornerRadius: 16)
+                        )
                     }
                     .buttonStyle(.plain)
                 }
@@ -205,6 +216,7 @@ private struct DawnExperienceView: View {
 private enum ObserverWorld: String, CaseIterable, Identifiable {
     case earth = "Earth"
     case mars = "Mars"
+
     var id: Self { self }
     var symbol: String { self == .earth ? "globe.americas.fill" : "circle.circle.fill" }
 }
@@ -218,10 +230,10 @@ private enum TargetWorld: String, CaseIterable, Identifiable {
     case saturn = "Saturn"
 
     var id: Self { self }
+
     var symbol: String {
         switch self {
-        case .mercury: "circle.fill"
-        case .venus: "circle.fill"
+        case .mercury, .venus: "circle.fill"
         case .earth: "globe.americas.fill"
         case .mars: "circle.circle.fill"
         case .jupiter: "circle.grid.cross.fill"
@@ -236,7 +248,7 @@ private struct PlanetFinderView: View {
     @State private var showActual = true
 
     private var availableTargets: [TargetWorld] {
-        TargetWorld.allCases.filter { !($0.rawValue == observer.rawValue) }
+        TargetWorld.allCases.filter { $0.rawValue != observer.rawValue }
     }
 
     var body: some View {
@@ -249,22 +261,28 @@ private struct PlanetFinderView: View {
                             .foregroundStyle(CosmicPalette.paleGold)
 
                         Picker("Observer", selection: $observer) {
-                            ForEach(ObserverWorld.allCases) { world in Text("From \(world.rawValue)").tag(world) }
+                            ForEach(ObserverWorld.allCases) { world in
+                                Text("From \(world.rawValue)").tag(world)
+                            }
                         }
                         .pickerStyle(.segmented)
                         .onChange(of: observer) { _, newValue in
-                            if target.rawValue == newValue.rawValue { target = newValue == .earth ? .mars : .earth }
+                            if target.rawValue == newValue.rawValue {
+                                target = newValue == .earth ? .mars : .earth
+                            }
                         }
 
                         Picker("Target", selection: $target) {
-                            ForEach(availableTargets) { planet in Text(planet.rawValue).tag(planet) }
+                            ForEach(availableTargets) { planet in
+                                Text(planet.rawValue).tag(planet)
+                            }
                         }
                         .pickerStyle(.menu)
 
                         SkyPositionCanvas(observer: observer, target: target, showActual: showActual)
                             .frame(height: 300)
 
-                        Text("Aim at the VISIBLE NOW marker to find \(target.rawValue) in the sky. ACTUAL NOW represents its modeled present location after accounting for light-travel delay.")
+                        Text("Aim at VISIBLE NOW to find \(target.rawValue). ACTUAL NOW shows its modeled present location after light-travel delay.")
                             .font(.custom("Papyrus", size: 18))
                             .foregroundStyle(CosmicPalette.paleGold)
                             .multilineTextAlignment(.center)
@@ -272,18 +290,6 @@ private struct PlanetFinderView: View {
                         Toggle("Show Actual Now", isOn: $showActual)
                             .font(.custom("Papyrus", size: 17))
                             .tint(CosmicPalette.gold)
-                    }
-                }
-
-                CosmicCard {
-                    VStack(spacing: 8) {
-                        Text("NIGHT-SKY MODE")
-                            .font(.custom("Papyrus", size: 18))
-                            .foregroundStyle(CosmicPalette.gold)
-                        Text("Camera + motion sensors can later place these markers over the real sky. This screen establishes the observer/target model and the Visible Now versus Actual Now interface.")
-                            .font(.custom("Papyrus", size: 17))
-                            .foregroundStyle(CosmicPalette.paleGold)
-                            .multilineTextAlignment(.center)
                     }
                 }
             }
@@ -305,8 +311,13 @@ private struct SkyPositionCanvas: View {
                     .fill(LinearGradient(colors: [.indigo.opacity(0.28), .black], startPoint: .top, endPoint: .bottom))
 
                 ForEach(0..<28, id: \.self) { i in
-                    Circle().fill(.white.opacity(0.55)).frame(width: i.isMultiple(of: 5) ? 2 : 1)
-                        .position(x: CGFloat((i * 47) % 310) / 310 * proxy.size.width, y: CGFloat((i * 79) % 230) / 230 * proxy.size.height)
+                    Circle()
+                        .fill(.white.opacity(0.55))
+                        .frame(width: i.isMultiple(of: 5) ? 2 : 1)
+                        .position(
+                            x: CGFloat((i * 47) % 310) / 310 * proxy.size.width,
+                            y: CGFloat((i * 79) % 230) / 230 * proxy.size.height
+                        )
                 }
 
                 VStack {
@@ -360,43 +371,60 @@ private struct PositionMarker: View {
     }
 }
 
-private struct QuantumJumpView: View {
+private struct XSkyJumpView: View {
     @State private var observer: ObserverWorld = .earth
-    @State private var jumping = false
     @State private var target: TargetWorld = .earth
+    @State private var jumping = false
+    @State private var starStretch = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 CosmicCard {
                     VStack(spacing: 18) {
-                        Text(observer == .earth ? "YOU ARE ON EARTH" : "YOU ARE STANDING ON MARS")
-                            .font(.custom("Papyrus", size: 26))
+                        Text("xSky Jump")
+                            .font(.custom("Papyrus", size: 34))
+                            .foregroundStyle(CosmicPalette.gold)
+
+                        Text("Jump the observer. Change the sky.")
+                            .font(.custom("Papyrus", size: 20))
                             .foregroundStyle(CosmicPalette.paleGold)
 
-                        Image(systemName: observer.symbol)
-                            .font(.system(size: 100, weight: .thin))
-                            .foregroundStyle(observer == .earth ? .cyan : .orange)
-                            .shadow(color: CosmicPalette.gold.opacity(0.5), radius: 18)
-                            .scaleEffect(jumping ? 0.15 : 1)
-                            .opacity(jumping ? 0.2 : 1)
+                        ZStack {
+                            ForEach(0..<18, id: \.self) { index in
+                                Capsule()
+                                    .fill(.white.opacity(0.55))
+                                    .frame(width: starStretch ? 80 : 3, height: 2)
+                                    .rotationEffect(.degrees(Double(index) * 20))
+                                    .offset(x: CGFloat((index % 6) * 18 - 45), y: CGFloat((index / 6) * 30 - 30))
+                                    .opacity(jumping ? 1 : 0)
+                            }
+
+                            Image(systemName: observer.symbol)
+                                .font(.system(size: 100, weight: .thin))
+                                .foregroundStyle(observer == .earth ? .cyan : .orange)
+                                .shadow(color: CosmicPalette.gold.opacity(0.5), radius: 18)
+                                .scaleEffect(jumping ? 0.18 : 1)
+                                .opacity(jumping ? 0.18 : 1)
+                        }
+                        .frame(height: 130)
+
+                        Text(observer == .earth ? "YOU ARE ON EARTH" : "YOU ARE STANDING ON MARS")
+                            .font(.custom("Papyrus", size: 25))
+                            .foregroundStyle(CosmicPalette.paleGold)
 
                         Text(observer == .earth
-                             ? "Quantum jump to Mars, then turn around and look home."
-                             : "Look back toward Earth, Venus, Mercury—and the Sun—from an entirely different sky.")
-                            .font(.custom("Papyrus", size: 21))
+                             ? "xSky Jump to Mars, then turn around and look home."
+                             : "Earth, Venus, Mercury, and the Sun now belong to a Martian sky.")
+                            .font(.custom("Papyrus", size: 20))
                             .foregroundStyle(CosmicPalette.paleGold)
                             .multilineTextAlignment(.center)
 
-                        Button(observer == .earth ? "Quantum Jump to Mars" : "Quantum Jump Home") {
-                            withAnimation(.easeInOut(duration: 0.8)) { jumping = true }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.82) {
-                                observer = observer == .earth ? .mars : .earth
-                                target = observer == .mars ? .earth : .mars
-                                withAnimation(.spring(response: 0.6, dampingFraction: 0.72)) { jumping = false }
-                            }
+                        Button(observer == .earth ? "xSky Jump to Mars" : "xSky Jump Home") {
+                            performJump()
                         }
                         .buttonStyle(CosmicButtonStyle())
+                        .disabled(jumping)
                     }
                 }
 
@@ -417,7 +445,9 @@ private struct QuantumJumpView: View {
                             SkyPositionCanvas(observer: .mars, target: target, showActual: true)
                                 .frame(height: 280)
 
-                            Text(target == .earth ? "Quantum jump complete. You are now looking home." : "Every planet owns a different sky—and every sky arrives late.")
+                            Text(target == .earth
+                                 ? "xSky Jump complete. You are now looking home."
+                                 : "Every planet owns a different sky—and every sky arrives late.")
                                 .font(.custom("Papyrus", size: 20))
                                 .foregroundStyle(CosmicPalette.paleGold)
                                 .multilineTextAlignment(.center)
@@ -430,6 +460,23 @@ private struct QuantumJumpView: View {
             .padding(.bottom, 30)
         }
     }
+
+    private func performJump() {
+        withAnimation(.easeIn(duration: 0.25)) {
+            jumping = true
+            starStretch = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.72) {
+            observer = observer == .earth ? .mars : .earth
+            target = observer == .mars ? .earth : .mars
+
+            withAnimation(.spring(response: 0.65, dampingFraction: 0.72)) {
+                jumping = false
+                starStretch = false
+            }
+        }
+    }
 }
 
 private struct ScienceLiteracyView: View {
@@ -437,10 +484,10 @@ private struct ScienceLiteracyView: View {
         ScrollView {
             VStack(spacing: 16) {
                 FactCard(title: "The Sun", body: "Sunlight reaches Earth in about 8 minutes 19 seconds.")
-                FactCard(title: "Visible Now", body: "Visible Now answers the immediate human question: where do I aim to see it?")
-                FactCard(title: "Actual Now", body: "Actual Now represents the object's modeled present location after accounting for light-travel delay.")
-                FactCard(title: "Mars Perspective", body: "From Mars, Earth becomes a wandering planet. Venus and Mercury occupy a completely different apparent geometry.")
-                FactCard(title: "TimelyUNA", body: "Because every dawn is already history—and every world has its own delayed sky.")
+                FactCard(title: "Visible Now", body: "Where arriving light tells you to look.")
+                FactCard(title: "Actual Now", body: "The object's modeled present location after accounting for light-travel delay.")
+                FactCard(title: "xSky Jump", body: "Change the observer and the entire sky changes with it.")
+                FactCard(title: "Mars Perspective", body: "From Mars, Earth becomes a wandering planet. Venus and Mercury occupy a different geometry.")
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 30)
@@ -455,8 +502,13 @@ private struct FactCard: View {
     var body: some View {
         CosmicCard {
             VStack(spacing: 8) {
-                Text(title).font(.custom("Papyrus", size: 24)).foregroundStyle(CosmicPalette.gold)
-                Text(body).font(.custom("Papyrus", size: 19)).foregroundStyle(CosmicPalette.paleGold).multilineTextAlignment(.center)
+                Text(title)
+                    .font(.custom("Papyrus", size: 24))
+                    .foregroundStyle(CosmicPalette.gold)
+                Text(body)
+                    .font(.custom("Papyrus", size: 19))
+                    .foregroundStyle(CosmicPalette.paleGold)
+                    .multilineTextAlignment(.center)
             }
         }
     }
