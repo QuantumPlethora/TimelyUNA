@@ -6,7 +6,9 @@ struct ContentView: View {
     @StateObject private var persistence = HorizonPersistence()
     @StateObject private var clock = HorizonClock()
     @StateObject private var sunriseReminder = SunriseReminderService()
-    @State private var selectedTab: AppTab = .horizon
+    @State private var selectedTab: AppTab = ProcessInfo.processInfo.arguments.contains("-openXSkyJump")
+        ? .jump
+        : .horizon
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     enum AppTab: String, CaseIterable, Identifiable {
@@ -90,6 +92,7 @@ struct ContentView: View {
     // MARK: - iPhone compact
 
     private var compactPhoneShell: some View {
+        // Bottom navigation consumes layout height via safeAreaInset (not a ZStack float).
         VStack(spacing: 0) {
             if selectedTab != .horizon {
                 CompactHeader()
@@ -99,15 +102,12 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            CosmicTabBar(selection: $selectedTab, compact: true)
-                .background(
-                    LinearGradient(
-                        colors: [Color.black.opacity(0.15), Color.black.opacity(0.75)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .ignoresSafeArea(edges: .bottom)
-                )
+            VStack(spacing: 0) {
+                CosmicTabBar(selection: $selectedTab, compact: true)
+                // Solid fill so nothing from tab content can show through.
+                Color.black.frame(height: 0)
+            }
+            .background(Color.black)
         }
     }
 
@@ -338,297 +338,8 @@ private struct DawnExperienceView: View {
     }
 }
 
-private enum ObserverWorld: String, CaseIterable, Identifiable {
-    case earth = "Earth"
-    case mars = "Mars"
-    var id: Self { self }
-    var symbol: String { self == .earth ? "globe.americas.fill" : "circle.circle.fill" }
-}
-
-private enum TargetWorld: String, CaseIterable, Identifiable {
-    case mercury = "Mercury"
-    case venus = "Venus"
-    case earth = "Earth"
-    case mars = "Mars"
-    case jupiter = "Jupiter"
-    case saturn = "Saturn"
-
-    var id: Self { self }
-
-    var symbol: String {
-        switch self {
-        case .mercury, .venus: "circle.fill"
-        case .earth: "globe.americas.fill"
-        case .mars: "circle.circle.fill"
-        case .jupiter: "circle.grid.cross.fill"
-        case .saturn: "circle.dotted.circle.fill"
-        }
-    }
-}
-
-private struct PlanetFinderView: View {
-    @State private var observer: ObserverWorld = .earth
-    @State private var target: TargetWorld = .saturn
-    @State private var showActual = true
-
-    private var availableTargets: [TargetWorld] {
-        TargetWorld.allCases.filter { $0.rawValue != observer.rawValue }
-    }
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                CosmicCard {
-                    VStack(spacing: 16) {
-                        Text("PLANET FINDER")
-                            .font(TimelyUNATheme.sectionFont)
-                            .foregroundStyle(TimelyUNATheme.papyrus)
-
-                        Picker("Observer", selection: $observer) {
-                            ForEach(ObserverWorld.allCases) { world in
-                                Text("From \(world.rawValue)").tag(world)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .onChange(of: observer) { _, newValue in
-                            if target.rawValue == newValue.rawValue {
-                                target = newValue == .earth ? .mars : .earth
-                            }
-                        }
-
-                        Picker("Target", selection: $target) {
-                            ForEach(availableTargets) { planet in
-                                Text(planet.rawValue).tag(planet)
-                            }
-                        }
-                        .pickerStyle(.menu)
-
-                        SkyPositionCanvas(observer: observer, target: target, showActual: showActual)
-                            .frame(height: 285)
-
-                        Text("Aim at VISIBLE NOW to find \(target.rawValue). ACTUAL NOW shows its modeled present location after light-travel delay.")
-                            .font(TimelyUNATheme.bodyFont)
-                            .foregroundStyle(TimelyUNATheme.papyrus)
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(4)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Text("Educational interface. Precision sky placement requires a trusted ephemeris.")
-                            .font(TimelyUNATheme.captionFont)
-                            .foregroundStyle(TimelyUNATheme.muted)
-                            .multilineTextAlignment(.center)
-
-                        Toggle("Show Actual Now", isOn: $showActual)
-                            .font(TimelyUNATheme.bodyFont)
-                            .tint(TimelyUNATheme.acid)
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 30)
-        }
-    }
-}
-
-private struct SkyPositionCanvas: View {
-    let observer: ObserverWorld
-    let target: TargetWorld
-    let showActual: Bool
-
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack {
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(
-                        LinearGradient(
-                            colors: [TimelyUNATheme.cosmicPurple.opacity(0.28), .black],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-
-                ForEach(0..<28, id: \.self) { index in
-                    Circle()
-                        .fill(.white.opacity(0.55))
-                        .frame(width: index.isMultiple(of: 5) ? 2 : 1)
-                        .position(
-                            x: CGFloat((index * 47) % 310) / 310 * proxy.size.width,
-                            y: CGFloat((index * 79) % 230) / 230 * proxy.size.height
-                        )
-                }
-
-                VStack {
-                    HStack {
-                        Label("VIEWED FROM \(observer.rawValue.uppercased())", systemImage: observer.symbol)
-                            .font(TimelyUNATheme.captionFont)
-                        Spacer()
-                    }
-                    .foregroundStyle(TimelyUNATheme.goldDeep)
-                    .padding()
-                    Spacer()
-                }
-
-                PositionMarker(title: "VISIBLE NOW", symbol: target.symbol, filled: true)
-                    .position(x: proxy.size.width * 0.36, y: proxy.size.height * 0.57)
-
-                if showActual {
-                    Path { path in
-                        path.move(to: CGPoint(x: proxy.size.width * 0.42, y: proxy.size.height * 0.55))
-                        path.addLine(to: CGPoint(x: proxy.size.width * 0.69, y: proxy.size.height * 0.40))
-                    }
-                    .stroke(TimelyUNATheme.acid, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
-
-                    PositionMarker(title: "ACTUAL NOW", symbol: "scope", filled: false)
-                        .position(x: proxy.size.width * 0.72, y: proxy.size.height * 0.38)
-                }
-            }
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("\(target.rawValue) viewed from \(observer.rawValue). Visible Now shows where to look. Actual Now shows the modeled present location.")
-    }
-}
-
-private struct PositionMarker: View {
-    let title: String
-    let symbol: String
-    let filled: Bool
-
-    var body: some View {
-        VStack(spacing: 5) {
-            ZStack {
-                Circle().stroke(TimelyUNATheme.acid, lineWidth: 2).frame(width: 56, height: 56)
-                Image(systemName: symbol)
-                    .font(.system(size: 27, weight: .light))
-                    .foregroundStyle(filled ? TimelyUNATheme.papyrus : TimelyUNATheme.acid)
-            }
-            Text(title)
-                .font(TimelyUNATheme.smallCaptionFont)
-                .foregroundStyle(TimelyUNATheme.papyrus)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-    }
-}
-
-private struct XSkyJumpView: View {
-    @State private var observer: ObserverWorld = .earth
-    @State private var target: TargetWorld = .earth
-    @State private var jumping = false
-    @State private var starStretch = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                CosmicCard {
-                    VStack(spacing: 16) {
-                        Text("xSky Jump")
-                            .font(TimelyUNATheme.titleFont)
-                            .foregroundStyle(TimelyUNATheme.acid)
-
-                        Text("Jump the observer. Change the sky.")
-                            .font(TimelyUNATheme.subheadingFont)
-                            .foregroundStyle(TimelyUNATheme.papyrus)
-                            .multilineTextAlignment(.center)
-
-                        ZStack {
-                            ForEach(0..<18, id: \.self) { index in
-                                Capsule()
-                                    .fill(.white.opacity(0.55))
-                                    .frame(width: starStretch ? 80 : 3, height: 2)
-                                    .rotationEffect(.degrees(Double(index) * 20))
-                                    .offset(x: CGFloat((index % 6) * 18 - 45), y: CGFloat((index / 6) * 30 - 30))
-                                    .opacity(jumping ? 1 : 0)
-                            }
-
-                            Image(systemName: observer.symbol)
-                                .font(.system(size: 96, weight: .thin))
-                                .foregroundStyle(observer == .earth ? TimelyUNATheme.blue : TimelyUNATheme.mars)
-                                .shadow(color: TimelyUNATheme.acid.opacity(0.45), radius: 18)
-                                .scaleEffect(jumping ? 0.18 : 1)
-                                .opacity(jumping ? 0.18 : 1)
-                        }
-                        .frame(height: 125)
-
-                        Text(observer == .earth ? "YOU ARE ON EARTH" : "YOU ARE STANDING ON MARS")
-                            .font(TimelyUNATheme.sectionFont)
-                            .foregroundStyle(TimelyUNATheme.papyrus)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Text(observer == .earth
-                             ? "xSky Jump to Mars, then turn around and look home."
-                             : "Earth, Venus, Mercury, and the Sun now belong to a Martian sky.")
-                            .font(TimelyUNATheme.bodyFont)
-                            .foregroundStyle(TimelyUNATheme.papyrus)
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(4)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Button(observer == .earth ? "xSky Jump to Mars" : "xSky Jump Home") {
-                            performJump()
-                        }
-                        .buttonStyle(CosmicButtonStyle())
-                        .disabled(jumping)
-                    }
-                }
-
-                if observer == .mars {
-                    CosmicCard {
-                        VStack(spacing: 15) {
-                            Text("MARTIAN SKY: LOOK INWARD")
-                                .font(TimelyUNATheme.headlineFont)
-                                .foregroundStyle(TimelyUNATheme.acid)
-                                .multilineTextAlignment(.center)
-
-                            Picker("World", selection: $target) {
-                                Text("Earth").tag(TargetWorld.earth)
-                                Text("Venus").tag(TargetWorld.venus)
-                                Text("Mercury").tag(TargetWorld.mercury)
-                            }
-                            .pickerStyle(.segmented)
-
-                            SkyPositionCanvas(observer: .mars, target: target, showActual: true)
-                                .frame(height: 270)
-
-                            Text(target == .earth
-                                 ? "xSky Jump complete. You are now looking home."
-                                 : "Every planet owns a different sky—and every sky arrives late.")
-                                .font(TimelyUNATheme.bodyFont)
-                                .foregroundStyle(TimelyUNATheme.papyrus)
-                                .multilineTextAlignment(.center)
-                                .lineSpacing(4)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 30)
-        }
-    }
-
-    private func performJump() {
-        if reduceMotion {
-            observer = observer == .earth ? .mars : .earth
-            target = observer == .mars ? .earth : .mars
-            return
-        }
-        withAnimation(.easeIn(duration: 0.25)) {
-            jumping = true
-            starStretch = true
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.72) {
-            observer = observer == .earth ? .mars : .earth
-            target = observer == .mars ? .earth : .mars
-            withAnimation(.spring(response: 0.65, dampingFraction: 0.72)) {
-                jumping = false
-                starStretch = false
-            }
-        }
-    }
-}
+// Planet Finder lives in Views/PlanetFinderView.swift (Phase 1 instrument).
+// xSky Jump lives in Views/XSkyJump/XSkyJumpView.swift (cinematic SceneKit stage).
 
 private struct ScienceLiteracyView: View {
     var body: some View {

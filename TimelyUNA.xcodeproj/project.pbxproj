@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FC8941AE99A54AFDBDBEB87A /* PlanetaryEphemeris.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A789D501AB4F4BA0200FE9 /* PlanetaryEphemeris.swift */; };
+		A05CF3C4532043518E9CF5B3 /* FinderMotionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6847DC6F1284E318E8F4494 /* FinderMotionService.swift */; };
+		24CEB05F743142D180DCAAF4 /* PlanetFinderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58C697F3D4AD48CA9FB11237 /* PlanetFinderView.swift */; };
 		0E39C053B7D444228EABB683 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CE6A45433D5E4AF89E89C591 /* PrivacyInfo.xcprivacy */; };
 		148A150E023A4882A2B9337C /* ChronosModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17ACC55BC47844B9B660D08B /* ChronosModeView.swift */; };
 		20CA6F03B52D48FB9CE5DE15 /* ChronosCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED8C1E728DD84453A8E41D2D /* ChronosCanvasView.swift */; };
@@ -27,11 +30,22 @@
 		A1B2C3D4E5F60718293A0004 /* HorizonClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0004 /* HorizonClock.swift */; };
 		A1B2C3D4E5F60718293A0005 /* TrueHorizonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0005 /* TrueHorizonView.swift */; };
 		A1B2C3D4E5F60718293A0007 /* SunriseReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0007 /* SunriseReminderService.swift */; };
+		A1B2C3D4E5F60718293A0008 /* ARCelestialMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0008 /* ARCelestialMath.swift */; };
+		A1B2C3D4E5F60718293A0009 /* ARCalibrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0009 /* ARCalibrationService.swift */; };
+		A1B2C3D4E5F60718293A0010 /* XSkyJumpState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0010 /* XSkyJumpState.swift */; };
+		A1B2C3D4E5F60718293A0011 /* XSkyJumpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0011 /* XSkyJumpView.swift */; };
+		A1B2C3D4E5F60718293A0012 /* XSkyPlanetSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0012 /* XSkyPlanetSceneView.swift */; };
+		A1B2C3D4E5F60718293A0013 /* XSkyStarfieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0013 /* XSkyStarfieldView.swift */; };
+		A1B2C3D4E5F60718293A0014 /* XSkyPlanetTextures.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0014 /* XSkyPlanetTextures.swift */; };
+		A1B2C3D4E5F60718293A0015 /* XSkyPlanetStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0015 /* XSkyPlanetStage.swift */; };
 		C684FBC42F2E4CF6B167B047 /* PhotonLabyrinthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5439159981D8417DAB2EF8C8 /* PhotonLabyrinthView.swift */; };
 		EF71F2E0E8384D9A848B7D5B /* LightTimeConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76ACA30747814220AEDA0E17 /* LightTimeConstants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C8A789D501AB4F4BA0200FE9 /* PlanetaryEphemeris.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanetaryEphemeris.swift; sourceTree = "<group>"; };
+		C6847DC6F1284E318E8F4494 /* FinderMotionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderMotionService.swift; sourceTree = "<group>"; };
+		58C697F3D4AD48CA9FB11237 /* PlanetFinderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanetFinderView.swift; sourceTree = "<group>"; };
 		07E219CC715B417F9089CAD0 /* TimelyUNATheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelyUNATheme.swift; sourceTree = "<group>"; };
 		095D061E4269402BA35A6162 /* TimelyUNA.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TimelyUNA.entitlements; sourceTree = "<group>"; };
 		17ACC55BC47844B9B660D08B /* ChronosModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronosModeView.swift; sourceTree = "<group>"; };
@@ -50,12 +64,21 @@
 		A1B2C3D4E5F60718293F0004 /* HorizonClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizonClock.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293F0005 /* TrueHorizonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrueHorizonView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293F0007 /* SunriseReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunriseReminderService.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293F0008 /* ARCelestialMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARCelestialMath.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293F0009 /* ARCalibrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARCalibrationService.swift; sourceTree = "<group>"; };
 		A219F1BF0F004D31B0999F03 /* SimulationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationState.swift; sourceTree = "<group>"; };
 		AED3AF2E7FC1418187E00AAE /* True Horizon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "True Horizon.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1BA77E9A9C745A9B8CEFAF3 /* TimelyUNAApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelyUNAApp.swift; sourceTree = "<group>"; };
 		BF428BF3B1394AB6927D5FAC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CE6A45433D5E4AF89E89C591 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED8C1E728DD84453A8E41D2D /* ChronosCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronosCanvasView.swift; sourceTree = "<group>"; };
+
+		A1B2C3D4E5F60718293F0010 /* XSkyJumpState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XSkyJumpState.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293F0011 /* XSkyJumpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XSkyJumpView.swift; path = XSkyJump/XSkyJumpView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293F0012 /* XSkyPlanetSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XSkyPlanetSceneView.swift; path = XSkyJump/XSkyPlanetSceneView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293F0013 /* XSkyStarfieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XSkyStarfieldView.swift; path = XSkyJump/XSkyStarfieldView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293F0014 /* XSkyPlanetTextures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XSkyPlanetTextures.swift; path = XSkyJump/XSkyPlanetTextures.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293F0015 /* XSkyPlanetStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XSkyPlanetStage.swift; path = XSkyJump/XSkyPlanetStage.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +138,9 @@
 				A1B2C3D4E5F60718293F0003 /* HorizonPersistence.swift */,
 				A1B2C3D4E5F60718293F0004 /* HorizonClock.swift */,
 				A1B2C3D4E5F60718293F0007 /* SunriseReminderService.swift */,
+				A1B2C3D4E5F60718293F0008 /* ARCelestialMath.swift */,
+				A1B2C3D4E5F60718293F0009 /* ARCalibrationService.swift */,
+				C6847DC6F1284E318E8F4494 /* FinderMotionService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -133,6 +159,8 @@
 				76ACA30747814220AEDA0E17 /* LightTimeConstants.swift */,
 				A219F1BF0F004D31B0999F03 /* SimulationState.swift */,
 				A1B2C3D4E5F60718293F0001 /* SolarEngine.swift */,
+				C8A789D501AB4F4BA0200FE9 /* PlanetaryEphemeris.swift */,
+				A1B2C3D4E5F60718293F0010 /* XSkyJumpState.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -141,7 +169,13 @@
 			isa = PBXGroup;
 			children = (
 				3411C322674949F9AD8459CE /* ContentView.swift */,
+				58C697F3D4AD48CA9FB11237 /* PlanetFinderView.swift */,
 				A1B2C3D4E5F60718293F0005 /* TrueHorizonView.swift */,
+				A1B2C3D4E5F60718293F0014 /* XSkyPlanetTextures.swift */,
+				A1B2C3D4E5F60718293F0013 /* XSkyStarfieldView.swift */,
+				A1B2C3D4E5F60718293F0012 /* XSkyPlanetSceneView.swift */,
+				A1B2C3D4E5F60718293F0015 /* XSkyPlanetStage.swift */,
+				A1B2C3D4E5F60718293F0011 /* XSkyJumpView.swift */,
 				784E667D00F746AC8AD8ED72 /* InfoCards.swift */,
 				1C6A792A6E2243ACBE314077 /* SunSextantView.swift */,
 				8D6806B646ED4F95AB19EDDB /* SunCanvasView.swift */,
@@ -236,6 +270,8 @@
 				A1B2C3D4E5F60718293A0003 /* HorizonPersistence.swift in Sources */,
 				A1B2C3D4E5F60718293A0004 /* HorizonClock.swift in Sources */,
 				A1B2C3D4E5F60718293A0007 /* SunriseReminderService.swift in Sources */,
+				A1B2C3D4E5F60718293A0008 /* ARCelestialMath.swift in Sources */,
+				A1B2C3D4E5F60718293A0009 /* ARCalibrationService.swift in Sources */,
 				8DDCAC6EEF25482F9D10BC7F /* SunSextantView.swift in Sources */,
 				88A97B433C51458A849366AD /* SunCanvasView.swift in Sources */,
 				148A150E023A4882A2B9337C /* ChronosModeView.swift in Sources */,
@@ -245,6 +281,15 @@
 				C684FBC42F2E4CF6B167B047 /* PhotonLabyrinthView.swift in Sources */,
 				6A0E7AC2B4A94F9AA1EB1EF4 /* ARSunRocketView.swift in Sources */,
 				7BD73D89A83243D98CF21E6D /* PhotonLabyrinthPuzzle.swift in Sources */,
+				A1B2C3D4E5F60718293A0014 /* XSkyPlanetTextures.swift in Sources */,
+				A1B2C3D4E5F60718293A0013 /* XSkyStarfieldView.swift in Sources */,
+				A1B2C3D4E5F60718293A0012 /* XSkyPlanetSceneView.swift in Sources */,
+				A1B2C3D4E5F60718293A0015 /* XSkyPlanetStage.swift in Sources */,
+				A1B2C3D4E5F60718293A0011 /* XSkyJumpView.swift in Sources */,
+				A1B2C3D4E5F60718293A0010 /* XSkyJumpState.swift in Sources */,
+				FC8941AE99A54AFDBDBEB87A /* PlanetaryEphemeris.swift in Sources */,
+				A05CF3C4532043518E9CF5B3 /* FinderMotionService.swift in Sources */,
+				24CEB05F743142D180DCAAF4 /* PlanetFinderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
