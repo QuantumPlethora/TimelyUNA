@@ -2,38 +2,1247 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>TimelyUNA • Visible Now / Actual Now</title>
-<meta name="description" content="TimelyUNA is a Light-SpaceTime sextant and planetary perspective engine showing Visible Now, Actual Now, and the delayed skies of Earth and Mars.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>True Horizon • Visible Now / Actual Now • TimelyUNA Engine</title>
+<meta name="description" content="True Horizon is powered by the TimelyUNA light-time engine. See Visible Now and Actual Now, correct the Sun for light travel, launch a daily ritual, and explore delayed skies from Earth to Mars.">
 <meta name="theme-color" content="#070912">
+<meta name="author" content="Craig · QuantumPlethora">
+<meta name="keywords" content="True Horizon, TimelyUNA, light time, Visible Now, Actual Now, SpaceTime Offset, solar position, sunrise, Mars, educational astronomy">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://macsafedevelopersapple.io/">
+<meta property="og:title" content="True Horizon • Visible Now / Actual Now">
+<meta property="og:description" content="True Horizon is powered by the TimelyUNA light-time engine. See the Sun where it truly is, and explore Visible Now versus Actual Now.">
+<meta property="og:site_name" content="True Horizon">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="True Horizon • Visible Now / Actual Now">
+<meta name="twitter:description" content="True Horizon is powered by the TimelyUNA light-time engine. Educational light-time astronomy for Earth and Mars.">
 <link rel="canonical" href="https://macsafedevelopersapple.io/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23070912'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23d5ae69'/%3E%3Ccircle cx='44' cy='22' r='7' fill='%23d9ff43'/%3E%3C/svg%3E">
 <style>
-:root{--bg:#070912;--panel:rgba(17,20,32,.9);--paper:#f8edcf;--muted:#c9bea3;--gold:#d5ae69;--gold2:#f4d99f;--line:rgba(213,174,105,.42);--blue:#78bde8;--mars:#dd754a;--papyrus:Papyrus,"Papyrus Linotype","Segoe Print",fantasy,serif}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(circle at 18% 5%,rgba(87,76,159,.22),transparent 30rem),radial-gradient(circle at 88% 20%,rgba(213,174,105,.12),transparent 28rem),linear-gradient(145deg,#02030a,#0a1020 45%,#03040a);color:var(--paper);font-family:var(--papyrus);line-height:1.55}body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.52;background-image:radial-gradient(circle at 10% 20%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 75% 12%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 35% 70%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 88% 78%,#fff 0 1px,transparent 1.5px);background-size:150px 140px,210px 190px,180px 170px,240px 220px}.shell{width:min(1160px,calc(100% - 2rem));margin:auto}.skip{position:fixed;top:-5rem;left:1rem;background:var(--gold);color:#000;padding:.7rem 1rem;z-index:1000}.skip:focus{top:1rem}header{position:sticky;top:0;z-index:100;background:rgba(5,7,14,.84);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}.head{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:1rem}.brand{color:var(--gold2);text-decoration:none;font-size:clamp(1.8rem,4vw,2.6rem)}.brand small{display:block;color:var(--gold);font-size:.62rem;letter-spacing:.16em}nav{display:flex;gap:.25rem;flex-wrap:wrap}nav a{color:var(--muted);text-decoration:none;padding:.5rem .65rem;border-radius:10px;font-size:.85rem}nav a:hover,nav a:focus-visible{background:rgba(213,174,105,.13);color:var(--gold2)}section{padding:clamp(3.5rem,7vw,6rem) 0}h1,h2,h3{margin:0;color:var(--gold2);line-height:1.08}h1{font-size:clamp(3.2rem,10vw,7rem)}h2{font-size:clamp(2.1rem,5vw,4rem)}h3{font-size:clamp(1.25rem,3vw,1.9rem)}p{margin:0}.eyebrow{color:var(--gold);letter-spacing:.18em;text-transform:uppercase;font-size:.76rem}.lead{font-size:clamp(1.12rem,2.3vw,1.55rem)}.muted{color:var(--muted)}.gold{color:var(--gold2)}.hero-grid,.split{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(1.5rem,5vw,4rem);align-items:center}.hero-copy{display:grid;gap:1.15rem}.thesis{font-size:clamp(1.55rem,3.5vw,2.6rem);max-width:25ch}.actions{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.5rem}.btn{border:1px solid var(--gold);border-radius:15px;padding:.88rem 1.15rem;background:rgba(213,174,105,.08);color:var(--paper);cursor:pointer;text-decoration:none;transition:.2s}.btn:hover,.btn:focus-visible{transform:translateY(-2px);background:var(--gold);color:#080808}.primary{background:var(--gold);color:#080808;font-weight:700}.panel{border:1px solid var(--line);background:linear-gradient(145deg,rgba(29,26,27,.92),var(--panel));border-radius:24px;padding:clamp(1.15rem,3vw,2rem);box-shadow:0 20px 55px rgba(0,0,0,.4)}.now-orbit{min-height:430px;border:1px solid var(--line);border-radius:50%;position:relative;display:grid;place-items:center;background:radial-gradient(circle,rgba(213,174,105,.16),transparent 30%,rgba(0,0,0,.42) 67%)}.ring{position:absolute;border:1px solid rgba(213,174,105,.34);border-radius:50%}.r1{width:68%;height:68%}.r2{width:88%;height:48%;transform:rotate(-18deg)}.arriving{width:112px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;text-align:center;color:#2c1607;background:radial-gradient(circle at 35% 35%,#fff9d1,#efbd58 40%,#a94318 75%,#2c1008);box-shadow:0 0 48px rgba(255,193,84,.58)}.marker{position:absolute;width:92px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;text-align:center;font-size:.72rem;padding:.35rem}.visible{left:5%;bottom:16%;border:2px solid var(--paper);background:rgba(245,232,199,.12)}.actual{right:6%;top:16%;border:2px solid var(--gold);background:rgba(213,174,105,.16)}.path{position:absolute;width:66%;height:2px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);transform:rotate(-24deg)}.now-pair{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem}.now-card{min-height:210px;display:grid;place-items:center;text-align:center}.now-card strong{display:block;font-size:clamp(1.6rem,4vw,2.5rem);color:var(--gold2)}.sky{height:360px;position:relative;overflow:hidden;border-radius:20px;border:1px solid var(--line);background:linear-gradient(#10162d,#1d2750 55%,#1b1520 75%,#07080f 76%)}.sky:before{content:"";position:absolute;inset:0;opacity:.7;background-image:radial-gradient(circle at 15% 20%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 55% 15%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 80% 35%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 35% 45%,#fff 0 1px,transparent 1.5px);background-size:105px 95px,135px 125px,175px 150px,210px 180px}.sky-label{position:absolute;left:1rem;top:1rem;color:var(--gold);letter-spacing:.12em;font-size:.8rem}.planet-marker{position:absolute;transform:translate(-50%,-50%);text-align:center;transition:.5s}.planet-marker .dot{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin:auto;background:rgba(248,237,207,.12);border:2px solid var(--paper);font-size:1.8rem;box-shadow:0 0 20px rgba(255,255,255,.14)}.planet-marker.actual-marker .dot{border-color:var(--gold);background:rgba(213,174,105,.14);color:var(--gold2)}.planet-marker span{display:block;margin-top:.35rem;font-size:.78rem;color:var(--gold2)}.offset-line{position:absolute;height:2px;background:repeating-linear-gradient(90deg,var(--gold) 0 8px,transparent 8px 14px);transform-origin:left center}.controls{display:grid;gap:1rem;margin-top:1.25rem}.control-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.control label{display:block;color:var(--gold);margin-bottom:.35rem}.control select{width:100%;padding:.8rem;border-radius:12px;border:1px solid var(--line);background:#111522;color:var(--paper);font-family:inherit}.jump-stage{min-height:360px;display:grid;place-items:center;text-align:center;position:relative;overflow:hidden}.world{font-size:7rem;filter:drop-shadow(0 0 24px rgba(213,174,105,.4));transition:.65s}.world.jump{transform:scale(.08) rotate(180deg);opacity:.15}.look-home{display:none;margin-top:1rem}.look-home.show{display:block}.planet-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;margin:1rem 0}.planet-buttons button{border:1px solid var(--line);background:transparent;color:var(--paper);padding:.65rem .9rem;border-radius:999px;cursor:pointer}.planet-buttons button.active{background:var(--gold);color:#080808}.quote{font-size:clamp(1.6rem,3.2vw,2.55rem);color:var(--gold2)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}.metric{display:grid;gap:.35rem}.metric strong{font-size:clamp(1.45rem,3vw,2.1rem);color:var(--gold2)}footer{padding:3rem 0 5rem;border-top:1px solid var(--line);color:var(--muted)}@media(max-width:860px){nav{display:none}.hero-grid,.split,.now-pair,.control-row{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.now-orbit{min-height:340px}.marker{width:78px;font-size:.64rem}.sky{height:330px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+:root{
+  --bg:#070912;--panel:rgba(17,20,32,.92);--paper:#f8edcf;--muted:#c9bea3;
+  --gold:#d5ae69;--gold2:#f4d99f;--line:rgba(213,174,105,.42);
+  --blue:#78bde8;--mars:#dd754a;--acid:#d9ff43;--ink:#171713;--cream:#f2efe6;
+  --orange:#ff6b35;--purple:#8367e8;
+  --papyrus:Papyrus,"Papyrus Linotype","Bradley Hand","Segoe Print",fantasy,serif;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100vh;min-height:100dvh;
+  background:radial-gradient(circle at 18% 5%,rgba(87,76,159,.22),transparent 30rem),
+             radial-gradient(circle at 88% 20%,rgba(213,174,105,.12),transparent 28rem),
+             linear-gradient(145deg,#02030a,#0a1020 45%,#03040a);
+  color:var(--paper);font-family:var(--papyrus);line-height:1.55;
+  overflow-x:hidden;
+  padding-left:var(--safe-left);padding-right:var(--safe-right);
+  overflow-wrap:break-word;word-wrap:break-word;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;z-index:0;
+  background-image:radial-gradient(circle at 10% 20%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 75% 12%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 35% 70%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 88% 78%,#fff 0 1px,transparent 1.5px);
+  background-size:150px 140px,210px 190px,180px 170px,240px 220px;
+}
+button,a,input,select,textarea,label,option{font-family:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--acid);outline-offset:3px}
+.shell{width:min(1160px,calc(100% - 2rem));max-width:100%;margin:auto;position:relative;z-index:1;padding-left:0;padding-right:0}
+.skip{
+  position:fixed;top:-5rem;left:calc(1rem + var(--safe-left));
+  background:var(--gold);color:#000;padding:.7rem 1rem;z-index:1000;text-decoration:none;
+}
+.skip:focus{top:calc(1rem + var(--safe-top))}
+.site-header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(5,7,14,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+  padding-top:var(--safe-top);
+}
+.head{
+  min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.brand{color:var(--gold2);text-decoration:none;font-size:clamp(1.5rem,3.5vw,2.2rem);line-height:1.05}
+.brand small{display:block;color:var(--gold);font-size:.55rem;letter-spacing:.14em;margin-top:.15rem}
+.brand-mark{display:inline-grid;place-items:center;width:1.35rem;height:1.35rem;border:1px solid var(--gold);border-radius:50%;font-size:.7rem;margin-right:.35rem;vertical-align:middle}
+nav.primary-nav{display:flex;gap:.15rem;flex-wrap:wrap;justify-content:flex-end}
+nav.primary-nav a{
+  color:var(--muted);text-decoration:none;padding:.45rem .55rem;border-radius:10px;font-size:.78rem;
+}
+nav.primary-nav a:hover,nav.primary-nav a:focus-visible{background:rgba(213,174,105,.13);color:var(--gold2)}
+.streak-pill{
+  display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);
+  border-radius:999px;padding:.35rem .65rem .35rem .35rem;font-size:.72rem;color:var(--muted);
+  white-space:nowrap;flex-shrink:0;
+}
+.streak-pill b{
+  display:inline-grid;place-items:center;min-width:1.55rem;height:1.55rem;padding:0 .3rem;
+  border-radius:999px;background:var(--acid);color:#111;font-size:.78rem;
+}
+section{padding:clamp(3rem,6vw,5.5rem) 0;position:relative;z-index:1}
+h1,h2,h3{margin:0;color:var(--gold2);line-height:1.08;font-weight:700}
+h1{font-size:clamp(2.6rem,8vw,5.6rem)}
+h2{font-size:clamp(1.9rem,4.5vw,3.4rem)}
+h3{font-size:clamp(1.2rem,2.8vw,1.85rem)}
+p{margin:0}
+.eyebrow{color:var(--gold);letter-spacing:.16em;text-transform:uppercase;font-size:.74rem}
+.lead{font-size:clamp(1.05rem,2.1vw,1.45rem)}
+.muted{color:var(--muted)}
+.gold{color:var(--gold2)}
+.acid{color:var(--acid)}
+.thesis{font-size:clamp(1.2rem,3vw,2.2rem);max-width:min(28ch,100%);overflow-wrap:anywhere}
+.engine-line{
+  border-left:3px solid var(--acid);padding:.65rem 0 .65rem 1rem;margin-top:.35rem;
+  color:var(--gold2);font-size:clamp(.95rem,2vw,1.2rem);
+  overflow-wrap:anywhere;word-break:break-word;max-width:100%;
+}
+.hero-grid,.split{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(1.25rem,4vw,3.5rem);align-items:center}
+.hero-copy{display:grid;gap:1rem;min-width:0;max-width:100%}
+.actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:.35rem}
+.btn{
+  border:1px solid var(--gold);border-radius:15px;padding:.85rem 1.1rem;
+  background:rgba(213,174,105,.08);color:var(--paper);cursor:pointer;
+  text-decoration:none;transition:.2s;display:inline-flex;align-items:center;gap:.5rem;
+  font-size:.92rem;
+}
+.btn:hover,.btn:focus-visible{transform:translateY(-2px);background:var(--gold);color:#080808}
+.btn.primary{background:var(--gold);color:#080808;font-weight:700}
+.btn.acid{background:var(--acid);border-color:var(--acid);color:#111;font-weight:700}
+.btn.acid:hover,.btn.acid:focus-visible{background:#e8ff7a}
+.btn:disabled{opacity:.7;cursor:default;transform:none}
+.panel{
+  border:1px solid var(--line);
+  background:linear-gradient(145deg,rgba(29,26,27,.92),var(--panel));
+  border-radius:24px;padding:clamp(1.1rem,3vw,1.85rem);
+  box-shadow:0 20px 55px rgba(0,0,0,.4);
+}
+.now-orbit{
+  min-height:min(430px,70vw);border:1px solid var(--line);border-radius:50%;
+  position:relative;display:grid;place-items:center;
+  background:radial-gradient(circle,rgba(213,174,105,.16),transparent 30%,rgba(0,0,0,.42) 67%);
+}
+.ring{position:absolute;border:1px solid rgba(213,174,105,.34);border-radius:50%}
+.r1{width:68%;height:68%}.r2{width:88%;height:48%;transform:rotate(-18deg)}
+.arriving{
+  width:112px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;text-align:center;
+  color:#2c1607;background:radial-gradient(circle at 35% 35%,#fff9d1,#efbd58 40%,#a94318 75%,#2c1008);
+  box-shadow:0 0 48px rgba(255,193,84,.58);font-size:.78rem;line-height:1.2;
+}
+.marker{
+  position:absolute;width:92px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+  text-align:center;font-size:.68rem;padding:.3rem;line-height:1.15;
+}
+.visible{left:5%;bottom:16%;border:2px solid var(--paper);background:rgba(245,232,199,.12)}
+.actual{right:6%;top:16%;border:2px solid var(--gold);background:rgba(213,174,105,.16)}
+.path{position:absolute;width:66%;height:2px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);transform:rotate(-24deg)}
+.now-pair{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.now-card{min-height:200px;display:grid;place-items:center;text-align:center}
+.now-card strong{display:block;font-size:clamp(1.45rem,3.5vw,2.2rem);color:var(--gold2);margin-bottom:.5rem}
+.def-list{display:grid;gap:.85rem;margin-top:1rem}
+.def-list dt{color:var(--gold);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
+.def-list dd{margin:0;color:var(--muted)}
+.loc-bar{
+  display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;align-items:center;
+  border:1px solid var(--line);border-radius:16px;padding:.85rem 1rem;margin-top:1rem;
+  background:rgba(0,0,0,.25);font-size:.9rem;
+  max-width:100%;overflow-wrap:anywhere;
+}
+.loc-bar span{min-width:0}
+
+.loc-bar strong{color:var(--gold2)}
+.notice{
+  border:1px solid rgba(217,255,67,.35);background:rgba(217,255,67,.08);
+  border-radius:14px;padding:.85rem 1rem;margin-top:1rem;color:var(--muted);font-size:.92rem;
+}
+.sky{
+  height:360px;position:relative;overflow:hidden;border-radius:20px;border:1px solid var(--line);
+  background:linear-gradient(#10162d,#1d2750 55%,#1b1520 75%,#07080f 76%);
+}
+.sky::before{
+  content:"";position:absolute;inset:0;opacity:.7;
+  background-image:radial-gradient(circle at 15% 20%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 55% 15%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 80% 35%,#fff 0 1px,transparent 1.5px),
+    radial-gradient(circle at 35% 45%,#fff 0 1px,transparent 1.5px);
+  background-size:105px 95px,135px 125px,175px 150px,210px 180px;
+}
+.sky-label{position:absolute;left:1rem;top:1rem;color:var(--gold);letter-spacing:.12em;font-size:.78rem;z-index:2}
+.planet-marker{position:absolute;transform:translate(-50%,-50%);text-align:center;transition:.5s;z-index:2}
+.planet-marker .dot{
+  width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin:auto;
+  background:rgba(248,237,207,.12);border:2px solid var(--paper);font-size:1.8rem;
+  box-shadow:0 0 20px rgba(255,255,255,.14);
+}
+.planet-marker.actual-marker .dot{border-color:var(--gold);background:rgba(213,174,105,.14);color:var(--gold2)}
+.planet-marker span{display:block;margin-top:.35rem;font-size:.72rem;color:var(--gold2)}
+.offset-line{position:absolute;height:2px;background:repeating-linear-gradient(90deg,var(--gold) 0 8px,transparent 8px 14px);transform-origin:left center;z-index:1}
+.controls{display:grid;gap:1rem;margin-top:1.1rem}
+.control-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.control label{display:block;color:var(--gold);margin-bottom:.35rem}
+.control select{
+  width:100%;padding:.8rem;border-radius:12px;border:1px solid var(--line);
+  background:#111522;color:var(--paper);font-family:inherit;font-size:1rem;
+}
+.jump-stage{min-height:340px;display:grid;place-items:center;text-align:center;position:relative;overflow:hidden}
+.world{font-size:clamp(4.5rem,12vw,7rem);filter:drop-shadow(0 0 24px rgba(213,174,105,.4));transition:.65s}
+.world.jump{transform:scale(.08) rotate(180deg);opacity:.15}
+.look-home{display:none;margin-top:1rem}
+.look-home.show{display:block}
+.planet-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;margin:1rem 0}
+.planet-buttons button{
+  border:1px solid var(--line);background:transparent;color:var(--paper);
+  padding:.65rem .9rem;border-radius:999px;cursor:pointer;font-family:inherit;
+}
+.planet-buttons button.active{background:var(--gold);color:#080808}
+.quote{font-size:clamp(1.35rem,2.8vw,2.2rem);color:var(--gold2)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.metric{display:grid;gap:.35rem}
+.metric strong{font-size:clamp(1.25rem,2.6vw,1.9rem);color:var(--gold2)}
+/* True Horizon ritual */
+.th-band{background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.35));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.ritual-card{
+  display:grid;grid-template-columns:1.35fr .9fr;gap:0;overflow:hidden;border-radius:24px;
+  border:1px solid var(--line);min-height:480px;background:#12120f;
+}
+.ritual-sky{
+  position:relative;overflow:hidden;min-height:320px;
+  background:radial-gradient(circle at 75% 25%,#76714c 0,transparent 19%),linear-gradient(175deg,#26261f 0 65%,#0e0e0c 66%);
+}
+.ritual-sky::before{
+  content:"";position:absolute;inset:0;opacity:.28;
+  background-image:radial-gradient(#fff 1px,transparent 1.5px);background-size:63px 57px;
+}
+.horizon-line{
+  border-top:1px solid #777663;height:50px;position:absolute;bottom:24%;left:-10%;right:-10%;
+  transform:rotate(-3deg);box-shadow:0 -9px 45px #d5cb7155;
+}
+.horizon-sun{border-radius:50%;position:absolute}
+.horizon-sun b{position:absolute;top:110%;left:50%;transform:translateX(-50%);font-size:.65rem;letter-spacing:.12em;white-space:nowrap}
+.false-sun{opacity:.4;background:#d6d1a2;width:70px;height:70px;bottom:31%;right:34%}
+.actual-sun{background:var(--acid);width:120px;height:120px;bottom:37%;right:12%;box-shadow:0 0 70px #d9ff4388}
+.actual-sun b{color:var(--acid)}
+.launch-pad{position:absolute;bottom:19%;left:22%}
+.rocket{
+  background:#eeeee7;border-radius:50% 50% 35% 35%;width:28px;height:56px;position:relative;
+  transition:transform 1s cubic-bezier(.2,.8,.2,1),opacity .4s;
+}
+.rocket::before{content:"";background:var(--orange);border-radius:50% 50% 40% 40%;height:24px;position:absolute;inset:3px 7px auto}
+.rocket-window{z-index:2;background:#7ce0ec;border:2px solid #222;border-radius:50%;width:9px;height:9px;position:absolute;top:17px;left:9px}
+.rocket-fin{background:var(--orange);width:10px;height:20px;position:absolute;bottom:3px}
+.rocket-fin.left{clip-path:polygon(100% 0,100% 100%,0 100%);left:-7px}
+.rocket-fin.right{clip-path:polygon(0 0,100% 100%,0 100%);right:-7px}
+.rocket-flame{background:var(--acid);clip-path:polygon(50% 100%,0 0,100% 0);width:10px;height:19px;animation:.25s infinite alternate flicker;position:absolute;bottom:-16px;left:9px}
+.rocket.is-launched{opacity:.2;transform:translateY(-420px) rotate(5deg)}
+@keyframes flicker{to{background:#ff7b36;height:27px}}
+.ritual-panel{display:flex;flex-direction:column;padding:clamp(1.25rem,3vw,2.2rem);background:#191915;color:var(--cream)}
+.micro{color:#8a897f;letter-spacing:.16em;text-transform:uppercase;font-size:.7rem}
+.delay-row{display:flex;align-items:flex-end;gap:.45rem;margin:.4rem 0 1rem}
+.delay-row strong{font-size:clamp(2.2rem,5vw,3rem);color:#fff;line-height:1}
+.delay-row span{color:#89887f;font-size:.65rem;margin-bottom:.45rem}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin:1rem 0}
+.metric-grid div{border:1px solid #383832;border-radius:12px;padding:.65rem .7rem;font-size:.78rem;color:#a8a79e}
+.metric-grid b{display:block;color:#fff;font-size:1.05rem;margin-top:.2rem}
+.fact-line{border-top:1px solid #383832;border-bottom:1px solid #383832;padding:1rem 0;color:#a8a79e;font-size:.9rem}
+.fact-line strong{color:#fff}
+.launch-btn{
+  margin-top:auto;border:0;border-radius:12px;background:var(--acid);color:#111;
+  padding:.95rem 1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.78rem;
+  display:flex;align-items:center;justify-content:center;gap:.65rem;
+}
+.launch-btn.done{background:#fff}
+.launch-btn span.icon{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border:1px solid #111;border-radius:50%}
+.solar-stage{
+  position:relative;min-height:280px;border-radius:20px;border:1px solid var(--line);
+  background:radial-gradient(circle at 70% 30%,rgba(217,255,67,.12),transparent 40%),#0d0d0b;overflow:hidden;
+}
+.solar-stage .orbit{position:absolute;border:1px solid rgba(255,255,255,.08);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+.o1{width:140px;height:140px}.o2{width:220px;height:220px}.o3{width:300px;height:300px}
+.sun-blob{position:absolute;border-radius:50%;display:grid;place-items:center;text-align:center}
+.sun-blob span{position:absolute;top:calc(100% + 8px);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+.sun-blob small{position:absolute;top:calc(100% + 22px);font-size:.62rem;color:#7c7b74;white-space:nowrap}
+.sun-app{width:72px;height:72px;left:14%;top:38%;opacity:.65;background:radial-gradient(circle at 35% 35%,#fff5ac,#e3e360 60%,#5d602a);box-shadow:0 0 40px #e4ee7142}
+.sun-true{width:110px;height:110px;right:12%;top:18%;background:radial-gradient(circle at 35% 30%,#fffbc8,#dfff48 55%,#85961e);box-shadow:0 0 60px #d9ff4350}
+.light-dash{position:absolute;top:48%;left:28%;right:30%;border-top:1px dashed #dadb9b;transform:rotate(-8deg)}
+.light-dash b{position:absolute;top:-1.3rem;left:30%;font-size:.65rem;color:#8d8c83;font-weight:400;white-space:nowrap}
+.you-dot{position:absolute;bottom:12%;left:42%;width:28px;height:28px;border-radius:50%;background:#7d69de;box-shadow:inset -6px 0 #3d8a89,0 0 18px #8367e855}
+.you-dot span{position:absolute;top:32px;left:50%;transform:translateX(-50%);font-size:.6rem;letter-spacing:.12em}
+.epoch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+.epoch-card{
+  text-align:left;background:rgba(20,20,18,.9);border:1px solid #34342e;border-radius:18px;
+  min-height:320px;padding:1rem;color:var(--paper);transition:.25s;position:relative;overflow:hidden;
+}
+.epoch-card:hover,.epoch-card.selected{border-color:var(--acid);transform:translateY(-4px)}
+.epoch-card.locked{opacity:.4;filter:grayscale(1);cursor:not-allowed}
+.epoch-art{height:160px;margin:0 -1rem 1rem;position:relative;overflow:hidden}
+.epoch-art::after{content:"";position:absolute;inset:auto -10% -40%;height:70%;border-radius:50% 50% 0 0;background:#2d483b}
+.epoch-art i{position:absolute;top:28%;left:50%;transform:translateX(-50%);width:70px;height:70px;border-radius:50%;background:var(--acid);box-shadow:0 0 40px #d9ff4370;display:block}
+.epoch-art.now{background:linear-gradient(#1c2238,#0b0d14)}
+.epoch-art.cretaceous{background:linear-gradient(#865749,#d0a56c)}
+.epoch-art.cretaceous i{background:#ffb15b}
+.epoch-art.jurassic{background:linear-gradient(#775d80,#b08170)}
+.epoch-art.jurassic i{background:#e7c2d2;width:40px;height:40px}
+.epoch-art.deep{background:#07070d}
+.epoch-art.deep i{background:#8f7dec}
+.epoch-card strong{display:block;font-size:1.15rem}
+.epoch-card small{display:block;color:var(--muted);margin-top:.35rem;font-size:.8rem}
+.epoch-status{position:absolute;bottom:1rem;left:1rem;font-size:.68rem;letter-spacing:.12em;color:var(--acid);text-transform:uppercase}
+.labyrinth-panel{
+  display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(1rem,3vw,2rem);align-items:center;
+  background:#ddd7ca;color:var(--ink);border-radius:24px;padding:clamp(1.25rem,3vw,2.5rem);
+  position:relative;overflow:hidden;
+}
+.rare-tag{position:absolute;top:1rem;right:1rem;background:#ff633b;color:#111;padding:.45rem .7rem;font-size:.68rem;letter-spacing:.12em;font-weight:700}
+.maze{position:relative;height:min(380px,70vw);border:1px solid #b7b2a8;border-radius:16px;overflow:hidden;background:rgba(255,255,255,.25)}
+.maze-grid{position:absolute;inset:8px;background-image:linear-gradient(#9b978f55 1px,transparent 1px),linear-gradient(90deg,#9b978f55 1px,transparent 1px);background-size:40px 40px}
+.maze svg{position:absolute;inset:0;width:100%;height:100%}
+.maze path{fill:none;stroke:#171713;stroke-width:18;stroke-linecap:square}
+.maze-sun,.maze-earth{position:absolute;z-index:2;display:grid;place-items:center;border-radius:50%}
+.maze-sun{top:6%;left:4%;font-size:2rem;color:#ff653b}
+.maze-earth{bottom:10%;right:5%;width:36px;height:36px;background:#8069db;color:#fff}
+.photon{position:absolute;z-index:3;width:10px;height:10px;border-radius:50%;background:var(--acid);box-shadow:0 0 14px var(--acid);transition:left .12s linear,top .12s linear}
+.maze-controls{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+.maze-controls button{border:1px solid #171713;background:#171713;color:#fff;border-radius:10px;padding:.55rem .8rem;font-family:inherit}
+.sunrise-box{border:1px solid var(--line);border-radius:18px;padding:1.4rem;background:rgba(0,0,0,.25)}
+.sunrise-box strong{display:block;font-size:clamp(2rem,5vw,2.8rem);color:var(--gold2);margin:.5rem 0;letter-spacing:.06em}
+.postcard{
+  aspect-ratio:1.35;border-radius:18px;padding:1.5rem;color:#fff;position:relative;overflow:hidden;
+  background:linear-gradient(#c98961,#f0c47e 50%,#334539 51%);transform:rotate(-2deg);
+  box-shadow:0 20px 50px rgba(0,0,0,.35);
+}
+.postcard::before{content:"";position:absolute;inset:49% -10% auto;height:45%;border-radius:50% 50% 0 0;background:#253930}
+.postcard > *{position:relative;z-index:1}
+.postcard blockquote{margin:3.5rem 0 0;font-size:clamp(1rem,2.5vw,1.25rem);font-style:italic;line-height:1.4}
+.share-band{
+  background:var(--acid);color:var(--ink);border-radius:24px;padding:clamp(1.4rem,3vw,2.2rem);
+  display:grid;grid-template-columns:1.2fr auto auto;gap:1.25rem;align-items:center;
+}
+.share-band h2{color:var(--ink)}
+.share-band .btn{background:#171713;border-color:#171713;color:#fff}
+.share-band .btn span{color:var(--acid)}
+.toast{
+  position:fixed;bottom:calc(1.2rem + var(--safe-bottom));right:calc(1.2rem + var(--safe-right));
+  z-index:80;max-width:min(360px,calc(100vw - 2rem));background:#f5f1e7;color:#171713;
+  border-left:5px solid var(--acid);padding:1rem;box-shadow:0 12px 40px rgba(0,0,0,.45);
+  display:none;font-size:.95rem;
+}
+.toast.show{display:block}
+.toast button{border:0;background:transparent;color:#777;margin-left:.75rem;font-family:inherit;cursor:pointer}
+.modal{
+  position:fixed;inset:0;z-index:90;background:rgba(5,7,14,.78);
+  display:none;align-items:center;justify-content:center;padding:1.25rem;
+  padding-bottom:calc(1.25rem + var(--safe-bottom));
+}
+.modal.open{display:flex}
+.modal-card{
+  width:min(520px,100%);max-height:min(80vh,720px);overflow:auto;
+  background:var(--cream);color:var(--ink);border-radius:18px;padding:1.4rem;
+}
+.modal-card h3{color:var(--ink);margin-bottom:.5rem}
+.collection-list{list-style:none;padding:0;margin:1rem 0;display:grid;gap:.6rem}
+.collection-list li{border:1px solid #cfc9b8;background:#fffdf6;padding:.8rem;border-radius:10px;display:flex;justify-content:space-between;gap:.75rem}
+.collection-list strong{display:block}
+footer{
+  padding:2.5rem 0 calc(3.5rem + var(--safe-bottom));
+  border-top:1px solid var(--line);color:var(--muted);position:relative;z-index:1;
+}
+.footer-grid{display:grid;gap:.75rem}
+@media (max-width:900px){
+  nav.primary-nav{display:none}
+  .hero-grid,.split,.now-pair,.control-row,.ritual-card,.epoch-grid,.labyrinth-panel,.share-band{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr}
+  .now-orbit{min-height:320px}
+  .marker{width:78px;font-size:.62rem}
+  .sky{height:300px}
+  .epoch-grid{display:flex;overflow-x:auto;padding-bottom:.5rem}
+  .epoch-card{min-width:240px;flex:0 0 auto}
+  .share-band{justify-items:start}
+}
+@media (max-width:600px){
+  .shell{width:calc(100% - 1.25rem);max-width:calc(100% - 1.25rem)}
+  .head{min-height:68px;gap:.5rem}
+  .brand{font-size:1.2rem;min-width:0}
+  .brand small{font-size:.48rem;letter-spacing:.08em;white-space:normal;max-width:12rem}
+  .streak-pill span.label{display:none}
+  section{padding:2.5rem 0}
+  .ritual-card{min-height:0}
+  .you-dot span{left:0;transform:none}
+  .actions .btn{flex:1 1 auto;justify-content:center;text-align:center}
+  .lead,.engine-line,.thesis,p{max-width:100%}
+  h1{font-size:clamp(2.2rem,11vw,3.2rem)}
+  .now-orbit{margin-inline:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+  .world.jump{transform:none;opacity:1}
+  .rocket.is-launched{transform:none;opacity:.5}
+}
 </style>
 </head>
 <body>
-<a class="skip" href="#main">Skip to TimelyUNA</a>
-<header><div class="shell head"><a class="brand" href="#top">TimelyUNA<small>LIGHT‑SPACETIME SEXTANT • PLANETARY PERSPECTIVE ENGINE</small></a><nav aria-label="Primary"><a href="#dawn">Dawn</a><a href="#finder">Finder</a><a href="#jump">Quantum Jump</a><a href="#mars">Mars</a><a href="#cosmic">Cosmos</a></nav></div></header>
+<a class="skip" href="#main">Skip to True Horizon</a>
+
+<header class="site-header">
+  <div class="shell head">
+    <a class="brand" href="#top" aria-label="True Horizon home">
+      <span class="brand-mark" aria-hidden="true">✦</span>True Horizon
+      <small>POWERED BY TIMELYUNA LIGHT-TIME ENGINE</small>
+    </a>
+    <nav class="primary-nav" aria-label="Primary">
+      <a href="#horizon">Horizon</a>
+      <a href="#dawn">Dawn</a>
+      <a href="#finder">Finder</a>
+      <a href="#jump">Jump</a>
+      <a href="#epochs">Epochs</a>
+      <a href="#labyrinth">Labyrinth</a>
+      <a href="#mars">Mars</a>
+      <a href="#cosmic">Cosmos</a>
+      <a href="#vocabulary">Lexicon</a>
+    </nav>
+    <div class="streak-pill" title="Daily launch streak" aria-live="polite">
+      <b id="streak-count">0</b><span class="label">day streak</span>
+    </div>
+  </div>
+</header>
+
 <main id="main">
-<section id="top"><div class="shell hero-grid"><div class="hero-copy"><div class="eyebrow">There it is. There it was.</div><h1>TimelyUNA</h1><p class="thesis">We do not see the universe as it is. We see it as its light arrives.</p><p class="lead muted">Find a planet where it is <span class="gold">Visible Now</span>. Then see where calculations place it <span class="gold">Actual Now</span>.</p><div class="actions"><a class="btn primary" href="#finder">Find a Planet</a><a class="btn" href="#jump">Quantum Jump to Mars</a><button class="btn" id="speak-thesis">Hear the thesis</button></div></div><div class="now-orbit" role="img" aria-label="Visible Now and Actual Now connected by arriving light"><div class="ring r1"></div><div class="ring r2"></div><div class="path"></div><div class="arriving">ARRIVING<br>LIGHT</div><div class="marker visible">VISIBLE<br>NOW</div><div class="marker actual">ACTUAL<br>NOW</div></div></div></section>
-<section><div class="shell now-pair"><article class="panel now-card"><div><strong>VISIBLE NOW</strong><p class="lead">Where arriving light tells you to look.</p><p class="muted">The position appearing in your sky now.</p></div></article><article class="panel now-card"><div><strong>ACTUAL NOW</strong><p class="lead">Where the object is modeled to be now.</p><p class="muted">Its calculated present location after light-travel delay.</p></div></article></div></section>
-<section id="dawn"><div class="shell split"><div><div class="eyebrow">Dawn</div><h2>The Sun is late to its own horizon.</h2><p class="lead muted" style="margin-top:1rem">Sunlight reaches Earth roughly eight minutes after leaving the Sun. At sunrise, the light is Visible Now. The Sun itself is already Actual Now.</p><p class="quote" style="margin-top:1.5rem">Every Dawn is already history.</p></div><div class="panel metrics"><div class="metric"><span class="eyebrow">Visible Now</span><strong>Arriving light</strong><span class="muted">What your eyes receive</span></div><div class="metric"><span class="eyebrow">Light delay</span><strong>≈ 8m 19s</strong><span class="muted">Sun to Earth</span></div><div class="metric"><span class="eyebrow">Actual Now</span><strong>Already ahead</strong><span class="muted">Modeled present state</span></div></div></div></section>
-<section id="finder"><div class="shell"><div class="eyebrow">Planet Finder</div><h2>Find where it is visible—and where it is now.</h2><div class="split" style="margin-top:1.5rem"><div class="panel"><div class="controls"><div class="control-row"><div class="control"><label for="observer">Observer world</label><select id="observer"><option value="Earth">From Earth</option><option value="Mars">From Mars</option></select></div><div class="control"><label for="target">Target world</label><select id="target"><option>Mercury</option><option>Venus</option><option>Earth</option><option selected>Mars</option><option>Jupiter</option><option>Saturn</option></select></div></div><button class="btn primary" id="toggle-actual">Hide Actual Now</button></div><p class="muted" style="margin-top:1rem">This web visualization teaches the interface. Precision sky placement requires a trusted ephemeris, observer location, exact clock, device orientation, and atmospheric correction.</p></div><div class="sky" id="finder-sky"><div class="sky-label" id="sky-label">VIEWED FROM EARTH</div><div class="offset-line" id="offset-line"></div><div class="planet-marker" id="visible-marker"><div class="dot">●</div><span id="visible-label">MARS • VISIBLE NOW</span></div><div class="planet-marker actual-marker" id="actual-marker"><div class="dot">⌖</div><span id="actual-label">MARS • ACTUAL NOW</span></div></div></div></div></section>
-<section id="jump"><div class="shell"><div class="eyebrow">Quantum Jump</div><h2>Stand on Mars. Turn around. Look home.</h2><div class="split" style="margin-top:1.5rem"><div class="panel jump-stage"><div><div class="world" id="world">🌍</div><h3 id="jump-title">You are standing on Earth</h3><p class="lead muted" id="jump-copy">Jump to Mars, then look back toward Earth, Venus, and Mercury.</p><div class="actions" style="justify-content:center"><button class="btn primary" id="jump-button">Quantum Jump to Mars</button></div></div></div><div class="panel"><div class="look-home" id="look-home"><h3>Martian Sky: Look Inward</h3><div class="planet-buttons"><button class="active" data-look="Earth">Earth</button><button data-look="Venus">Venus</button><button data-look="Mercury">Mercury</button></div><p class="quote" id="home-message">Quantum jump complete. You are now looking home.</p><p class="muted" style="margin-top:1rem">Every world owns a different sky—and every sky arrives late.</p></div><div id="earth-waiting"><h3>Planetary Perspective</h3><p class="lead muted" style="margin-top:1rem">From Mars, Earth becomes a wandering planet. Venus and Mercury occupy a new geometry around the Sun. Visible Now and Actual Now change with the observer.</p></div></div></div></div></section>
-<section id="mars"><div class="shell split"><div><div class="eyebrow">Mars Mission</div><h2>Mission Control cannot control the moment.</h2><p class="lead muted" style="margin-top:1rem">Earth and Mars exchange delayed signals across changing Light-SpaceTime. The farther apart they are, the longer each command and reply must travel.</p></div><div class="panel metrics"><div class="metric"><span class="eyebrow">One way</span><strong>≈ 3–22 min</strong><span class="muted">Changing with distance</span></div><div class="metric"><span class="eyebrow">Round trip</span><strong>≈ 6–44 min</strong><span class="muted">No instant conversation</span></div><div class="metric"><span class="eyebrow">Local autonomy</span><strong>Essential</strong><span class="muted">Robots and crews decide locally</span></div></div></div></section>
-<section id="cosmic"><div class="shell split"><div class="panel"><div style="min-height:280px;display:grid;place-items:center;background:radial-gradient(circle,#000 0 17%,#321d08 18% 23%,#d79c42 24% 25%,transparent 45%);border-radius:18px"></div></div><div><div class="eyebrow">Cosmos</div><h2>Light is always carrying history.</h2><p class="quote" style="margin-top:1.2rem">“A black hole is a star so bright it forgot to let go of its light.”</p><p class="lead muted" style="margin-top:1.2rem">TimelyUNA connects the poetry of seeing with the physics of arriving light.</p></div></div></section>
-<section><div class="shell panel"><div class="eyebrow">The TimelyUNA vocabulary</div><h2 style="margin-top:.5rem">Visible Now. Actual Now.</h2><p class="lead muted" style="margin-top:1rem">Visible Now answers: “Where do I look?” Actual Now answers: “Where is it modeled to be at this moment?” The difference is the SpaceTime Offset.</p><div class="actions"><a class="btn primary" href="https://github.com/QuantumPlethora/TimelyUNA">Explore the SwiftUI project</a><a class="btn" href="#top">Return to Dawn</a></div></div></section>
+  <!-- HERO -->
+  <section id="top">
+    <div class="shell hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">There it is. There it was.</p>
+        <h1>True Horizon</h1>
+        <p class="engine-line">True Horizon is powered by the TimelyUNA light-time engine.</p>
+        <p class="thesis">We do not see the universe as it is. We see it as its light arrives.</p>
+        <p class="lead muted">Find a planet where it is <span class="gold">Visible Now</span>. Then see where calculations place it <span class="gold">Actual Now</span>. Correct the Sun for light travel—and keep a daily streak of reality corrections.</p>
+        <div class="actions">
+          <a class="btn acid" href="#horizon">Begin today’s correction</a>
+          <a class="btn primary" href="#finder">Find a Planet</a>
+          <a class="btn" href="#jump">Quantum Jump to Mars</a>
+          <button class="btn" type="button" id="speak-thesis">Hear the thesis</button>
+          <button class="btn" type="button" id="request-location">Share my horizon location</button>
+        </div>
+        <div class="loc-bar" id="loc-bar" aria-live="polite">
+          <span><strong>Date</strong> <span id="local-date">—</span></span>
+          <span><strong>Time</strong> <span id="local-time">—</span></span>
+          <span><strong>Coords</strong> <span id="local-coords">awaiting permission…</span></span>
+          <span><strong>Status</strong> <span id="loc-status">Location not requested yet</span></span>
+        </div>
+        <p class="notice">Educational visualization. Not for navigation, surveying, or safety-critical astronomy. Precision sky placement needs a trusted ephemeris, exact clock, device orientation, and atmospheric models.</p>
+      </div>
+      <div class="now-orbit" role="img" aria-label="Visible Now and Actual Now connected by arriving light">
+        <div class="ring r1"></div>
+        <div class="ring r2"></div>
+        <div class="path"></div>
+        <div class="arriving">ARRIVING<br>LIGHT</div>
+        <div class="marker visible">VISIBLE<br>NOW</div>
+        <div class="marker actual">ACTUAL<br>NOW</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISIBLE / ACTUAL CARDS -->
+  <section aria-labelledby="now-heading">
+    <div class="shell">
+      <h2 id="now-heading" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Visible Now and Actual Now</h2>
+      <div class="now-pair">
+        <article class="panel now-card">
+          <div>
+            <strong>VISIBLE NOW</strong>
+            <p class="lead">Where arriving light tells you to look.</p>
+            <p class="muted">The position appearing in your sky now—the direction of photons reaching your eyes.</p>
+          </div>
+        </article>
+        <article class="panel now-card">
+          <div>
+            <strong>ACTUAL NOW</strong>
+            <p class="lead">Where the object is modeled to be now.</p>
+            <p class="muted">Its calculated present location after correcting for light-travel delay.</p>
+          </div>
+        </article>
+      </div>
+      <div class="panel" style="margin-top:1rem">
+        <p class="eyebrow">SpaceTime Offset</p>
+        <p class="lead muted" style="margin-top:.6rem">The difference between Visible Now and Actual Now—the geometry of light still in flight.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUE HORIZON RITUAL -->
+  <section id="horizon" class="th-band">
+    <div class="shell">
+      <div class="split" style="margin-bottom:1.5rem;align-items:end">
+        <div>
+          <p class="eyebrow">01 · Daily ritual · True Horizon</p>
+          <h2>See the Sun where it truly is.</h2>
+          <p class="lead muted" style="margin-top:.75rem">Light takes a calculated delay—driven by today’s Earth–Sun distance—to reach your eyes. Visible Now is the apparent Sun. Actual Now is the light-time-corrected true position.</p>
+        </div>
+        <div class="solar-stage" aria-label="Apparent Sun versus true light-time-corrected Sun">
+          <div class="orbit o1"></div><div class="orbit o2"></div><div class="orbit o3"></div>
+          <div class="sun-blob sun-app"><span>Apparent</span><small>Visible Now</small></div>
+          <div class="light-dash"><b id="path-delay">calculating…</b></div>
+          <div class="sun-blob sun-true"><span>True Sun</span><small>Actual Now</small></div>
+          <div class="you-dot"><span>YOU</span></div>
+          <div style="position:absolute;bottom:18%;left:30%;transform:scale(.85) rotate(15deg)">
+            <div class="rocket" id="hero-rocket" aria-hidden="true">
+              <span class="rocket-window"></span><span class="rocket-fin left"></span><span class="rocket-fin right"></span><span class="rocket-flame"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ritual-card">
+        <div class="ritual-sky" aria-hidden="true">
+          <div class="horizon-sun false-sun"><b>APPARENT</b></div>
+          <div class="horizon-sun actual-sun"><b>TRUE POSITION</b></div>
+          <div class="horizon-line"></div>
+          <div class="launch-pad">
+            <div class="rocket" id="ritual-rocket" aria-hidden="true">
+              <span class="rocket-window"></span><span class="rocket-fin left"></span><span class="rocket-fin right"></span><span class="rocket-flame"></span>
+            </div>
+          </div>
+        </div>
+        <div class="ritual-panel">
+          <p class="micro">Photon delay today (from distance)</p>
+          <div class="delay-row">
+            <strong id="delay-min">--</strong><span>MIN</span>
+            <strong id="delay-sec">--</strong><span>SEC</span>
+          </div>
+          <p class="fact-line">Earth–Sun distance <strong id="au-distance">—</strong> AU · Sun has traveled roughly <strong id="travel-km">—</strong> while this light flew.</p>
+          <div class="metric-grid">
+            <div>Apparent altitude (Visible Now)<b id="app-alt">—</b></div>
+            <div>Apparent azimuth<b id="app-az">—</b></div>
+            <div>True altitude (Actual Now)<b id="true-alt">—</b></div>
+            <div>True azimuth<b id="true-az">—</b></div>
+          </div>
+          <p class="muted" style="font-size:.85rem;margin:.5rem 0 1rem" id="ritual-note">One launch keeps your streak alive. Calculations update from your clock and coordinates.</p>
+          <button class="launch-btn" type="button" id="launch-btn"><span class="icon" aria-hidden="true">↑</span>Launch &amp; correct reality</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAWN -->
+  <section id="dawn">
+    <div class="shell split">
+      <div>
+        <p class="eyebrow">Dawn</p>
+        <h2>The Sun is late to its own horizon.</h2>
+        <p class="lead muted" style="margin-top:1rem">Sunlight reaches Earth only after leaving the Sun. At sunrise, the light is Visible Now. The Sun itself is already Actual Now—ahead by roughly one photon delay.</p>
+        <p class="quote" style="margin-top:1.5rem">Every Dawn is already history.</p>
+        <div class="sunrise-box" style="margin-top:1.5rem">
+          <p class="eyebrow">True sunrise countdown</p>
+          <strong id="sunrise-countdown">--:--:--</strong>
+          <p class="muted" id="sunrise-label">Visible sunrise · calculating…</p>
+          <div class="actions" style="margin-top:1rem">
+            <button class="btn" type="button" id="reminder-btn">Set a quiet reminder</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel metrics">
+        <div class="metric"><span class="eyebrow">Visible Now</span><strong>Arriving light</strong><span class="muted">What your eyes receive</span></div>
+        <div class="metric"><span class="eyebrow">Light delay</span><strong id="dawn-delay">calculating…</strong><span class="muted">Sun to Earth (live)</span></div>
+        <div class="metric"><span class="eyebrow">Actual Now</span><strong>Already ahead</strong><span class="muted">Modeled present state</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANET FINDER -->
+  <section id="finder">
+    <div class="shell">
+      <p class="eyebrow">Planet Finder</p>
+      <h2>Find where it is visible—and where it is now.</h2>
+      <div class="split" style="margin-top:1.5rem">
+        <div class="panel">
+          <div class="controls">
+            <div class="control-row">
+              <div class="control">
+                <label for="observer">Observer world</label>
+                <select id="observer">
+                  <option value="Earth">From Earth</option>
+                  <option value="Mars">From Mars</option>
+                </select>
+              </div>
+              <div class="control">
+                <label for="target">Target world</label>
+                <select id="target">
+                  <option>Mercury</option>
+                  <option>Venus</option>
+                  <option>Earth</option>
+                  <option selected>Mars</option>
+                  <option>Jupiter</option>
+                  <option>Saturn</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn primary" type="button" id="toggle-actual">Hide Actual Now</button>
+          </div>
+          <p class="muted" style="margin-top:1rem">This web visualization teaches the interface. Precision sky placement requires a trusted ephemeris, observer location, exact clock, device orientation, and atmospheric correction.</p>
+        </div>
+        <div class="sky" id="finder-sky" role="img" aria-label="Planet finder sky showing Visible Now and Actual Now markers">
+          <div class="sky-label" id="sky-label">VIEWED FROM EARTH</div>
+          <div class="offset-line" id="offset-line"></div>
+          <div class="planet-marker" id="visible-marker"><div class="dot">●</div><span id="visible-label">MARS • VISIBLE NOW</span></div>
+          <div class="planet-marker actual-marker" id="actual-marker"><div class="dot">⌖</div><span id="actual-label">MARS • ACTUAL NOW</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUANTUM JUMP -->
+  <section id="jump">
+    <div class="shell">
+      <p class="eyebrow">Quantum Jump</p>
+      <h2>Stand on Mars. Turn around. Look home.</h2>
+      <div class="split" style="margin-top:1.5rem">
+        <div class="panel jump-stage">
+          <div>
+            <div class="world" id="world" aria-hidden="true">🌍</div>
+            <h3 id="jump-title">You are standing on Earth</h3>
+            <p class="lead muted" id="jump-copy">Jump to Mars, then look back toward Earth, Venus, and Mercury.</p>
+            <div class="actions" style="justify-content:center">
+              <button class="btn primary" type="button" id="jump-button">Quantum Jump to Mars</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="look-home" id="look-home">
+            <h3>Martian Sky: Look Inward</h3>
+            <div class="planet-buttons" role="group" aria-label="Look toward a world from Mars">
+              <button type="button" class="active" data-look="Earth">Earth</button>
+              <button type="button" data-look="Venus">Venus</button>
+              <button type="button" data-look="Mercury">Mercury</button>
+            </div>
+            <p class="quote" id="home-message">Quantum jump complete. You are now looking home.</p>
+            <p class="muted" style="margin-top:1rem">Every world owns a different sky—and every sky arrives late.</p>
+          </div>
+          <div id="earth-waiting">
+            <h3>Planetary Perspective</h3>
+            <p class="lead muted" style="margin-top:1rem">From Mars, Earth becomes a wandering planet. Venus and Mercury occupy a new geometry around the Sun. Visible Now and Actual Now change with the observer.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EPOCHS -->
+  <section id="epochs">
+    <div class="shell">
+      <p class="eyebrow">02 · Chronos collection</p>
+      <h2>Go deeper than now.</h2>
+      <p class="lead muted" style="margin-top:.75rem;max-width:40rem">Complete launches and living labyrinths to open skies no human has ever seen. Unlock progress is saved on this device.</p>
+      <div class="epoch-grid" id="epoch-grid" style="margin-top:1.5rem"></div>
+    </div>
+  </section>
+
+  <!-- LABYRINTH -->
+  <section id="labyrinth">
+    <div class="shell">
+      <div class="labyrinth-panel">
+        <div class="rare-tag">RARE ALIGNMENT · LIVE TODAY</div>
+        <div>
+          <p class="eyebrow" style="color:#5a584f">03 · Living photon labyrinth</p>
+          <h2 style="color:var(--ink)">Venus threads the morning light.</h2>
+          <p style="color:#65635b;margin:1rem 0;max-width:28rem">Guide one photon from the Sun to Earth. Educational path game—complete it to unlock rarer skies and the Dawn Chaser rocket skin.</p>
+          <button class="btn" type="button" id="enter-labyrinth" style="background:#171713;border-color:#171713;color:#fff">Enter today’s labyrinth <span class="acid">↗</span></button>
+          <div class="maze-controls" aria-label="Photon controls">
+            <button type="button" id="maze-back" aria-label="Move photon backward">← Back</button>
+            <button type="button" id="maze-forward" aria-label="Move photon forward">Forward →</button>
+          </div>
+          <p id="maze-hint" style="margin-top:.75rem;color:#65635b;font-size:.92rem">Enter the labyrinth, then use arrows, WASD, or the buttons.</p>
+          <p style="margin-top:1.25rem;font-size:.85rem;color:#5a584f"><strong>Reward:</strong> Dawn Chaser · rare rocket skin</p>
+        </div>
+        <div class="maze" id="maze" role="img" aria-label="Photon labyrinth path from Sun to Earth">
+          <div class="maze-grid"></div>
+          <div class="photon" id="photon"></div>
+          <div class="maze-sun" aria-hidden="true">☀</div>
+          <div class="maze-earth" aria-hidden="true">◉</div>
+          <svg viewBox="0 0 600 440" aria-hidden="true"><path d="M70 75 H260 V150 H470 V260 H370 V360 H535"></path></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- POSTCARDS -->
+  <section id="postcards">
+    <div class="shell split">
+      <div class="postcard" id="active-postcard">
+        <p style="letter-spacing:.16em;font-size:.68rem">POSTCARD FROM</p>
+        <strong id="postcard-title" style="display:block;font-size:clamp(1.4rem,3vw,1.9rem);margin:.35rem 0">THE CRETACEOUS</strong>
+        <span id="postcard-age" style="letter-spacing:.12em;font-size:.68rem">86,000,000 YEARS AGO</span>
+        <blockquote id="postcard-quote">“The sky is warmer here.<br>Saturn hangs low in the east.”</blockquote>
+        <p style="position:absolute;bottom:1rem;right:1rem;font-size:.6rem;letter-spacing:.12em">TRUE HORIZON · CHRONOS LOG</p>
+      </div>
+      <div>
+        <p class="eyebrow">05 · Deep-time postcards</p>
+        <h2>Bring something back with you.</h2>
+        <p class="lead muted" style="margin-top:1rem">Every successful correction and quantum jump can create an atmospheric record from another age. Collect them on this device. Remember skies that vanished.</p>
+        <div class="actions">
+          <button class="btn primary" type="button" id="collection-btn">View your collection →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHARE -->
+  <section id="share">
+    <div class="shell">
+      <div class="share-band">
+        <div>
+          <p class="eyebrow" style="color:#3a3a30">Today’s correction</p>
+          <h2>I saw the Sun where it actually is.</h2>
+          <p id="share-summary" style="margin-top:.5rem;font-size:.9rem">Waiting for horizon calculations…</p>
+        </div>
+        <div class="rocket" aria-hidden="true" style="transform:scale(1.2) rotate(25deg)">
+          <span class="rocket-window"></span><span class="rocket-fin left"></span><span class="rocket-fin right"></span><span class="rocket-flame"></span>
+        </div>
+        <button class="btn" type="button" id="share-btn">Share this moment <span>↗</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARS MISSION -->
+  <section id="mars">
+    <div class="shell split">
+      <div>
+        <p class="eyebrow">Mars Mission</p>
+        <h2>Mission Control cannot control the moment.</h2>
+        <p class="lead muted" style="margin-top:1rem">Earth and Mars exchange delayed signals across changing Light-SpaceTime. The farther apart they are, the longer each command and reply must travel.</p>
+      </div>
+      <div class="panel metrics">
+        <div class="metric"><span class="eyebrow">One way</span><strong>≈ 3–22 min</strong><span class="muted">Changing with distance</span></div>
+        <div class="metric"><span class="eyebrow">Round trip</span><strong>≈ 6–44 min</strong><span class="muted">No instant conversation</span></div>
+        <div class="metric"><span class="eyebrow">Local autonomy</span><strong>Essential</strong><span class="muted">Robots and crews decide locally</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COSMOS -->
+  <section id="cosmic">
+    <div class="shell split">
+      <div class="panel">
+        <div style="min-height:280px;display:grid;place-items:center;background:radial-gradient(circle,#000 0 17%,#321d08 18% 23%,#d79c42 24% 25%,transparent 45%);border-radius:18px" role="img" aria-label="Stylized black hole and accretion glow"></div>
+      </div>
+      <div>
+        <p class="eyebrow">Cosmos</p>
+        <h2>Light is always carrying history.</h2>
+        <p class="quote" style="margin-top:1.2rem">“A black hole is a star so bright it forgot to let go of its light.”</p>
+        <p class="lead muted" style="margin-top:1.2rem">TimelyUNA connects the poetry of seeing with the physics of arriving light. True Horizon carries that engine into a daily practice of correction.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VOCABULARY -->
+  <section id="vocabulary">
+    <div class="shell panel">
+      <p class="eyebrow">The TimelyUNA vocabulary</p>
+      <h2 style="margin-top:.5rem">Visible Now. Actual Now. SpaceTime Offset.</h2>
+      <dl class="def-list">
+        <div>
+          <dt>Visible Now</dt>
+          <dd>The position indicated by light arriving now—where you look based on photons in your eyes.</dd>
+        </div>
+        <div>
+          <dt>Actual Now</dt>
+          <dd>The modeled position after correcting for light travel—where the object is calculated to be at this moment.</dd>
+        </div>
+        <div>
+          <dt>SpaceTime Offset</dt>
+          <dd>The difference between those positions: the gap opened by finite light speed across Light-SpaceTime.</dd>
+        </div>
+      </dl>
+      <p class="lead muted" style="margin-top:1.25rem">Visible Now answers: “Where do I look?” Actual Now answers: “Where is it modeled to be at this moment?” The difference is the SpaceTime Offset.</p>
+      <div class="actions">
+        <a class="btn primary" href="https://github.com/QuantumPlethora/TimelyUNA">Explore the SwiftUI project</a>
+        <a class="btn" href="#top">Return to Dawn</a>
+        <a class="btn" href="#horizon">Return to True Horizon</a>
+      </div>
+    </div>
+  </section>
 </main>
-<footer><div class="shell"><strong class="gold">TimelyUNA</strong><br>Light-SpaceTime Sextant • Planetary Perspective Engine<br>Because the Sun is always late to its own Dawn—from our perspective.</div></footer>
+
+<footer>
+  <div class="shell footer-grid">
+    <p><strong class="gold">True Horizon</strong> · powered by the <strong class="gold">TimelyUNA</strong> light-time engine</p>
+    <p>Light-SpaceTime Sextant • Planetary Perspective Engine</p>
+    <p>Because the Sun is always late to its own Dawn—from our perspective.</p>
+    <p>Educational only · <a class="gold" href="https://github.com/QuantumPlethora/TimelyUNA" style="color:var(--gold2)">GitHub</a> · <a class="gold" href="https://macsafedevelopersapple.io/" style="color:var(--gold2)">macsafedevelopersapple.io</a></p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status"><span id="toast-msg"></span><button type="button" id="toast-close" aria-label="Dismiss">✕</button></div>
+
+<div class="modal" id="collection-modal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="collection-title">
+    <h3 id="collection-title">Chronos collection</h3>
+    <p class="muted" style="color:#5f5d55">Postcards and rewards earned from launches and labyrinth runs. Stored only on this device.</p>
+    <ul class="collection-list" id="collection-list"></ul>
+    <div class="actions">
+      <button class="btn primary" type="button" id="close-collection" style="background:#171713;border-color:#171713;color:#fff">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const speak=t=>{if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.9;speechSynthesis.speak(u)};
-document.getElementById('speak-thesis').onclick=()=>speak('We do not see the universe as it is. We see it as its light arrives. Visible Now is where arriving light tells you to look. Actual Now is where the object is modeled to be now.');
-const observer=document.getElementById('observer'),target=document.getElementById('target'),visible=document.getElementById('visible-marker'),actual=document.getElementById('actual-marker'),line=document.getElementById('offset-line'),skyLabel=document.getElementById('sky-label'),visibleLabel=document.getElementById('visible-label'),actualLabel=document.getElementById('actual-label');let actualShown=true;
-const positions={Mercury:[[32,58],[58,43]],Venus:[[39,49],[66,38]],Earth:[[35,60],[63,42]],Mars:[[37,57],[70,39]],Jupiter:[[28,48],[61,34]],Saturn:[[31,43],[68,31]]};
-function drawFinder(){const name=target.value;if(name===observer.value){target.value=observer.value==='Earth'?'Mars':'Earth';return drawFinder()}const p=positions[target.value];visible.style.left=p[0][0]+'%';visible.style.top=p[0][1]+'%';actual.style.left=p[1][0]+'%';actual.style.top=p[1][1]+'%';skyLabel.textContent='VIEWED FROM '+observer.value.toUpperCase();visibleLabel.textContent=target.value.toUpperCase()+' • VISIBLE NOW';actualLabel.textContent=target.value.toUpperCase()+' • ACTUAL NOW';const sky=document.getElementById('finder-sky'),x1=sky.clientWidth*p[0][0]/100,y1=sky.clientHeight*p[0][1]/100,x2=sky.clientWidth*p[1][0]/100,y2=sky.clientHeight*p[1][1]/100,dx=x2-x1,dy=y2-y1;line.style.left=x1+'px';line.style.top=y1+'px';line.style.width=Math.hypot(dx,dy)+'px';line.style.transform='rotate('+Math.atan2(dy,dx)+'rad)';actual.style.display=actualShown?'block':'none';line.style.display=actualShown?'block':'none'}
-observer.onchange=drawFinder;target.onchange=drawFinder;window.addEventListener('resize',drawFinder);document.getElementById('toggle-actual').onclick=e=>{actualShown=!actualShown;e.currentTarget.textContent=actualShown?'Hide Actual Now':'Show Actual Now';drawFinder()};drawFinder();
-const world=document.getElementById('world'),jumpTitle=document.getElementById('jump-title'),jumpCopy=document.getElementById('jump-copy'),jumpButton=document.getElementById('jump-button'),lookHome=document.getElementById('look-home'),earthWaiting=document.getElementById('earth-waiting');let onMars=false;jumpButton.onclick=()=>{world.classList.add('jump');setTimeout(()=>{onMars=!onMars;world.textContent=onMars?'🔴':'🌍';jumpTitle.textContent=onMars?'You are standing on Mars':'You are standing on Earth';jumpCopy.textContent=onMars?'Turn around and look home.':'Jump to Mars, then look back toward Earth, Venus, and Mercury.';jumpButton.textContent=onMars?'Quantum Jump Home':'Quantum Jump to Mars';lookHome.classList.toggle('show',onMars);earthWaiting.style.display=onMars?'none':'block';world.classList.remove('jump')},660)};
-document.querySelectorAll('[data-look]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-look]').forEach(x=>x.classList.remove('active'));b.classList.add('active');const name=b.dataset.look;document.getElementById('home-message').textContent=name==='Earth'?'Quantum jump complete. You are now looking home.':'From Mars, '+name+' owns a different Visible Now and Actual Now.'});
+(function(){
+"use strict";
+
+/* ── Solar engine (NOAA/Meeus educational, offline) ── */
+const Solar = {
+  snapshot(date, lat, lon){
+    const current = this.position(date, lat, lon);
+    const lightTime = current.distanceAU * 499.0047838;
+    const trueDate = new Date(date.getTime() + lightTime * 1000);
+    const trueSun = this.position(trueDate, lat, lon);
+    const rise = this.sunrise(date, lat, lon);
+    return {
+      apparent: current.horizontal,
+      truePosition: trueSun.horizontal,
+      distanceAU: current.distanceAU,
+      lightTimeSeconds: lightTime,
+      sunrise: rise,
+      trueSunrise: rise ? new Date(rise.getTime() - lightTime * 1000) : null
+    };
+  },
+  position(date, lat, lon){
+    const jd = date.getTime()/86400000 + 2440587.5;
+    const t = (jd - 2451545.0)/36525.0;
+    const l0 = this.norm(280.46646 + t*(36000.76983 + 0.0003032*t));
+    const m = this.norm(357.52911 + t*(35999.05029 - 0.0001537*t));
+    const e = 0.016708634 - t*(0.000042037 + 0.0000001267*t);
+    const c = this.sinD(m)*(1.914602 - t*(0.004817+0.000014*t))
+            + this.sinD(2*m)*(0.019993 - 0.000101*t)
+            + this.sinD(3*m)*0.000289;
+    const trueLong = l0 + c;
+    const trueAnomaly = m + c;
+    const radius = (1.000001018*(1 - e*e))/(1 + e*this.cosD(trueAnomaly));
+    const omega = 125.04 - 1934.136*t;
+    const lambda = trueLong - 0.00569 - 0.00478*this.sinD(omega);
+    const epsilon0 = 23 + (26 + (21.448 - t*(46.815 + t*(0.00059 - t*0.001813)))/60)/60;
+    const epsilon = epsilon0 + 0.00256*this.cosD(omega);
+    const dec = this.asinD(this.sinD(epsilon)*this.sinD(lambda));
+    const ra = this.atan2D(this.cosD(epsilon)*this.sinD(lambda), this.cosD(lambda));
+    const gmst = this.norm(280.46061837 + 360.98564736629*(jd-2451545.0) + 0.000387933*t*t - t*t*t/38710000);
+    const ha = this.signed(gmst + lon - ra);
+    let alt = this.asinD(this.sinD(lat)*this.sinD(dec) + this.cosD(lat)*this.cosD(dec)*this.cosD(ha));
+    const az = this.norm(this.atan2D(this.sinD(ha), this.cosD(ha)*this.sinD(lat) - this.tanD(dec)*this.cosD(lat)) + 180);
+    alt += this.refraction(alt);
+    return {horizontal:{altitude:alt,azimuth:az}, distanceAU:radius};
+  },
+  sunrise(date, lat, lon){
+    const start = new Date(date); start.setHours(0,0,0,0);
+    let prevDate = start, prevAlt = this.position(start, lat, lon).horizontal.altitude;
+    const target = -0.833;
+    for(let minute=2; minute<=24*60; minute+=2){
+      const cand = new Date(start.getTime() + minute*60000);
+      const alt = this.position(cand, lat, lon).horizontal.altitude;
+      if(prevAlt < target && alt >= target){
+        const f = (target - prevAlt)/(alt - prevAlt);
+        return new Date(prevDate.getTime() + 120000*f);
+      }
+      prevDate = cand; prevAlt = alt;
+    }
+    return null;
+  },
+  refraction(alt){ if(alt<=-1) return 0; return 1.02/this.tanD(alt + 10.3/(alt+5.11))/60; },
+  norm(v){ return ((v%360)+360)%360; },
+  signed(v){ const x=this.norm(v); return x>180?x-360:x; },
+  sinD(x){ return Math.sin(x*Math.PI/180); },
+  cosD(x){ return Math.cos(x*Math.PI/180); },
+  tanD(x){ return Math.tan(x*Math.PI/180); },
+  asinD(x){ return Math.asin(Math.max(-1,Math.min(1,x)))*180/Math.PI; },
+  atan2D(y,x){ return Math.atan2(y,x)*180/Math.PI; }
+};
+
+const EPOCHS = [
+  {id:"now", n:"01", name:"Now", sub:"Present day", art:"now", free:true},
+  {id:"cretaceous", n:"02", name:"Cretaceous", sub:"86 million years ago", art:"cretaceous", free:true},
+  {id:"jurassic", n:"03", name:"Jurassic", sub:"171 million years ago", art:"jurassic", key:"labyrinth_done"},
+  {id:"deep", n:"04", name:"Deep Time", sub:"Unknown coordinates", art:"deep", key:"deep"}
+];
+const POSTCARDS = {
+  now:{title:"THE PRESENT", age:"RIGHT NOW", quote:"“Photons are still mid-flight.<br>You are already correcting.”"},
+  cretaceous:{title:"THE CRETACEOUS", age:"86,000,000 YEARS AGO", quote:"“The sky is warmer here.<br>Saturn hangs low in the east.”"},
+  jurassic:{title:"THE JURASSIC", age:"171,000,000 YEARS AGO", quote:"“Green haze. Longer days.<br>The Moon pulls harder.”"},
+  deep:{title:"DEEP TIME", age:"BEYOND THE KNOWN SKY", quote:"“Coordinates dissolve.<br>Only light remembers.”"}
+};
+const MAZE_PATH = [
+  {left:12,top:17},{left:43,top:17},{left:43,top:34},{left:78,top:34},
+  {left:78,top:59},{left:62,top:59},{left:62,top:82},{left:89,top:82}
+];
+
+const state = {
+  lat:37.3349, lon:-122.009,
+  hasGeo:false,
+  snapshot:null,
+  selectedEpoch:"now",
+  ritualComplete:false,
+  mazeActive:false,
+  mazeStep:0
+};
+
+const $ = id => document.getElementById(id);
+const pad2 = n => String(n).padStart(2,"0");
+
+function toast(msg){
+  $("toast-msg").textContent = msg;
+  $("toast").classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>$("toast").classList.remove("show"), 4500);
+}
+
+function todayKey(){
+  const d=new Date();
+  return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+}
+
+function loadStreak(){
+  const streak = parseInt(localStorage.getItem("th_streak")||"0",10);
+  $("streak-count").textContent = String(streak);
+  if(localStorage.getItem("th_lastRitual")===todayKey()){
+    state.ritualComplete = true;
+    markRitualDone(false);
+  }
+}
+
+function saveRitual(){
+  const last = localStorage.getItem("th_lastRitual");
+  const today = todayKey();
+  let streak = parseInt(localStorage.getItem("th_streak")||"0",10);
+  if(last !== today){
+    const y=new Date(); y.setDate(y.getDate()-1);
+    const yKey=y.getFullYear()+"-"+pad2(y.getMonth()+1)+"-"+pad2(y.getDate());
+    streak = (!last) ? 1 : (last===yKey ? streak+1 : 1);
+    localStorage.setItem("th_streak", String(streak));
+    localStorage.setItem("th_lastRitual", today);
+  }
+  $("streak-count").textContent = String(parseInt(localStorage.getItem("th_streak")||"0",10));
+  addCollection({id:"ritual-"+today, title:"Daily correction", detail:"Rocket launched · "+today});
+}
+
+function getCollection(){
+  try{ return JSON.parse(localStorage.getItem("th_collection")||"[]"); }catch(e){ return []; }
+}
+function addCollection(item){
+  const list=getCollection();
+  if(list.some(x=>x.id===item.id)) return;
+  list.unshift(item);
+  localStorage.setItem("th_collection", JSON.stringify(list.slice(0,50)));
+}
+function unlock(key){ localStorage.setItem("th_unlock_"+key,"1"); }
+function unlocked(key){ return localStorage.getItem("th_unlock_"+key)==="1"; }
+
+function formatWords(sec){
+  const m=Math.floor(sec/60), s=Math.floor(sec%60);
+  return m+" minutes, "+s+" seconds";
+}
+function formatTime(d){
+  if(!d) return "—";
+  return d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+}
+
+function updateClock(){
+  const now=new Date();
+  $("local-date").textContent = now.toLocaleDateString(undefined,{weekday:"long", month:"long", day:"numeric", year:"numeric"});
+  $("local-time").textContent = now.toLocaleTimeString();
+  $("local-coords").textContent = state.lat.toFixed(4)+"°, "+state.lon.toFixed(4)+"°"+(state.hasGeo?"":" (fallback)");
+}
+
+function refreshSolar(){
+  state.snapshot = Solar.snapshot(new Date(), state.lat, state.lon);
+  const s = state.snapshot;
+  const sec = s.lightTimeSeconds;
+  const min = Math.floor(sec/60);
+  const rem = Math.floor(sec%60);
+  $("delay-min").textContent = pad2(min);
+  $("delay-sec").textContent = pad2(rem);
+  $("path-delay").textContent = min+"m "+pad2(rem)+"s of light";
+  $("dawn-delay").textContent = min+"m "+pad2(rem)+"s";
+  $("au-distance").textContent = s.distanceAU.toFixed(6);
+  $("travel-km").textContent = Math.round(29.78*sec).toLocaleString()+" km";
+  $("app-alt").textContent = s.apparent.altitude.toFixed(2)+"°";
+  $("app-az").textContent = s.apparent.azimuth.toFixed(2)+"°";
+  $("true-alt").textContent = s.truePosition.altitude.toFixed(2)+"°";
+  $("true-az").textContent = s.truePosition.azimuth.toFixed(2)+"°";
+  $("share-summary").textContent =
+    formatWords(sec)+" · True alt "+s.truePosition.altitude.toFixed(2)+"° · "+
+    (state.ritualComplete?"Rocket launched":"Ready to launch")+" · Educational estimate";
+  updateSunrise();
+}
+
+function updateSunrise(){
+  const s=state.snapshot; if(!s) return;
+  let trueRise=s.trueSunrise, apparent=s.sunrise;
+  if(trueRise && trueRise.getTime()<Date.now()){
+    const t=new Date(); t.setDate(t.getDate()+1);
+    const n=Solar.snapshot(t, state.lat, state.lon);
+    trueRise=n.trueSunrise; apparent=n.sunrise;
+  }
+  if(!trueRise){
+    $("sunrise-countdown").textContent="—";
+    $("sunrise-label").textContent="No sunrise at this latitude for the modeled day";
+    return;
+  }
+  const diff=Math.max(0, trueRise.getTime()-Date.now());
+  const h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000), sec=Math.floor((diff%60000)/1000);
+  $("sunrise-countdown").textContent=pad2(h)+":"+pad2(m)+":"+pad2(sec);
+  $("sunrise-label").textContent="Visible sunrise · "+formatTime(apparent)+" · True sunrise · "+formatTime(trueRise);
+}
+
+function markRitualDone(animate){
+  const btn=$("launch-btn");
+  btn.classList.add("done");
+  btn.disabled=true;
+  btn.innerHTML='<span class="icon" aria-hidden="true">✓</span>Today’s launch complete';
+  $("ritual-note").textContent="Reality corrected. Streak preserved on this device.";
+  if(animate){
+    ["hero-rocket","ritual-rocket"].forEach(id=>{
+      const r=$(id); r.classList.remove("is-launched"); void r.offsetWidth; r.classList.add("is-launched");
+    });
+  }
+}
+function launchRitual(){
+  if(state.ritualComplete) return;
+  state.ritualComplete=true;
+  markRitualDone(true);
+  saveRitual();
+  unlock("after_launch");
+  renderEpochs();
+  toast("Reality corrected. Your streak is alive.");
+  refreshSolar();
+}
+
+function epochOpen(ep){
+  if(ep.free) return true;
+  if(ep.key==="labyrinth_done") return unlocked("labyrinth_done") || state.ritualComplete;
+  if(ep.key==="deep") return unlocked("deep");
+  return false;
+}
+function renderEpochs(){
+  const grid=$("epoch-grid"); grid.innerHTML="";
+  EPOCHS.forEach(ep=>{
+    const open=epochOpen(ep);
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.className="epoch-card"+(state.selectedEpoch===ep.id?" selected":"")+(open?"":" locked");
+    btn.innerHTML='<span class="muted" style="font-size:.75rem">'+ep.n+'</span><div class="epoch-art '+ep.art+'"><i></i></div><strong>'+ep.name+'</strong><small>'+ep.sub+'</small><span class="epoch-status">'+(open?(state.selectedEpoch===ep.id?"Active sky":"Explore"):"Locked")+'</span>';
+    if(open) btn.addEventListener("click", ()=>selectEpoch(ep.id));
+    grid.appendChild(btn);
+  });
+}
+function selectEpoch(id){
+  state.selectedEpoch=id;
+  const card=POSTCARDS[id]||POSTCARDS.now;
+  $("postcard-title").textContent=card.title;
+  $("postcard-age").textContent=card.age;
+  $("postcard-quote").innerHTML=card.quote;
+  if(id!=="now") addCollection({id:"postcard-"+id, title:card.title, detail:card.age});
+  renderEpochs();
+  toast("Sky shifted · "+(EPOCHS.find(e=>e.id===id)||{}).name);
+}
+
+function placePhoton(){
+  const p=MAZE_PATH[state.mazeStep];
+  const el=$("photon");
+  el.style.left=p.left+"%"; el.style.top=p.top+"%";
+}
+function enterLabyrinth(){
+  state.mazeActive=true; state.mazeStep=0; placePhoton();
+  $("maze-hint").textContent="Guide the photon · arrows / WASD / buttons · reach Earth";
+  $("maze-hint").style.color="";
+  toast("Labyrinth entered.");
+}
+function moveMaze(dir){
+  if(!state.mazeActive) return;
+  if(dir==="forward") state.mazeStep=Math.min(MAZE_PATH.length-1, state.mazeStep+1);
+  if(dir==="back") state.mazeStep=Math.max(0, state.mazeStep-1);
+  placePhoton();
+  if(state.mazeStep===MAZE_PATH.length-1){
+    state.mazeActive=false;
+    unlock("labyrinth_done"); unlock("deep");
+    addCollection({id:"skin-dawn-chaser", title:"Dawn Chaser", detail:"Rare rocket skin · photon labyrinth"});
+    addCollection({id:"postcard-jurassic", title:"THE JURASSIC", detail:"Unlocked via labyrinth"});
+    $("maze-hint").textContent="Photon arrived. Jurassic & Deep Time unlocked · Dawn Chaser earned.";
+    renderEpochs();
+    toast("Labyrinth complete. Deep skies unlocked.");
+  }
+}
+
+function openCollection(){
+  const list=$("collection-list");
+  const items=getCollection();
+  list.innerHTML="";
+  if(!items.length) list.innerHTML="<li><div><strong>Empty sky</strong>Launch or explore to collect records.</div></li>";
+  else items.forEach(item=>{
+    const li=document.createElement("li");
+    li.innerHTML="<div><strong>"+item.title+"</strong>"+item.detail+"</div><span>✦</span>";
+    list.appendChild(li);
+  });
+  $("collection-modal").classList.add("open");
+  $("collection-modal").setAttribute("aria-hidden","false");
+  $("close-collection").focus();
+}
+function closeCollection(){
+  $("collection-modal").classList.remove("open");
+  $("collection-modal").setAttribute("aria-hidden","true");
+}
+
+async function shareMoment(){
+  const s=state.snapshot;
+  const text = s
+    ? "I saw the Sun where it actually is on True Horizon (TimelyUNA engine). Light delay "+Math.floor(s.lightTimeSeconds/60)+"m "+Math.floor(s.lightTimeSeconds%60)+"s · true altitude "+s.truePosition.altitude.toFixed(2)+"°. Educational estimate. https://macsafedevelopersapple.io/"
+    : "True Horizon — powered by the TimelyUNA light-time engine. https://macsafedevelopersapple.io/";
+  try{
+    if(navigator.share){ await navigator.share({title:"True Horizon", text}); toast("Shared."); }
+    else if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(text); toast("Share text copied to clipboard."); }
+    else toast(text);
+  }catch(e){ if(e && e.name!=="AbortError") toast("Share cancelled."); }
+}
+
+function requestLocation(){
+  $("loc-status").textContent="Requesting permission…";
+  if(!navigator.geolocation){
+    $("loc-status").textContent="Unavailable · using educational fallback (Cupertino)";
+    toast("Geolocation unavailable. Using educational fallback coordinates.");
+    refreshSolar(); return;
+  }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    state.lat=pos.coords.latitude; state.lon=pos.coords.longitude; state.hasGeo=true;
+    $("loc-status").textContent="Live GPS horizon locked";
+    updateClock(); refreshSolar();
+    toast("Horizon locked to your location.");
+  }, err=>{
+    state.hasGeo=false;
+    $("loc-status").textContent="Denied or failed · educational fallback (Cupertino)";
+    updateClock(); refreshSolar();
+    toast("Location not available. Using Cupertino fallback for calculations.");
+  }, {enableHighAccuracy:false, timeout:12000, maximumAge:300000});
+}
+
+/* Preserve TimelyUNA interactions */
+function initLegacy(){
+  const speak=t=>{ if(!("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.rate=.9; speechSynthesis.speak(u); };
+  $("speak-thesis").onclick=()=>speak("We do not see the universe as it is. We see it as its light arrives. Visible Now is where arriving light tells you to look. Actual Now is where the object is modeled to be now. True Horizon is powered by the TimelyUNA light-time engine.");
+
+  const observer=$("observer"), target=$("target");
+  const visible=$("visible-marker"), actual=$("actual-marker"), line=$("offset-line");
+  const skyLabel=$("sky-label"), visibleLabel=$("visible-label"), actualLabel=$("actual-label");
+  let actualShown=true;
+  const positions={Mercury:[[32,58],[58,43]],Venus:[[39,49],[66,38]],Earth:[[35,60],[63,42]],Mars:[[37,57],[70,39]],Jupiter:[[28,48],[61,34]],Saturn:[[31,43],[68,31]]};
+  function drawFinder(){
+    if(target.value===observer.value){ target.value=observer.value==="Earth"?"Mars":"Earth"; return drawFinder(); }
+    const p=positions[target.value];
+    visible.style.left=p[0][0]+"%"; visible.style.top=p[0][1]+"%";
+    actual.style.left=p[1][0]+"%"; actual.style.top=p[1][1]+"%";
+    skyLabel.textContent="VIEWED FROM "+observer.value.toUpperCase();
+    visibleLabel.textContent=target.value.toUpperCase()+" • VISIBLE NOW";
+    actualLabel.textContent=target.value.toUpperCase()+" • ACTUAL NOW";
+    const sky=$("finder-sky");
+    const x1=sky.clientWidth*p[0][0]/100, y1=sky.clientHeight*p[0][1]/100;
+    const x2=sky.clientWidth*p[1][0]/100, y2=sky.clientHeight*p[1][1]/100;
+    const dx=x2-x1, dy=y2-y1;
+    line.style.left=x1+"px"; line.style.top=y1+"px";
+    line.style.width=Math.hypot(dx,dy)+"px";
+    line.style.transform="rotate("+Math.atan2(dy,dx)+"rad)";
+    actual.style.display=actualShown?"block":"none";
+    line.style.display=actualShown?"block":"none";
+  }
+  observer.onchange=drawFinder; target.onchange=drawFinder;
+  window.addEventListener("resize", drawFinder);
+  $("toggle-actual").onclick=e=>{ actualShown=!actualShown; e.currentTarget.textContent=actualShown?"Hide Actual Now":"Show Actual Now"; drawFinder(); };
+  drawFinder();
+
+  const world=$("world"), jumpTitle=$("jump-title"), jumpCopy=$("jump-copy"), jumpButton=$("jump-button");
+  const lookHome=$("look-home"), earthWaiting=$("earth-waiting");
+  let onMars=false;
+  jumpButton.onclick=()=>{
+    world.classList.add("jump");
+    setTimeout(()=>{
+      onMars=!onMars;
+      world.textContent=onMars?"🔴":"🌍";
+      jumpTitle.textContent=onMars?"You are standing on Mars":"You are standing on Earth";
+      jumpCopy.textContent=onMars?"Turn around and look home.":"Jump to Mars, then look back toward Earth, Venus, and Mercury.";
+      jumpButton.textContent=onMars?"Quantum Jump Home":"Quantum Jump to Mars";
+      lookHome.classList.toggle("show", onMars);
+      earthWaiting.style.display=onMars?"none":"block";
+      world.classList.remove("jump");
+    }, 660);
+  };
+  document.querySelectorAll("[data-look]").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll("[data-look]").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    const name=b.dataset.look;
+    $("home-message").textContent = name==="Earth"
+      ? "Quantum jump complete. You are now looking home."
+      : "From Mars, "+name+" owns a different Visible Now and Actual Now.";
+  });
+}
+
+function init(){
+  loadStreak();
+  renderEpochs();
+  placePhoton();
+  updateClock();
+  refreshSolar();
+  initLegacy();
+
+  $("request-location").addEventListener("click", requestLocation);
+  $("launch-btn").addEventListener("click", launchRitual);
+  $("enter-labyrinth").addEventListener("click", enterLabyrinth);
+  $("maze-forward").addEventListener("click", ()=>{
+    if(!state.mazeActive){
+      if(unlocked("labyrinth_done")){ toast("Labyrinth complete. Press Enter today’s labyrinth to replay."); return; }
+      enterLabyrinth();
+    }
+    moveMaze("forward");
+  });
+  $("maze-back").addEventListener("click", ()=>{
+    if(!state.mazeActive){ toast("Enter the labyrinth first."); return; }
+    moveMaze("back");
+  });
+  $("maze").addEventListener("click", ()=>{
+    if(!state.mazeActive){
+      if(unlocked("labyrinth_done")){ toast("Labyrinth complete. Press Enter today’s labyrinth to replay."); return; }
+      enterLabyrinth(); return;
+    }
+    moveMaze("forward");
+  });
+  $("collection-btn").addEventListener("click", openCollection);
+  $("close-collection").addEventListener("click", closeCollection);
+  $("collection-modal").addEventListener("click", e=>{ if(e.target===$("collection-modal")) closeCollection(); });
+  $("share-btn").addEventListener("click", shareMoment);
+  $("toast-close").addEventListener("click", ()=>$("toast").classList.remove("show"));
+  $("reminder-btn").addEventListener("click", ()=>{
+    localStorage.setItem("th_reminder","1");
+    $("reminder-btn").textContent="Quiet reminder armed";
+    toast("Reminder saved on this device. Check back near true sunrise.");
+  });
+  if(localStorage.getItem("th_reminder")==="1") $("reminder-btn").textContent="Quiet reminder armed";
+
+  window.addEventListener("keydown", e=>{
+    if(!state.mazeActive) return;
+    if(["ArrowRight","ArrowDown","d","D","s","S"].includes(e.key)){ e.preventDefault(); moveMaze("forward"); }
+    if(["ArrowLeft","ArrowUp","a","A","w","W"].includes(e.key)){ e.preventDefault(); moveMaze("back"); }
+  });
+
+  setInterval(()=>{ updateClock(); refreshSolar(); }, 30000);
+  setInterval(updateSunrise, 1000);
+  setInterval(updateClock, 1000);
+
+  // Gentle auto-prompt after load (does not force)
+  setTimeout(()=>{
+    if(!state.hasGeo) $("loc-status").textContent="Tap “Share my horizon location” for live coordinates";
+  }, 800);
+}
+
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", init);
+else init();
+})();
 </script>
 </body>
 </html>
