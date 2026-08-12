@@ -2,9 +2,14 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var simulation = SimulationState()
-    @State private var selectedTab: AppTab = .dawn
+    @StateObject private var location = ObserverLocationService()
+    @StateObject private var persistence = HorizonPersistence()
+    @StateObject private var clock = HorizonClock()
+    @StateObject private var sunriseReminder = SunriseReminderService()
+    @State private var selectedTab: AppTab = .horizon
 
     enum AppTab: String, CaseIterable, Identifiable {
+        case horizon = "Horizon"
         case dawn = "Dawn"
         case finder = "Finder"
         case jump = "xSky"
@@ -17,7 +22,8 @@ struct ContentView: View {
 
         var symbol: String {
             switch self {
-            case .dawn: "sun.max"
+            case .horizon: "sun.horizon.fill"
+            case .dawn: "sunrise.fill"
             case .finder: "scope"
             case .jump: "sparkles"
             case .sextant: "location.viewfinder"
@@ -33,18 +39,18 @@ struct ContentView: View {
             CosmicBackground()
 
             VStack(spacing: 0) {
-                if selectedTab == .dawn {
-                    DawnHeroHeader()
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                } else {
+                // Horizon owns its chrome; other tabs keep a compact header.
+                if selectedTab != .horizon {
                     CompactHeader()
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                        .transition(.opacity)
                 }
 
                 CosmicTabBar(selection: $selectedTab)
 
                 Group {
                     switch selectedTab {
+                    case .horizon:
+                        TrueHorizonView()
                     case .dawn:
                         DawnExperienceView()
                     case .finder:
@@ -65,31 +71,67 @@ struct ContentView: View {
             }
         }
         .environmentObject(simulation)
+        .environmentObject(location)
+        .environmentObject(persistence)
+        .environmentObject(clock)
+        .environmentObject(sunriseReminder)
         .font(TimelyUNATheme.bodyFont)
         .tint(TimelyUNATheme.gold)
         .preferredColorScheme(.dark)
         .animation(.easeInOut(duration: 0.24), value: selectedTab)
+        .onAppear {
+            clock.start()
+            Task { await sunriseReminder.refreshStatus() }
+        }
+        .onDisappear { clock.stop() }
     }
 }
 
-private struct CosmicBackground: View {
+// MARK: - Background
+
+struct CosmicBackground: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [.black, Color(red: 0.01, green: 0.025, blue: 0.055), .black],
+                colors: [
+                    TimelyUNATheme.backgroundDeep,
+                    TimelyUNATheme.background,
+                    Color(red: 0.06, green: 0.03, blue: 0.12),
+                    TimelyUNATheme.backgroundDeep
+                ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
 
+            // Soft purple nebula
+            RadialGradient(
+                colors: [TimelyUNATheme.cosmicPurple.opacity(0.18), .clear],
+                center: .topTrailing,
+                startRadius: 20,
+                endRadius: 420
+            )
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+
+            // Warm horizon glow
+            RadialGradient(
+                colors: [TimelyUNATheme.orange.opacity(0.12), .clear],
+                center: .bottom,
+                startRadius: 10,
+                endRadius: 380
+            )
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+
             Canvas { context, size in
-                for index in 0..<100 {
+                for index in 0..<120 {
                     let x = random(index * 17) * size.width
                     let y = random(index * 43 + 11) * size.height
                     let diameter = 0.7 + random(index * 71 + 7) * 1.8
                     context.fill(
                         Path(ellipseIn: CGRect(x: x, y: y, width: diameter, height: diameter)),
-                        with: .color(.white.opacity(0.2 + random(index * 29) * 0.6))
+                        with: .color(.white.opacity(0.18 + random(index * 29) * 0.55))
                     )
                 }
             }
@@ -104,46 +146,12 @@ private struct CosmicBackground: View {
     }
 }
 
-private struct DawnHeroHeader: View {
-    var body: some View {
-        VStack(spacing: 9) {
-            Text("TimelyUNA")
-                .font(TimelyUNATheme.displayFont)
-                .foregroundStyle(TimelyUNATheme.gold)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-
-            HStack(spacing: 12) {
-                Rectangle().fill(TimelyUNATheme.accent.opacity(0.75)).frame(height: 1)
-                Image(systemName: "sparkle")
-                    .foregroundStyle(TimelyUNATheme.gold)
-                Rectangle().fill(TimelyUNATheme.accent.opacity(0.75)).frame(height: 1)
-            }
-
-            Text("Light-SpaceTime Sextant • Planetary Perspective Engine")
-                .font(TimelyUNATheme.calloutFont)
-                .foregroundStyle(TimelyUNATheme.accent)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text("There it is. There it was.\nTimelyUNA shows you both.")
-                .font(TimelyUNATheme.subheadingFont)
-                .foregroundStyle(TimelyUNATheme.papyrus)
-                .multilineTextAlignment(.center)
-                .lineSpacing(4)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(.horizontal, 22)
-        .padding(.top, 8)
-        .padding(.bottom, 12)
-    }
-}
+// MARK: - Headers
 
 private struct CompactHeader: View {
     var body: some View {
         HStack(spacing: 12) {
-            Text("TimelyUNA")
+            Text("True Horizon")
                 .font(TimelyUNATheme.sectionFont)
                 .foregroundStyle(TimelyUNATheme.gold)
                 .lineLimit(1)
@@ -152,13 +160,13 @@ private struct CompactHeader: View {
             Spacer()
 
             Image(systemName: "sparkle")
-                .foregroundStyle(TimelyUNATheme.accent)
+                .foregroundStyle(TimelyUNATheme.acid)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 8)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(TimelyUNATheme.accent.opacity(0.55))
+                .fill(TimelyUNATheme.line)
                 .frame(height: 1)
                 .padding(.horizontal, 18)
         }
@@ -182,50 +190,71 @@ private struct CosmicTabBar: View {
                                 .font(TimelyUNATheme.captionFont)
                                 .lineLimit(1)
                         }
-                        .foregroundStyle(selection == tab ? TimelyUNATheme.papyrus : TimelyUNATheme.accent)
+                        .foregroundStyle(selection == tab ? TimelyUNATheme.papyrus : TimelyUNATheme.muted)
                         .frame(width: 66, height: 50)
                         .background(
-                            selection == tab ? TimelyUNATheme.accent.opacity(0.22) : .clear,
+                            selection == tab ? TimelyUNATheme.acid.opacity(0.18) : .clear,
                             in: RoundedRectangle(cornerRadius: 15)
                         )
+                        .overlay {
+                            if selection == tab {
+                                RoundedRectangle(cornerRadius: 15)
+                                    .stroke(TimelyUNATheme.acid.opacity(0.45), lineWidth: 1)
+                            }
+                        }
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(tab.rawValue)
+                    .accessibilityAddTraits(selection == tab ? .isSelected : [])
                 }
             }
             .padding(4)
         }
-        .background(.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(TimelyUNATheme.accent.opacity(0.7)))
+        .background(Color.black.opacity(0.45), in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(TimelyUNATheme.line, lineWidth: 1))
         .padding(.horizontal, 14)
-        .padding(.bottom, 8)
+        .padding(.bottom, 4)
+        .padding(.top, 8)
     }
 }
 
+// MARK: - Placeholder feature tabs (Phase 2 expands these)
+
 private struct DawnExperienceView: View {
+    @EnvironmentObject private var location: ObserverLocationService
+    @EnvironmentObject private var clock: HorizonClock
     @State private var showActual = true
+
+    private var delayLabel: String {
+        guard let lat = location.latitude, let lon = location.longitude, location.hasLiveCoordinates else {
+            return "live delay after location"
+        }
+        let snap = SolarEngine.snapshot(date: clock.now, latitude: lat, longitude: lon)
+        return SolarFormat.lightDelayCompact(snap.lightTimeSeconds)
+    }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 CosmicCard {
                     VStack(spacing: 14) {
-                        Text("THE SUN IS LATE TO ITS OWN DAWN")
+                        Text("THE SUN IS LATE TO ITS OWN HORIZON")
                             .font(TimelyUNATheme.headlineFont)
-                            .foregroundStyle(TimelyUNATheme.accent)
+                            .foregroundStyle(TimelyUNATheme.acid)
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
 
                         HStack(alignment: .top, spacing: 10) {
-                            PositionBadge(title: "VISIBLE NOW", detail: "Light from 8m 19s ago", symbol: "sun.max.fill")
+                            PositionBadge(title: "VISIBLE NOW", detail: "Light from \(delayLabel) ago", symbol: "sun.max.fill")
                             Image(systemName: "arrow.right")
-                                .foregroundStyle(TimelyUNATheme.accent)
+                                .foregroundStyle(TimelyUNATheme.goldDeep)
                                 .padding(.top, 30)
                             if showActual {
                                 PositionBadge(title: "ACTUAL NOW", detail: "Already ahead", symbol: "scope")
                             }
                         }
 
-                        Text("At sunrise, we see the past. The true Sun is already ahead.")
+                        Text("At sunrise, we see the past. The true Sun is already ahead by roughly one photon delay.")
                             .font(TimelyUNATheme.subheadingFont)
                             .foregroundStyle(TimelyUNATheme.papyrus)
                             .multilineTextAlignment(.center)
@@ -240,12 +269,10 @@ private struct DawnExperienceView: View {
                 }
 
                 CosmicCard {
-                    Text("A black hole is a star so bright it forgot to let go of its light.")
+                    Text("Every Dawn is already history.")
                         .font(TimelyUNATheme.subheadingFont)
-                        .foregroundStyle(TimelyUNATheme.papyrus)
+                        .foregroundStyle(TimelyUNATheme.gold)
                         .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(.horizontal, 16)
@@ -329,9 +356,14 @@ private struct PlanetFinderView: View {
                             .lineSpacing(4)
                             .fixedSize(horizontal: false, vertical: true)
 
+                        Text("Educational interface. Precision sky placement requires a trusted ephemeris.")
+                            .font(TimelyUNATheme.captionFont)
+                            .foregroundStyle(TimelyUNATheme.muted)
+                            .multilineTextAlignment(.center)
+
                         Toggle("Show Actual Now", isOn: $showActual)
                             .font(TimelyUNATheme.bodyFont)
-                            .tint(TimelyUNATheme.accent)
+                            .tint(TimelyUNATheme.acid)
                     }
                 }
             }
@@ -350,7 +382,13 @@ private struct SkyPositionCanvas: View {
         GeometryReader { proxy in
             ZStack {
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(LinearGradient(colors: [.indigo.opacity(0.28), .black], startPoint: .top, endPoint: .bottom))
+                    .fill(
+                        LinearGradient(
+                            colors: [TimelyUNATheme.cosmicPurple.opacity(0.28), .black],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
 
                 ForEach(0..<28, id: \.self) { index in
                     Circle()
@@ -368,7 +406,7 @@ private struct SkyPositionCanvas: View {
                             .font(TimelyUNATheme.captionFont)
                         Spacer()
                     }
-                    .foregroundStyle(TimelyUNATheme.accent)
+                    .foregroundStyle(TimelyUNATheme.goldDeep)
                     .padding()
                     Spacer()
                 }
@@ -381,7 +419,7 @@ private struct SkyPositionCanvas: View {
                         path.move(to: CGPoint(x: proxy.size.width * 0.42, y: proxy.size.height * 0.55))
                         path.addLine(to: CGPoint(x: proxy.size.width * 0.69, y: proxy.size.height * 0.40))
                     }
-                    .stroke(TimelyUNATheme.accent, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
+                    .stroke(TimelyUNATheme.acid, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
 
                     PositionMarker(title: "ACTUAL NOW", symbol: "scope", filled: false)
                         .position(x: proxy.size.width * 0.72, y: proxy.size.height * 0.38)
@@ -401,10 +439,10 @@ private struct PositionMarker: View {
     var body: some View {
         VStack(spacing: 5) {
             ZStack {
-                Circle().stroke(TimelyUNATheme.accent, lineWidth: 2).frame(width: 56, height: 56)
+                Circle().stroke(TimelyUNATheme.acid, lineWidth: 2).frame(width: 56, height: 56)
                 Image(systemName: symbol)
                     .font(.system(size: 27, weight: .light))
-                    .foregroundStyle(filled ? TimelyUNATheme.papyrus : TimelyUNATheme.accent)
+                    .foregroundStyle(filled ? TimelyUNATheme.papyrus : TimelyUNATheme.acid)
             }
             Text(title)
                 .font(TimelyUNATheme.smallCaptionFont)
@@ -420,6 +458,7 @@ private struct XSkyJumpView: View {
     @State private var target: TargetWorld = .earth
     @State private var jumping = false
     @State private var starStretch = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ScrollView {
@@ -428,7 +467,7 @@ private struct XSkyJumpView: View {
                     VStack(spacing: 16) {
                         Text("xSky Jump")
                             .font(TimelyUNATheme.titleFont)
-                            .foregroundStyle(TimelyUNATheme.accent)
+                            .foregroundStyle(TimelyUNATheme.acid)
 
                         Text("Jump the observer. Change the sky.")
                             .font(TimelyUNATheme.subheadingFont)
@@ -447,8 +486,8 @@ private struct XSkyJumpView: View {
 
                             Image(systemName: observer.symbol)
                                 .font(.system(size: 96, weight: .thin))
-                                .foregroundStyle(observer == .earth ? .cyan : .orange)
-                                .shadow(color: TimelyUNATheme.accent.opacity(0.55), radius: 18)
+                                .foregroundStyle(observer == .earth ? TimelyUNATheme.blue : TimelyUNATheme.mars)
+                                .shadow(color: TimelyUNATheme.acid.opacity(0.45), radius: 18)
                                 .scaleEffect(jumping ? 0.18 : 1)
                                 .opacity(jumping ? 0.18 : 1)
                         }
@@ -482,7 +521,7 @@ private struct XSkyJumpView: View {
                         VStack(spacing: 15) {
                             Text("MARTIAN SKY: LOOK INWARD")
                                 .font(TimelyUNATheme.headlineFont)
-                                .foregroundStyle(TimelyUNATheme.accent)
+                                .foregroundStyle(TimelyUNATheme.acid)
                                 .multilineTextAlignment(.center)
 
                             Picker("World", selection: $target) {
@@ -514,15 +553,18 @@ private struct XSkyJumpView: View {
     }
 
     private func performJump() {
+        if reduceMotion {
+            observer = observer == .earth ? .mars : .earth
+            target = observer == .mars ? .earth : .mars
+            return
+        }
         withAnimation(.easeIn(duration: 0.25)) {
             jumping = true
             starStretch = true
         }
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.72) {
             observer = observer == .earth ? .mars : .earth
             target = observer == .mars ? .earth : .mars
-
             withAnimation(.spring(response: 0.65, dampingFraction: 0.72)) {
                 jumping = false
                 starStretch = false
@@ -535,11 +577,12 @@ private struct ScienceLiteracyView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                FactCard(title: "The Sun", text: "Sunlight reaches Earth in about 8 minutes 19 seconds.")
+                FactCard(title: "The Sun", text: "Sunlight reaches Earth after a delay set by today’s Earth–Sun distance—typically about eight minutes.")
                 FactCard(title: "Visible Now", text: "Where arriving light tells you to look.")
                 FactCard(title: "Actual Now", text: "The object's modeled present location after accounting for light-travel delay.")
                 FactCard(title: "xSky Jump", text: "Change the observer and the entire sky changes with it.")
                 FactCard(title: "Mars Perspective", text: "From Mars, Earth becomes a wandering planet. Venus and Mercury occupy a different geometry.")
+                FactCard(title: "Educational boundary", text: "True Horizon calculations are educational estimates—not navigation-grade results.")
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 30)
@@ -556,7 +599,7 @@ private struct FactCard: View {
             VStack(spacing: 8) {
                 Text(title)
                     .font(TimelyUNATheme.sectionFont)
-                    .foregroundStyle(TimelyUNATheme.accent)
+                    .foregroundStyle(TimelyUNATheme.acid)
                 Text(text)
                     .font(TimelyUNATheme.bodyFont)
                     .foregroundStyle(TimelyUNATheme.papyrus)
@@ -591,29 +634,35 @@ private struct PositionBadge: View {
     }
 }
 
-private struct CosmicCard<Content: View>: View {
+struct CosmicCard<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
         content
             .padding(18)
             .frame(maxWidth: .infinity)
-            .background(TimelyUNATheme.panel.opacity(0.9), in: RoundedRectangle(cornerRadius: 24))
-            .overlay(RoundedRectangle(cornerRadius: 24).stroke(TimelyUNATheme.accent.opacity(0.7)))
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color.black.opacity(0.55))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(TimelyUNATheme.line, lineWidth: 1)
+                    )
+            )
     }
 }
 
-private struct CosmicButtonStyle: ButtonStyle {
+struct CosmicButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(TimelyUNATheme.buttonFont)
-            .foregroundStyle(.black)
+            .foregroundStyle(TimelyUNATheme.ink)
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 12)
             .padding(.vertical, 13)
-            .background(TimelyUNATheme.accent.opacity(configuration.isPressed ? 0.72 : 1), in: RoundedRectangle(cornerRadius: 17))
+            .background(TimelyUNATheme.acid.opacity(configuration.isPressed ? 0.72 : 1), in: RoundedRectangle(cornerRadius: 17))
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
     }
 }

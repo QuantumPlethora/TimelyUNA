@@ -41,7 +41,8 @@ final class SimulationState: ObservableObject {
                 self?.showRocketHit = true
                 self?.isRocketFlying = false
             }
-            try? await Task.sleep(nanoseconds: 2_500_000_000)
+            // Hold the hit state long enough to read “reality corrected” in the ritual sky.
+            try? await Task.sleep(nanoseconds: 3_200_000_000)
             await MainActor.run {
                 self?.showRocketHit = false
                 self?.rocketProgress = 0

@@ -1,18 +1,42 @@
 import SwiftUI
 
-/// TimelyUNA's shared palette and semantic Papyrus typography.
+/// True Horizon / TimelyUNA shared palette and Papyrus typography.
+/// Palette mirrors macsafedevelopersapple.io: black, warm cream, electric yellow-green, orange, cosmic purple.
 enum TimelyUNATheme {
-    static let background = Color(red: 0.039, green: 0.039, blue: 0.059)
-    static let papyrus = Color(red: 0.961, green: 0.910, blue: 0.780)
-    static let gold = Color(red: 0.957, green: 0.851, blue: 0.627)
-    static let accent = Color(red: 0.788, green: 0.643, blue: 0.431)
+    // MARK: Surfaces
+    static let background = Color(red: 0.027, green: 0.035, blue: 0.071) // #070912
+    static let backgroundDeep = Color.black
+    static let panel = Color(red: 0.067, green: 0.078, blue: 0.125).opacity(0.92) // #111420
+    static let panelWarm = Color(red: 0.098, green: 0.098, blue: 0.082) // ritual #191915
+    static let ritualSky = Color(red: 0.071, green: 0.071, blue: 0.059) // #12120f
+
+    // MARK: Type colors
+    static let papyrus = Color(red: 0.973, green: 0.929, blue: 0.812) // #f8edcf
+    static let cream = Color(red: 0.949, green: 0.937, blue: 0.902) // #f2efe6
+    static let muted = Color(red: 0.788, green: 0.745, blue: 0.639) // #c9bea3
+    static let ink = Color(red: 0.090, green: 0.090, blue: 0.075)
+
+    // MARK: Accents
+    static let gold = Color(red: 0.957, green: 0.851, blue: 0.624) // #f4d99f
+    static let goldDeep = Color(red: 0.835, green: 0.682, blue: 0.412) // #d5ae69
+    static let accent = goldDeep
     static let accentMuted = Color(red: 0.545, green: 0.435, blue: 0.278)
-    static let panel = Color(red: 0.118, green: 0.098, blue: 0.078).opacity(0.92)
+    static let acid = Color(red: 0.851, green: 1.0, blue: 0.263) // #d9ff43 electric yellow-green
+    static let orange = Color(red: 1.0, green: 0.420, blue: 0.208) // #ff6b35
+    static let cosmicPurple = Color(red: 0.514, green: 0.404, blue: 0.910) // #8367e8
+    static let blue = Color(red: 0.471, green: 0.741, blue: 0.910) // #78bde8
+    static let mars = Color(red: 0.867, green: 0.459, blue: 0.290) // #dd754a
+
+    // MARK: Sun markers
     static let apparentSun = Color(red: 1.0, green: 0.667, blue: 0.2)
-    static let actualSun = Color(red: 1.0, green: 0.8, blue: 0.4)
+    static let actualSun = acid
     static let earthBlue = Color(red: 0.227, green: 0.482, blue: 0.835)
     static let earthGreen = Color(red: 0.165, green: 0.353, blue: 0.165)
 
+    // MARK: Lines
+    static let line = goldDeep.opacity(0.42)
+
+    // MARK: Papyrus type scale
     static let displayFont = Font.custom("Papyrus", size: 40, relativeTo: .largeTitle)
     static let titleFont = Font.custom("Papyrus", size: 32, relativeTo: .largeTitle)
     static let sectionFont = Font.custom("Papyrus", size: 24, relativeTo: .title2)
@@ -23,4 +47,6 @@ enum TimelyUNATheme {
     static let captionFont = Font.custom("Papyrus", size: 13, relativeTo: .caption)
     static let smallCaptionFont = Font.custom("Papyrus", size: 11, relativeTo: .caption2)
     static let buttonFont = Font.custom("Papyrus", size: 18, relativeTo: .headline)
+    static let metricFont = Font.custom("Papyrus", size: 28, relativeTo: .title)
+    static let heroMetricFont = Font.custom("Papyrus", size: 42, relativeTo: .largeTitle)
 }

@@ -1,10 +1,10 @@
 import Foundation
 
 /// Educational constants for the light-time sextant demo.
-/// Values are illustrative for the interactive proof of concept.
+/// Dynamic distance/delay live in `SolarEngine`; these remain as mean-value labels for static UI copy.
 enum LightTimeConstants {
     /// Mean light travel time from the Sun to Earth (~AU / c).
-    static let sunLightTravelSeconds: Double = 499.0 // 8 min 19 s
+    static let sunLightTravelSeconds: Double = SolarEngine.lightSecondsPerAU // ~8 min 19 s
 
     static var sunLightTravelDescription: String {
         let minutes = Int(sunLightTravelSeconds) / 60
