@@ -7,6 +7,7 @@ struct ContentView: View {
     @StateObject private var clock = HorizonClock()
     @StateObject private var sunriseReminder = SunriseReminderService()
     @State private var selectedTab: AppTab = .horizon
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     enum AppTab: String, CaseIterable, Identifiable {
         case horizon = "Horizon"
@@ -34,40 +35,23 @@ struct ContentView: View {
         }
     }
 
+    /// Compact phones use bottom tabs; Mac and regular-width iPad keep the top horizontal bar.
+    private var usesBottomTabs: Bool {
+        #if os(iOS)
+        horizontalSizeClass == .compact
+        #else
+        false
+        #endif
+    }
+
     var body: some View {
         ZStack {
             CosmicBackground()
 
-            VStack(spacing: 0) {
-                // Horizon owns its chrome; other tabs keep a compact header.
-                if selectedTab != .horizon {
-                    CompactHeader()
-                        .transition(.opacity)
-                }
-
-                CosmicTabBar(selection: $selectedTab)
-
-                Group {
-                    switch selectedTab {
-                    case .horizon:
-                        TrueHorizonView()
-                    case .dawn:
-                        DawnExperienceView()
-                    case .finder:
-                        PlanetFinderView()
-                    case .jump:
-                        XSkyJumpView()
-                    case .sextant:
-                        NavigationStack { SunSextantView() }
-                    case .cosmos:
-                        NavigationStack { ChronosModeView() }
-                    case .learn:
-                        ScienceLiteracyView()
-                    case .about:
-                        NavigationStack { AboutView() }
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if usesBottomTabs {
+                compactPhoneShell
+            } else {
+                wideShell
             }
         }
         .environmentObject(simulation)
@@ -79,11 +63,74 @@ struct ContentView: View {
         .tint(TimelyUNATheme.gold)
         .preferredColorScheme(.dark)
         .animation(.easeInOut(duration: 0.24), value: selectedTab)
+        .animation(.easeInOut(duration: 0.2), value: usesBottomTabs)
         .onAppear {
             clock.start()
             Task { await sunriseReminder.refreshStatus() }
         }
         .onDisappear { clock.stop() }
+    }
+
+    // MARK: - Mac / iPad (regular width)
+
+    private var wideShell: some View {
+        VStack(spacing: 0) {
+            if selectedTab != .horizon {
+                CompactHeader()
+                    .transition(.opacity)
+            }
+
+            CosmicTabBar(selection: $selectedTab, compact: false)
+
+            tabContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    // MARK: - iPhone compact
+
+    private var compactPhoneShell: some View {
+        VStack(spacing: 0) {
+            if selectedTab != .horizon {
+                CompactHeader()
+            }
+
+            tabContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            CosmicTabBar(selection: $selectedTab, compact: true)
+                .background(
+                    LinearGradient(
+                        colors: [Color.black.opacity(0.15), Color.black.opacity(0.75)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea(edges: .bottom)
+                )
+        }
+    }
+
+    @ViewBuilder
+    private var tabContent: some View {
+        switch selectedTab {
+        case .horizon:
+            TrueHorizonView()
+        case .dawn:
+            DawnExperienceView()
+        case .finder:
+            PlanetFinderView()
+        case .jump:
+            XSkyJumpView()
+        case .sextant:
+            NavigationStack { SunSextantView() }
+        case .cosmos:
+            NavigationStack { ChronosModeView() }
+        case .learn:
+            ScienceLiteracyView()
+        case .about:
+            NavigationStack { AboutView() }
+        }
     }
 }
 
@@ -175,23 +222,29 @@ private struct CompactHeader: View {
 
 private struct CosmicTabBar: View {
     @Binding var selection: ContentView.AppTab
+    /// Bottom bar on compact iPhone; top bar on Mac / iPad regular.
+    var compact: Bool = false
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 2) {
+            HStack(spacing: compact ? 4 : 2) {
                 ForEach(ContentView.AppTab.allCases) { tab in
                     Button {
                         selection = tab
                     } label: {
                         VStack(spacing: 3) {
                             Image(systemName: tab.symbol)
-                                .font(.body)
+                                .font(compact ? .body.weight(.semibold) : .body)
+                                .frame(height: 22)
                             Text(tab.rawValue)
                                 .font(TimelyUNATheme.captionFont)
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.75)
                         }
                         .foregroundStyle(selection == tab ? TimelyUNATheme.papyrus : TimelyUNATheme.muted)
-                        .frame(width: 66, height: 50)
+                        .frame(minWidth: compact ? 58 : 66, minHeight: 44)
+                        .frame(width: compact ? nil : 66, height: compact ? 52 : 50)
+                        .padding(.horizontal, compact ? 4 : 0)
                         .background(
                             selection == tab ? TimelyUNATheme.acid.opacity(0.18) : .clear,
                             in: RoundedRectangle(cornerRadius: 15)
@@ -202,6 +255,7 @@ private struct CosmicTabBar: View {
                                     .stroke(TimelyUNATheme.acid.opacity(0.45), lineWidth: 1)
                             }
                         }
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(tab.rawValue)
@@ -210,11 +264,14 @@ private struct CosmicTabBar: View {
             }
             .padding(4)
         }
-        .background(Color.black.opacity(0.45), in: RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(TimelyUNATheme.line, lineWidth: 1))
-        .padding(.horizontal, 14)
-        .padding(.bottom, 4)
-        .padding(.top, 8)
+        .background(Color.black.opacity(0.55), in: RoundedRectangle(cornerRadius: compact ? 22 : 20))
+        .overlay(RoundedRectangle(cornerRadius: compact ? 22 : 20).stroke(TimelyUNATheme.line, lineWidth: 1))
+        .padding(.horizontal, compact ? 10 : 14)
+        .padding(.top, compact ? 6 : 8)
+        .padding(.bottom, compact ? 10 : 4)
+        .background(compact ? Color.black.opacity(0.35) : Color.clear)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(compact ? "Main navigation, bottom" : "Main navigation")
     }
 }
 

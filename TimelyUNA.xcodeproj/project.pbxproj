@@ -51,7 +51,7 @@
 		A1B2C3D4E5F60718293F0005 /* TrueHorizonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrueHorizonView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293F0007 /* SunriseReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunriseReminderService.swift; sourceTree = "<group>"; };
 		A219F1BF0F004D31B0999F03 /* SimulationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationState.swift; sourceTree = "<group>"; };
-		AED3AF2E7FC1418187E00AAE /* TimelyUNA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimelyUNA.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AED3AF2E7FC1418187E00AAE /* True Horizon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "True Horizon.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1BA77E9A9C745A9B8CEFAF3 /* TimelyUNAApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelyUNAApp.swift; sourceTree = "<group>"; };
 		BF428BF3B1394AB6927D5FAC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CE6A45433D5E4AF89E89C591 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -89,7 +89,7 @@
 		7E7975BB40B94B70947CF317 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AED3AF2E7FC1418187E00AAE /* TimelyUNA.app */,
+				AED3AF2E7FC1418187E00AAE /* True Horizon.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -172,7 +172,7 @@
 			);
 			name = TimelyUNA;
 			productName = TimelyUNA;
-			productReference = AED3AF2E7FC1418187E00AAE /* TimelyUNA.app */;
+			productReference = AED3AF2E7FC1418187E00AAE /* True Horizon.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -269,8 +269,8 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_NSCameraUsageDescription = "True Horizon uses the camera for AR light-time navigation: place the Sun proxy and launch the Baby X rocket toward its true position.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © QuantumPlethora. All rights reserved.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
 				INFOPLIST_KEY_NSLocationUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -341,8 +341,8 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_NSCameraUsageDescription = "True Horizon uses the camera for AR light-time navigation: place the Sun proxy and launch the Baby X rocket toward its true position.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © QuantumPlethora. All rights reserved.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
 				INFOPLIST_KEY_NSLocationUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

@@ -19,21 +19,38 @@ struct TrueHorizonView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let wide = geo.size.width >= 820
-            let pad = geo.size.width > 1000 ? 32.0 : (geo.size.width > 600 ? 22.0 : 14.0)
+            let contentWidth = max(0, geo.size.width)
+            let wide = contentWidth >= 820 && horizontalSizeClass != .compact
+            let narrow = contentWidth < 520 || horizontalSizeClass == .compact
+            let pad: CGFloat = {
+                if contentWidth > 1000 { return 32 }
+                if contentWidth > 700 { return 22 }
+                if contentWidth > 400 { return 16 }
+                return 12
+            }()
+            // Stage scales with width; never wider than available content, avoid clipping labels.
+            let stageHeight: CGFloat = {
+                if wide { return min(360, contentWidth * 0.38) }
+                if narrow {
+                    let h = contentWidth * 0.72
+                    return min(300, max(200, h))
+                }
+                return min(320, max(240, contentWidth * 0.48))
+            }()
 
             ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 0) {
-                    topChrome(wide: wide)
+                    topChrome(wide: wide, narrow: narrow)
                         .padding(.horizontal, pad)
                         .padding(.top, 6)
 
-                    observerStrip
+                    observerStrip(narrow: narrow)
                         .padding(.horizontal, pad)
                         .padding(.top, 14)
 
                     // Central story — full width
-                    solarStage(height: wide ? 360 : min(320, max(240, geo.size.width * 0.55)))
+                    solarStage(height: stageHeight)
+                        .frame(maxWidth: .infinity)
                         .padding(.horizontal, pad)
                         .padding(.top, 18)
 
@@ -54,14 +71,20 @@ struct TrueHorizonView: View {
                     footerActions
                         .padding(.horizontal, pad)
                         .padding(.top, 18)
-                        .padding(.bottom, 48)
+                        // Extra bottom inset so last ritual/share controls clear the compact tab bar
+                        // and home indicator when scrolling to end.
+                        .padding(.bottom, narrow ? 96 : 56)
                 }
                 .frame(maxWidth: 1180)
                 .frame(maxWidth: .infinity)
             }
+            .frame(width: contentWidth)
+            .scrollIndicators(.visible)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             persistence.reload()
+            location.resumeIfAuthorized()
             recomputeSolar()
             startMotion()
             Task { await sunriseReminder.refreshStatus() }
@@ -102,31 +125,42 @@ struct TrueHorizonView: View {
 
     // MARK: - Top
 
-    private func topChrome(wide: Bool) -> some View {
-        HStack(alignment: .top, spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("01 · DAILY RITUAL · TRUE HORIZON")
-                    .font(TimelyUNATheme.captionFont)
-                    .tracking(2.4)
-                    .foregroundStyle(TimelyUNATheme.goldDeep)
+    private func topChrome(wide: Bool, narrow: Bool) -> some View {
+        let titleBlock = VStack(alignment: .leading, spacing: 8) {
+            Text("01 · DAILY RITUAL · TRUE HORIZON")
+                .font(TimelyUNATheme.captionFont)
+                .tracking(narrow ? 1.4 : 2.4)
+                .foregroundStyle(TimelyUNATheme.goldDeep)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
 
-                Text("See the Sun where it truly is.")
-                    .font(wide ? TimelyUNATheme.displayFont : TimelyUNATheme.titleFont)
-                    .foregroundStyle(TimelyUNATheme.gold)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityAddTraits(.isHeader)
+            Text("See the Sun where it truly is.")
+                .font(wide ? TimelyUNATheme.displayFont : (narrow ? TimelyUNATheme.sectionFont : TimelyUNATheme.titleFont))
+                .foregroundStyle(TimelyUNATheme.gold)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
 
-                Text("Light takes a calculated delay—driven by today’s Earth–Sun distance—to reach your eyes.")
-                    .font(TimelyUNATheme.bodyFont)
-                    .foregroundStyle(TimelyUNATheme.muted)
-                    .lineSpacing(3)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: 640, alignment: .leading)
+            Text("Light takes a calculated delay—driven by today’s Earth–Sun distance—to reach your eyes.")
+                .font(TimelyUNATheme.bodyFont)
+                .foregroundStyle(TimelyUNATheme.muted)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: 640, alignment: .leading)
+        }
+
+        return Group {
+            if narrow {
+                VStack(alignment: .leading, spacing: 12) {
+                    titleBlock
+                    streakBadge
+                }
+            } else {
+                HStack(alignment: .top, spacing: 16) {
+                    titleBlock
+                    Spacer(minLength: 8)
+                    streakBadge
+                }
             }
-
-            Spacer(minLength: 8)
-
-            streakBadge
         }
     }
 
@@ -163,45 +197,66 @@ struct TrueHorizonView: View {
 
     // MARK: - Observer (thin strip — not a gray card)
 
-    private var observerStrip: some View {
+    private func observerStrip(narrow: Bool) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 0) {
+            // Narrow / compact: always stack so date, time, coords, source never overflow.
+            if narrow {
+                VStack(alignment: .leading, spacing: 10) {
                     stripCell("DATE", clock.now.formatted(date: .complete, time: .omitted))
-                    stripDivider
                     stripCell("TIME", clock.now.formatted(date: .omitted, time: .standard))
-                    stripDivider
                     stripCell("COORDS", location.coordinateLabel)
-                    stripDivider
                     stripCell("SOURCE", location.sourceBadge)
                 }
-                VStack(alignment: .leading, spacing: 8) {
-                    stripCell("DATE", clock.now.formatted(date: .complete, time: .omitted))
-                    stripCell("TIME", clock.now.formatted(date: .omitted, time: .standard))
-                    stripCell("COORDS", location.coordinateLabel)
-                    stripCell("SOURCE", location.sourceBadge)
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 0) {
+                        stripCell("DATE", clock.now.formatted(date: .complete, time: .omitted))
+                        stripDivider
+                        stripCell("TIME", clock.now.formatted(date: .omitted, time: .standard))
+                        stripDivider
+                        stripCell("COORDS", location.coordinateLabel)
+                        stripDivider
+                        stripCell("SOURCE", location.sourceBadge)
+                    }
+                    VStack(alignment: .leading, spacing: 10) {
+                        stripCell("DATE", clock.now.formatted(date: .complete, time: .omitted))
+                        stripCell("TIME", clock.now.formatted(date: .omitted, time: .standard))
+                        stripCell("COORDS", location.coordinateLabel)
+                        stripCell("SOURCE", location.sourceBadge)
+                    }
                 }
             }
 
             if !location.hasLiveCoordinates {
                 locationPrompt
             } else {
-                HStack(spacing: 12) {
-                    Text(location.statusMessage)
-                        .font(TimelyUNATheme.captionFont)
-                        .foregroundStyle(TimelyUNATheme.acid)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) {
+                        Text(location.statusMessage)
+                            .font(TimelyUNATheme.captionFont)
+                            .foregroundStyle(TimelyUNATheme.acid)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true)
 
-                    Spacer(minLength: 8)
+                        Spacer(minLength: 8)
 
-                    locationButton
+                        locationButton
+                    }
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(location.statusMessage)
+                            .font(TimelyUNATheme.captionFont)
+                            .foregroundStyle(TimelyUNATheme.acid)
+                            .fixedSize(horizontal: false, vertical: true)
+                        locationButton
+                    }
                 }
             }
 
             Text("Educational visualization · not for navigation, surveying, or safety-critical astronomy.")
                 .font(TimelyUNATheme.smallCaptionFont)
                 .foregroundStyle(TimelyUNATheme.muted.opacity(0.9))
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.vertical, 12)
         .overlay(alignment: .top) {
@@ -226,22 +281,14 @@ struct TrueHorizonView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            HStack(spacing: 10) {
-                locationButton
-
-                if location.needsSettings {
-                    Button {
-                        location.openSystemLocationSettings()
-                    } label: {
-                        Text("How to enable")
-                            .font(TimelyUNATheme.captionFont)
-                            .foregroundStyle(TimelyUNATheme.acid)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 9)
-                            .overlay(Capsule().stroke(TimelyUNATheme.acid.opacity(0.6), lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityHint("Opens System Settings for Location Services")
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    locationButton
+                    if location.needsSettings { howToEnableButton }
+                }
+                VStack(alignment: .leading, spacing: 10) {
+                    locationButton
+                    if location.needsSettings { howToEnableButton }
                 }
             }
         }
@@ -253,6 +300,22 @@ struct TrueHorizonView: View {
                 .background(Color.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         )
         .accessibilityElement(children: .contain)
+    }
+
+    private var howToEnableButton: some View {
+        Button {
+            location.openSystemLocationSettings()
+        } label: {
+            Text("How to enable")
+                .font(TimelyUNATheme.captionFont)
+                .foregroundStyle(TimelyUNATheme.acid)
+                .frame(minHeight: 44)
+                .padding(.horizontal, 14)
+                .overlay(Capsule().stroke(TimelyUNATheme.acid.opacity(0.6), lineWidth: 1))
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Opens Settings for Location Services")
     }
 
     private var locationButton: some View {
@@ -269,14 +332,18 @@ struct TrueHorizonView: View {
                 Image(systemName: location.hasLiveCoordinates ? "location.fill" : "location")
                 Text(location.actionButtonTitle)
                     .font(TimelyUNATheme.calloutFont)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
             }
             .foregroundStyle(TimelyUNATheme.ink)
             .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .frame(minHeight: 44)
             .background(
                 location.source == .requesting ? TimelyUNATheme.muted : TimelyUNATheme.gold,
                 in: Capsule()
             )
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
         .disabled(location.source == .requesting)
@@ -337,28 +404,35 @@ struct TrueHorizonView: View {
 
             // Corner labels (editorial, not cards)
             VStack {
-                HStack {
+                HStack(alignment: .top, spacing: 8) {
                     Text("ARRIVING LIGHT")
                         .font(TimelyUNATheme.smallCaptionFont)
-                        .tracking(2)
+                        .tracking(1.4)
                         .foregroundStyle(TimelyUNATheme.muted)
-                    Spacer()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    Spacer(minLength: 4)
                     if let snapshot {
                         Text("☉ \(SolarFormat.lightDelayCompact(snapshot.lightTimeSeconds)) DELAY")
                             .font(TimelyUNATheme.captionFont)
-                            .tracking(1.2)
+                            .tracking(1.0)
                             .foregroundStyle(TimelyUNATheme.acid)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                     } else {
                         Text("LOCATION REQUIRED")
                             .font(TimelyUNATheme.captionFont)
-                            .tracking(1.2)
+                            .tracking(1.0)
                             .foregroundStyle(TimelyUNATheme.orange)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                     }
                 }
-                .padding(16)
+                .padding(12)
                 Spacer()
             }
         }
+        .frame(maxWidth: .infinity)
         .frame(height: height)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
@@ -966,15 +1040,20 @@ struct TrueHorizonView: View {
                     }
                     Text(persistence.ritualCompleteToday ? "TODAY’S LAUNCH COMPLETE" : "LAUNCH & CORRECT REALITY")
                         .font(TimelyUNATheme.captionFont)
-                        .tracking(1.4)
+                        .tracking(1.2)
                         .foregroundStyle(TimelyUNATheme.ink)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.75)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 15)
+                .padding(.horizontal, 12)
+                .frame(minHeight: 48)
                 .background(
                     persistence.ritualCompleteToday ? Color.white : TimelyUNATheme.acid,
                     in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                 )
+                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
             .disabled(persistence.ritualCompleteToday || simulation.isRocketFlying)
@@ -1061,43 +1140,23 @@ struct TrueHorizonView: View {
                 }
 
                 // Quiet reminder — authorization + scheduling
-                HStack(spacing: 12) {
-                    Button {
-                        Task {
-                            if sunriseReminder.isScheduled || persistence.sunriseReminderArmed {
-                                await sunriseReminder.disarm(persistence: persistence)
-                                showToast("Sunrise reminder off")
-                            } else {
-                                await sunriseReminder.armQuietReminder(
-                                    trueSunrise: pair.trueSun,
-                                    persistence: persistence
-                                )
-                                showToast(sunriseReminder.statusMessage)
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: sunriseReminder.isScheduled ? "bell.fill" : "bell")
-                            Text(sunriseReminder.isScheduled ? "Reminder armed" : "Set a quiet reminder")
-                                .font(TimelyUNATheme.calloutFont)
-                        }
-                        .foregroundStyle(TimelyUNATheme.ink)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(
-                            sunriseReminder.isScheduled ? TimelyUNATheme.acid : TimelyUNATheme.gold,
-                            in: Capsule()
-                        )
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) {
+                        reminderButton(trueSunrise: pair.trueSun)
+                        Text(sunriseReminder.statusMessage)
+                            .font(TimelyUNATheme.captionFont)
+                            .foregroundStyle(TimelyUNATheme.muted)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(pair.trueSun == nil)
-                    .accessibilityHint("Requests notification permission and schedules a quiet alert near true sunrise")
-
-                    Text(sunriseReminder.statusMessage)
-                        .font(TimelyUNATheme.captionFont)
-                        .foregroundStyle(TimelyUNATheme.muted)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
+                    VStack(alignment: .leading, spacing: 10) {
+                        reminderButton(trueSunrise: pair.trueSun)
+                        Text(sunriseReminder.statusMessage)
+                            .font(TimelyUNATheme.captionFont)
+                            .foregroundStyle(TimelyUNATheme.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             } else {
                 Text("Visible and true sunrise require a live location fix for your horizon.")
@@ -1126,10 +1185,47 @@ struct TrueHorizonView: View {
             Text(detail)
                 .font(TimelyUNATheme.captionFont)
                 .foregroundStyle(TimelyUNATheme.muted)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title): \(value). \(detail)")
+    }
+
+    private func reminderButton(trueSunrise: Date?) -> some View {
+        Button {
+            Task {
+                if sunriseReminder.isScheduled || persistence.sunriseReminderArmed {
+                    await sunriseReminder.disarm(persistence: persistence)
+                    showToast("Sunrise reminder off")
+                } else {
+                    await sunriseReminder.armQuietReminder(
+                        trueSunrise: trueSunrise,
+                        persistence: persistence
+                    )
+                    showToast(sunriseReminder.statusMessage)
+                }
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: sunriseReminder.isScheduled ? "bell.fill" : "bell")
+                Text(sunriseReminder.isScheduled ? "Reminder armed" : "Set a quiet reminder")
+                    .font(TimelyUNATheme.calloutFont)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+            }
+            .foregroundStyle(TimelyUNATheme.ink)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 44)
+            .background(
+                sunriseReminder.isScheduled ? TimelyUNATheme.acid : TimelyUNATheme.gold,
+                in: Capsule()
+            )
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(trueSunrise == nil)
+        .accessibilityHint("Requests notification permission and schedules a quiet alert near true sunrise")
     }
 
     // MARK: - Footer
@@ -1144,11 +1240,12 @@ struct TrueHorizonView: View {
                 }
                 .foregroundStyle(TimelyUNATheme.gold)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
+                .frame(minHeight: 48)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .stroke(TimelyUNATheme.line, lineWidth: 1)
                 )
+                .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
             .buttonStyle(.plain)
             .accessibilityHint("Opens the system share sheet")

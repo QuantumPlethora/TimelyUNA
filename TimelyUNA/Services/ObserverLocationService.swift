@@ -52,6 +52,19 @@ final class ObserverLocationService: NSObject, ObservableObject {
         manager.desiredAccuracy = kCLLocationAccuracyKilometer
         manager.distanceFilter = 500
         syncAuthorizationFromSystem()
+        // If permission was already granted (e.g. prior launch or simctl privacy grant),
+        // start a live fix without requiring another button press.
+        resumeIfAuthorized()
+    }
+
+    /// Begin updates when the system already authorized location.
+    func resumeIfAuthorized() {
+        switch manager.authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse:
+            beginUpdates()
+        default:
+            break
+        }
     }
 
     /// True only when we hold a live GPS fix.
@@ -110,9 +123,17 @@ final class ObserverLocationService: NSObject, ObservableObject {
         case .requesting:
             return "Waiting for permission or the first GPS fix…"
         case .denied:
+            #if os(iOS)
+            return "Location access is off for True Horizon. Open Settings → Privacy & Security → Location Services, enable True Horizon, then return and tap Refresh."
+            #else
             return "Location access is off for True Horizon. Open System Settings → Privacy & Security → Location Services, enable True Horizon, then return and refresh."
+            #endif
         case .unavailable:
+            #if os(iOS)
+            return "Location Services appear to be off. Enable them in the Settings app, then try again."
+            #else
             return "Location Services appear to be off. Enable them in System Settings, then try again."
+            #endif
         case .fixFailed:
             return "Could not get a fix. Check that Location Services are on, then try again."
         case .liveGPS:
