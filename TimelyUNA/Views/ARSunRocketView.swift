@@ -416,6 +416,14 @@ struct ARSunRocketView: View {
                 onCameraUnauthorized: { [arTeardown] in
                     guard arTeardown.presentationAlive else { return }
                     cameraDenied = true
+                },
+                onARIgnitionResult: { [arTeardown] ok, message in
+                    guard arTeardown.presentationAlive else { return }
+                    if ok {
+                        launch.noteARIgnitionSucceeded()
+                    } else {
+                        launch.abortFailedLaunch(message: message ?? "Could not lock launch direction.")
+                    }
                 }
             )
             .ignoresSafeArea()
@@ -1268,32 +1276,37 @@ struct ARSunRocketView: View {
     /// Charge → ignition → flight toward Actual Now (AR or 2D). Never silent-fail.
     private func beginBabyXLaunch() {
         guard !isShuttingDown, !isClosing, arTeardown.presentationAlive else { return }
-        #if canImport(UIKit)
-        UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.55)
-        #endif
 
         // Block only when we have no usable direction yet (not merely limited heading).
         let noDirectionYet = !useTwoD && displayPair == nil
         let hardTrackingBlock = !useTwoD && calibration.quality == .unavailable
 
         if noDirectionYet {
-            launch.blockMessage = "Calibrating direction…"
+            launch.blockMessage = "Calibrating direction… Wait for sky placement."
+            #if canImport(UIKit)
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            #endif
             return
         }
 
         let inFront: Bool? = useTwoD ? true : actualTargetInFront
         let bridge = arTeardown
+        let needsAR = !useTwoD
 
-        _ = launch.requestLaunch(
+        let started = launch.requestLaunch(
             showActualNow: showActualPosition,
             hasDisplayPair: displayPair != nil,
             targetInFront: inFront,
             trackingLimited: hardTrackingBlock,
             reduceMotion: reduceMotion,
+            requiresARIgnition: needsAR,
             onARIgnition: {
                 guard bridge.presentationAlive else { return }
-                if !useTwoD {
+                if needsAR {
                     triggerRocket = true
+                } else {
+                    // 2D path: no AR coordinator — acknowledge immediately.
+                    launch.noteARIgnitionSucceeded()
                 }
             },
             onSuccess: {
@@ -1304,6 +1317,15 @@ struct ARSunRocketView: View {
                 }
             }
         )
+        if started {
+            #if canImport(UIKit)
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.55)
+            #endif
+        } else {
+            #if canImport(UIKit)
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            #endif
+        }
     }
 
     /// Wider landscape inspector for secondary controls (iPad / large landscape).
@@ -1643,6 +1665,8 @@ private struct CelestialARContainer: UIViewRepresentable {
     var teardownBridge: ARTeardownBridge
     var onActualInFrontChange: ((Bool?) -> Void)?
     var onCameraUnauthorized: (() -> Void)?
+    /// Ignition path lock result (success → continue flight; failure → abort without ritual).
+    var onARIgnitionResult: ((Bool, String?) -> Void)?
 
     func makeCoordinator() -> Coordinator {
         let coordinator = Coordinator(calibration: calibration, onCameraUnauthorized: onCameraUnauthorized)
@@ -1658,6 +1682,7 @@ private struct CelestialARContainer: UIViewRepresentable {
         context.coordinator.reduceMotion = reduceMotion
         context.coordinator.chrome = chrome
         context.coordinator.onActualInFrontChange = onActualInFrontChange
+        context.coordinator.onARIgnitionResult = onARIgnitionResult
         teardownBridge.register(context.coordinator)
         context.coordinator.wirePresentation(
             onGuides: { [weak bridge = teardownBridge] guides, labels, uncertainty in
@@ -1712,6 +1737,7 @@ private struct CelestialARContainer: UIViewRepresentable {
         context.coordinator.headingSource = calibration.headingSource
         context.coordinator.calibrationQuality = calibration.quality
         context.coordinator.onActualInFrontChange = onActualInFrontChange
+        context.coordinator.onARIgnitionResult = onARIgnitionResult
         context.coordinator.wirePresentation(
             onGuides: { [weak bridge = teardownBridge] guides, labels, uncertainty in
                 guard let bridge, bridge.presentationAlive else { return }
@@ -1730,12 +1756,14 @@ private struct CelestialARContainer: UIViewRepresentable {
         // Drive rocket along locked path using SwiftUI flight progress (state machine owns pacing).
         context.coordinator.syncLaunchProgress(launchFlightProgress, active: isLaunchActive)
         if triggerRocket {
-            context.coordinator.beginIgnitionFlight()
+            // Resolve ignition on this update pass; report on next main turn (never mutate
+            // ObservedObject / bindings synchronously inside updateUIView).
+            let ok = context.coordinator.beginIgnitionFlight()
+            let failReason = context.coordinator.lastIgnitionFailureReason
             DispatchQueue.main.async {
-                // Only clear if still the same presentation cycle.
-                if !context.coordinator.isShuttingDown {
-                    triggerRocket = false
-                }
+                guard !context.coordinator.isShuttingDown else { return }
+                triggerRocket = false
+                context.coordinator.onARIgnitionResult?(ok, ok ? nil : failReason)
             }
         }
     }
@@ -1766,6 +1794,9 @@ private struct CelestialARContainer: UIViewRepresentable {
         /// Pushes throttled screen presentation (guides + labels). Never animates via SwiftUI.
         private var onPresentation: (([EdgeGuide], [ARScreenLabel], String?) -> Void)?
         var onActualInFrontChange: ((Bool?) -> Void)?
+        var onARIgnitionResult: ((Bool, String?) -> Void)?
+        /// Last failure reason from `beginIgnitionFlight` (for UI messaging).
+        private(set) var lastIgnitionFailureReason: String?
         /// Set once for full dismissal; all ticks/delegates/publishes become no-ops.
         private(set) var isShuttingDown = false
         /// Temporary background/memory pause — session can resume without recreating the view.
@@ -1860,6 +1891,7 @@ private struct CelestialARContainer: UIViewRepresentable {
             onPresentation = nil
             onActualInFrontChange = nil
             onCameraUnauthorized = nil
+            onARIgnitionResult = nil
             arLog("Delegates/callbacks cleared")
 
             // Clear session delegate BEFORE pause so no callback lands on a dying coordinator.
@@ -1869,15 +1901,23 @@ private struct CelestialARContainer: UIViewRepresentable {
                 arLog("Session paused")
             }
 
-            clearTrail()
+            // Disable entities first (safe if scene is mid-frame), then detach.
+            visibleSun?.isEnabled = false
+            actualSun?.isEnabled = false
+            lightline?.isEnabled = false
+            rocket?.isEnabled = false
             exhaustPlume?.isEnabled = false
-            // Detach scene content safely (ARView may already be leaving hierarchy).
+            clearTrail()
             if let anchor = rootAnchor {
                 let children = Array(anchor.children)
                 for child in children {
                     child.removeFromParent()
                 }
-                anchor.removeFromParent()
+                if let arView, arView.scene.anchors.contains(where: { $0 === anchor }) {
+                    anchor.removeFromParent()
+                } else {
+                    anchor.removeFromParent()
+                }
             }
             rootAnchor = nil
             visibleSun = nil
@@ -1895,6 +1935,10 @@ private struct CelestialARContainer: UIViewRepresentable {
             lastPublishedGuides = []
             lastPublishedLabels = []
             lastPublishedUncertainty = nil
+            lastIgnitionFailureReason = nil
+            launchActive = false
+            launchOriginLocal = nil
+            launchTargetLocal = nil
 
             calibration.markSessionRunning(false)
             arView = nil
@@ -2015,25 +2059,52 @@ private struct CelestialARContainer: UIViewRepresentable {
         }
 
         /// Called at ignition: lock Actual Now vector and prepare rocket (flight driven by `syncLaunchProgress`).
-        func beginIgnitionFlight() {
+        /// Returns false when the rocket cannot be placed — caller must abort without ritual.
+        @discardableResult
+        func beginIgnitionFlight() -> Bool {
+            lastIgnitionFailureReason = nil
             guard !isShuttingDown else {
                 arLog("Late callback ignored — beginIgnitionFlight")
-                return
+                lastIgnitionFailureReason = "AR is closing."
+                return false
             }
-            guard let rocket else { return }
+            // Idempotent if already locked this launch (duplicate updateUIView before trigger clears).
+            if launchActive, launchOriginLocal != nil, launchTargetLocal != nil {
+                return true
+            }
+            guard let rocket else {
+                lastIgnitionFailureReason = "Rocket not ready. Reopen AR and try again."
+                arLog("Ignition failed — no rocket entity")
+                return false
+            }
+            guard rootAnchor != nil else {
+                lastIgnitionFailureReason = "AR scene not ready."
+                return false
+            }
 
             // Prefer live Actual Now local vector; fall back to last good sample.
             // CRITICAL: do not require actualSun.isEnabled — that was false when the target was
             // merely off the free viewport / behind chrome, causing silent launch failures.
-            guard let target = resolveActualLocalTarget() else { return }
+            guard let target = resolveActualLocalTarget() else {
+                lastIgnitionFailureReason = "Could not lock Actual Now direction. Aim toward the target."
+                arLog("Ignition failed — no valid Actual Now vector")
+                return false
+            }
             let origin = SIMD3<Float>(0, -0.42, -0.95)
 
             // Validate finite, non-zero direction.
             let delta = target - origin
             let len = simd_length(delta)
-            guard len.isFinite, len > 0.5 else { return }
+            guard len.isFinite, len > 0.5,
+                  target.x.isFinite, target.y.isFinite, target.z.isFinite else {
+                lastIgnitionFailureReason = "Invalid launch direction. Try again."
+                return false
+            }
             // Behind camera: refuse (caller should have blocked).
-            guard target.z < -0.5 else { return }
+            guard target.z < -0.5 else {
+                lastIgnitionFailureReason = "Turn toward Actual Now to launch."
+                return false
+            }
 
             launchOriginLocal = origin
             launchTargetLocal = target
@@ -2046,7 +2117,7 @@ private struct CelestialARContainer: UIViewRepresentable {
             rocket.position = origin
             // Visible scale near camera (~0.35–0.5 m visual).
             rocket.scale = SIMD3<Float>(repeating: 3.2)
-            exhaustPlume?.isEnabled = true
+            exhaustPlume?.isEnabled = !reduceMotion
             exhaustPlume?.position = origin + SIMD3<Float>(0, -0.12, 0.08)
 
             if reduceMotion {
@@ -2054,9 +2125,11 @@ private struct CelestialARContainer: UIViewRepresentable {
                 rocket.scale = SIMD3<Float>(repeating: 0.4)
                 exhaustPlume?.isEnabled = false
             }
+            arLog("Ignition path locked")
+            return true
         }
 
-        /// Drive rocket along locked path from SwiftUI flight progress (0…1).
+        /// Drive rocket along locked path using SwiftUI flight progress (0…1).
         func syncLaunchProgress(_ progress: Double, active: Bool) {
             guard !isShuttingDown else { return }
             guard let rocket else { return }
@@ -2074,8 +2147,15 @@ private struct CelestialARContainer: UIViewRepresentable {
                 }
                 return
             }
-            guard launchActive,
-                  let origin = launchOriginLocal,
+            // Charging / pre-ignition: keep rocket visible near camera as acknowledgement.
+            if !launchActive {
+                rocket.isEnabled = true
+                rocket.position = SIMD3<Float>(0, -0.42, -0.95)
+                let pulse = 2.4 + 0.35 * Float(sin(CACurrentMediaTime() * 6.0))
+                rocket.scale = SIMD3<Float>(repeating: pulse)
+                return
+            }
+            guard let origin = launchOriginLocal,
                   let target = launchTargetLocal else { return }
 
             let p = Float(min(max(progress, 0), 1))
@@ -2084,15 +2164,20 @@ private struct CelestialARContainer: UIViewRepresentable {
             let arc = SIMD3<Float>(0, 0.55 * sin(Float.pi * ease), 0)
             let bank = SIMD3<Float>(0.12 * sin(ease * Float.pi * 2), 0, 0)
             let pos = origin + (target - origin) * ease + arc + bank
+            guard pos.x.isFinite, pos.y.isFinite, pos.z.isFinite else { return }
             rocket.position = pos
             // Shrink slightly as it recedes
             let scale = 3.2 * (1.0 - 0.55 * ease)
             rocket.scale = SIMD3<Float>(repeating: max(0.35, scale))
-            // Face along velocity
+            // Face along velocity — only when look target is finite and separated.
             let ahead = origin + (target - origin) * min(1, ease + 0.05) + arc
-            rocket.look(at: ahead, from: pos, relativeTo: rootAnchor)
+            let lookDelta = ahead - pos
+            if simd_length(lookDelta) > 0.02,
+               ahead.x.isFinite, ahead.y.isFinite, ahead.z.isFinite {
+                rocket.look(at: ahead, from: pos, relativeTo: rootAnchor)
+            }
 
-            exhaustPlume?.isEnabled = ease < 0.92
+            exhaustPlume?.isEnabled = ease < 0.92 && !reduceMotion
             exhaustPlume?.position = pos + SIMD3<Float>(0, -0.08, 0.12)
             exhaustPlume?.scale = SIMD3<Float>(repeating: 1.2 + ease)
 
@@ -2103,11 +2188,17 @@ private struct CelestialARContainer: UIViewRepresentable {
         }
 
         private func resolveActualLocalTarget() -> SIMD3<Float>? {
-            if let last = lastActualLocal, last.z < -0.5 {
-                // Re-normalize to flight distance for visibility.
-                let dir = simd_normalize(last)
-                return dir * rocketFlightDistance
+            // 1) Last camera-local Actual Now sample (even if marker hidden for chrome).
+            if let last = lastActualLocal {
+                let len = simd_length(last)
+                if len.isFinite, len > 0.01, last.z < -0.02 {
+                    let dir = last / len
+                    if dir.x.isFinite, dir.y.isFinite, dir.z.isFinite {
+                        return dir * rocketFlightDistance
+                    }
+                }
             }
+            // 2) Fresh world→camera transform from current pair + frame.
             guard let pair = currentPair, let arView, let frame = arView.session.currentFrame else {
                 return nil
             }
@@ -2115,6 +2206,7 @@ private struct CelestialARContainer: UIViewRepresentable {
                 altitudeDegrees: pair.actualAltitude,
                 azimuthDegrees: pair.actualAzimuth
             )
+            guard worldA.x.isFinite, worldA.y.isFinite, worldA.z.isFinite else { return nil }
             let cam = frame.camera.transform
             let r = simd_float3x3(
                 SIMD3<Float>(cam.columns.0.x, cam.columns.0.y, cam.columns.0.z),
@@ -2658,14 +2750,16 @@ private struct CelestialARContainer: UIViewRepresentable {
 // MARK: - Display-link proxy (breaks CADisplayLink → coordinator retain teardown races)
 
 /// Nonisolated NSObject target for CADisplayLink; weakly holds the coordinator.
-/// CADisplayLink runs on the main run loop — we forward without retaining the coordinator strongly.
+/// CADisplayLink runs on the main *thread* run loop but is **not** guaranteed to be on the
+/// Swift MainActor executor — `MainActor.assumeIsolated` can trap and kill the process.
+/// Always hop with `Task { @MainActor }` and drop work when the owner is gone or shutting down.
 private final class ARDisplayLinkProxy: NSObject {
     weak var owner: CelestialARContainer.Coordinator?
 
     @objc func tick() {
-        // Invoked on main; hop into MainActor isolation for the coordinator.
         guard let owner else { return }
-        MainActor.assumeIsolated {
+        Task { @MainActor [weak owner] in
+            guard let owner, !owner.isShuttingDown else { return }
             owner.handleDisplayTick()
         }
     }
@@ -2866,8 +2960,9 @@ private struct EducationalTwoDSkyView: View {
             let badgeY = max(free.minY + 14, chrome.top + 8)
             text(context, "EDU MAGNIFICATION · NOT LITERAL", at: CGPoint(x: free.midX, y: badgeY), color: TimelyUNATheme.orange, size: 11)
         }
-        if showRocket && showActualPosition && rocketProgress > 0 {
-            let t = rocketProgress
+        // Visible for entire launch visual (charge at t=0 through arrival) — never silent.
+        if showRocket && showActualPosition {
+            let t = max(0, min(1, rocketProgress))
             // Slight arc so 2D flight feels alive (not a straight decorative line).
             let arc = sin(t * .pi) * 28 * (reduceMotion ? 0.15 : 1)
             let x = you.x + (act.x - you.x) * t + CGFloat(arc * 0.25)

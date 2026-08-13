@@ -383,6 +383,7 @@ struct StartupTransitionView: View {
         try? await Task.sleep(nanoseconds: crossOut)
 
         guard !Task.isCancelled else { return }
+        // Remove from hierarchy via parent flag — cannot intercept touches after finish.
         onFinished()
     }
 }

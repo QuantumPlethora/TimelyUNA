@@ -63,6 +63,11 @@ final class BabyXLaunchController: ObservableObject {
 
     // MARK: - Entry
 
+    /// Set false at sequence start; AR path must call `noteARIgnitionSucceeded()` or abort.
+    private var arIgnitionSucceeded = false
+    /// When true, sequence runs without requiring AR ignition ack (2D / mac educational).
+    private var skipARIgnitionRequirement = false
+
     /// Validates and starts the cinematic sequence. Returns false if blocked.
     @discardableResult
     func requestLaunch(
@@ -71,31 +76,34 @@ final class BabyXLaunchController: ObservableObject {
         targetInFront: Bool?,
         trackingLimited: Bool,
         reduceMotion: Bool,
+        requiresARIgnition: Bool,
         onARIgnition: (() -> Void)?,
         onSuccess: (() -> Void)?
     ) -> Bool {
-        blockMessage = nil
         guard !isBusy else {
-            blockMessage = nil
+            blockMessage = "Launch already in progress."
             return false
         }
+        blockMessage = nil
         if !showActualNow {
-            blockMessage = "Actual Now target unavailable."
+            blockMessage = "Actual Now target unavailable. Turn on Actual Now."
             return false
         }
         if !hasDisplayPair {
-            blockMessage = "Calibrating direction…"
+            blockMessage = "Calibrating direction… Wait for sky placement."
             return false
         }
         if trackingLimited {
-            blockMessage = "AR tracking is limited."
+            blockMessage = "AR tracking unavailable. Try again when tracking recovers."
             return false
         }
         if let inFront = targetInFront, !inFront {
-            blockMessage = "Turn toward the target to launch."
+            blockMessage = "Turn toward Actual Now to launch."
             return false
         }
 
+        skipARIgnitionRequirement = !requiresARIgnition
+        arIgnitionSucceeded = !requiresARIgnition
         sequenceTask?.cancel()
         sequenceTask = Task { [weak self] in
             await self?.runSequence(
@@ -107,10 +115,29 @@ final class BabyXLaunchController: ObservableObject {
         return true
     }
 
+    /// Cancel without treating as success (Close, background, user abort).
     func cancel() {
         sequenceTask?.cancel()
         sequenceTask = nil
+        arIgnitionSucceeded = false
         resetToIdle(clearConfirm: true)
+    }
+
+    /// AR coordinator confirmed rocket path lock.
+    func noteARIgnitionSucceeded() {
+        arIgnitionSucceeded = true
+        blockMessage = nil
+    }
+
+    /// AR coordinator could not place rocket — abort cleanly, no ritual.
+    func abortFailedLaunch(message: String) {
+        sequenceTask?.cancel()
+        sequenceTask = nil
+        arIgnitionSucceeded = false
+        blockMessage = message
+        resetToIdle(clearConfirm: true)
+        accessibilityAnnouncement = message
+        postAnnouncement()
     }
 
     // MARK: - Sequence
@@ -120,7 +147,7 @@ final class BabyXLaunchController: ObservableObject {
         onARIgnition: (() -> Void)?,
         onSuccess: (() -> Void)?
     ) async {
-        // CHARGE
+        // CHARGE — immediate visual phase for button acknowledgement.
         phase = .charging
         flightProgress = 0
         showPhotonSlip = false
@@ -144,12 +171,30 @@ final class BabyXLaunchController: ObservableObject {
             countdownMark = nil
         }
 
-        // IGNITION
+        // IGNITION — request AR path lock; 2D does not need coordinator ack.
         guard !Task.isCancelled else { return resetToIdle(clearConfirm: true) }
         phase = .ignition
         mediumHaptic()
+        if !skipARIgnitionRequirement {
+            arIgnitionSucceeded = false
+        }
         onARIgnition?()
-        try? await Task.sleep(nanoseconds: reduceMotion ? 120_000_000 : 350_000_000)
+        // Yield so SwiftUI can run updateUIView → beginIgnitionFlight → ignition result callback.
+        let ignitionWaitNs: UInt64 = reduceMotion ? 220_000_000 : 550_000_000
+        let ignitionDeadline = Date().addingTimeInterval(Double(ignitionWaitNs) / 1_000_000_000.0)
+        while !Task.isCancelled && !skipARIgnitionRequirement && !arIgnitionSucceeded && Date() < ignitionDeadline {
+            try? await Task.sleep(nanoseconds: 16_000_000)
+        }
+        guard !Task.isCancelled else { return resetToIdle(clearConfirm: true) }
+        if !skipARIgnitionRequirement && !arIgnitionSucceeded {
+            // Coordinator may already have called abortFailedLaunch; if not, fail here.
+            if blockMessage == nil {
+                blockMessage = "Could not lock launch direction. Aim toward Actual Now."
+            }
+            accessibilityAnnouncement = blockMessage
+            postAnnouncement()
+            return resetToIdle(clearConfirm: true)
+        }
 
         // LIFTOFF
         guard !Task.isCancelled else { return resetToIdle(clearConfirm: true) }
@@ -168,7 +213,7 @@ final class BabyXLaunchController: ObservableObject {
             try? await Task.sleep(nanoseconds: 16_000_000)
         }
 
-        // PHOTON SLIP + ARRIVAL
+        // PHOTON SLIP + ARRIVAL — only after a real flight segment.
         guard !Task.isCancelled else { return resetToIdle(clearConfirm: true) }
         phase = .arrival
         flightProgress = 1
@@ -179,7 +224,7 @@ final class BabyXLaunchController: ObservableObject {
         accessibilityAnnouncement = "Launch complete."
         postAnnouncement()
 
-        // Record ritual once per successful launch (caller also gates streak).
+        // Ritual only after full successful sequence (never on cancel/fail).
         onSuccess?()
 
         try? await Task.sleep(nanoseconds: reduceMotion ? 400_000_000 : 650_000_000)
