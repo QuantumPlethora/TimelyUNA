@@ -92,7 +92,8 @@ struct ContentView: View {
     // MARK: - iPhone compact
 
     private var compactPhoneShell: some View {
-        // Bottom navigation consumes layout height via safeAreaInset (not a ZStack float).
+        // Bottom navigation participates in layout via safeAreaInset so ScrollViews
+        // (including Sextant) can scroll their last content above the bar + home indicator.
         VStack(spacing: 0) {
             if selectedTab != .horizon {
                 CompactHeader()
@@ -102,12 +103,13 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            VStack(spacing: 0) {
-                CosmicTabBar(selection: $selectedTab, compact: true)
-                // Solid fill so nothing from tab content can show through.
-                Color.black.frame(height: 0)
-            }
-            .background(Color.black)
+            CosmicTabBar(selection: $selectedTab, compact: true)
+                .background {
+                    // Extend solid bar into the home-indicator region without covering content.
+                    Color.black
+                        .ignoresSafeArea(edges: .bottom)
+                        .allowsHitTesting(false)
+                }
         }
     }
 
@@ -227,52 +229,127 @@ private struct CosmicTabBar: View {
     var compact: Bool = false
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: compact ? 4 : 2) {
-                ForEach(ContentView.AppTab.allCases) { tab in
-                    Button {
-                        selection = tab
-                    } label: {
-                        VStack(spacing: 3) {
-                            Image(systemName: tab.symbol)
-                                .font(compact ? .body.weight(.semibold) : .body)
-                                .frame(height: 22)
-                            Text(tab.rawValue)
-                                .font(TimelyUNATheme.captionFont)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.75)
-                        }
-                        .foregroundStyle(selection == tab ? TimelyUNATheme.papyrus : TimelyUNATheme.muted)
-                        .frame(minWidth: compact ? 58 : 66, minHeight: 44)
-                        .frame(width: compact ? nil : 66, height: compact ? 52 : 50)
-                        .padding(.horizontal, compact ? 4 : 0)
-                        .background(
-                            selection == tab ? TimelyUNATheme.acid.opacity(0.18) : .clear,
-                            in: RoundedRectangle(cornerRadius: 15)
-                        )
-                        .overlay {
-                            if selection == tab {
-                                RoundedRectangle(cornerRadius: 15)
-                                    .stroke(TimelyUNATheme.acid.opacity(0.45), lineWidth: 1)
-                            }
-                        }
-                        .contentShape(Rectangle())
+        Group {
+            if compact {
+                compactBottomBar
+            } else {
+                wideTopBar
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(compact ? "Main navigation, bottom" : "Main navigation")
+    }
+
+    /// Compact iPhone: intentional horizontal scrolling so About is fully reachable (44×44 targets).
+    private var compactBottomBar: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(ContentView.AppTab.allCases) { tab in
+                        tabButton(tab, compact: true)
+                            .id(tab)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(tab.rawValue)
-                    .accessibilityAddTraits(selection == tab ? .isSelected : [])
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+            }
+            // Horizontal-only scrolling; vertical page scroll is owned by tab content ScrollViews.
+            .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
+            .onAppear {
+                DispatchQueue.main.async {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        proxy.scrollTo(selection, anchor: .center)
+                    }
+                }
+            }
+            .onChange(of: selection) { _, newValue in
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    proxy.scrollTo(newValue, anchor: .center)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .background(
+            Color.black.opacity(0.92),
+            in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(TimelyUNATheme.line, lineWidth: 1)
+        )
+        // Edge affordance: soft fade hints that more tabs exist off-screen.
+        .overlay(alignment: .leading) {
+            LinearGradient(
+                colors: [Color.black.opacity(0.55), .clear],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .frame(width: 18)
+            .allowsHitTesting(false)
+        }
+        .overlay(alignment: .trailing) {
+            LinearGradient(
+                colors: [.clear, Color.black.opacity(0.55)],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .frame(width: 18)
+            .allowsHitTesting(false)
+        }
+        .padding(.horizontal, 8)
+        .padding(.top, 6)
+        .padding(.bottom, 6)
+        .background(Color.black)
+    }
+
+    private var wideTopBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 2) {
+                ForEach(ContentView.AppTab.allCases) { tab in
+                    tabButton(tab, compact: false)
                 }
             }
             .padding(4)
         }
-        .background(Color.black.opacity(0.55), in: RoundedRectangle(cornerRadius: compact ? 22 : 20))
-        .overlay(RoundedRectangle(cornerRadius: compact ? 22 : 20).stroke(TimelyUNATheme.line, lineWidth: 1))
-        .padding(.horizontal, compact ? 10 : 14)
-        .padding(.top, compact ? 6 : 8)
-        .padding(.bottom, compact ? 10 : 4)
-        .background(compact ? Color.black.opacity(0.35) : Color.clear)
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(compact ? "Main navigation, bottom" : "Main navigation")
+        .background(Color.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(TimelyUNATheme.line, lineWidth: 1))
+        .padding(.horizontal, 14)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
+    }
+
+    private func tabButton(_ tab: ContentView.AppTab, compact: Bool) -> some View {
+        Button {
+            selection = tab
+        } label: {
+            VStack(spacing: 3) {
+                Image(systemName: tab.symbol)
+                    .font(compact ? .body.weight(.semibold) : .body)
+                    .frame(height: 22)
+                Text(tab.rawValue)
+                    .font(TimelyUNATheme.captionFont)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+            .foregroundStyle(selection == tab ? TimelyUNATheme.papyrus : TimelyUNATheme.muted)
+            .frame(minWidth: compact ? 64 : 66, minHeight: 44)
+            .frame(height: compact ? 48 : 50)
+            .padding(.horizontal, compact ? 6 : 0)
+            .background(
+                selection == tab ? TimelyUNATheme.acid.opacity(0.18) : .clear,
+                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+            )
+            .overlay {
+                if selection == tab {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(TimelyUNATheme.acid.opacity(0.45), lineWidth: 1)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(tab.rawValue)
+        .accessibilityAddTraits(selection == tab ? .isSelected : [])
     }
 }
 

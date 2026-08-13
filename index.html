@@ -29,16 +29,34 @@
   --safe-bottom:env(safe-area-inset-bottom,0px);
   --safe-left:env(safe-area-inset-left,0px);
   --safe-right:env(safe-area-inset-right,0px);
+  /* Measured sticky header height (ResizeObserver); fallback covers wrapped brand on iPhone. */
+  --header-height:5.75rem;
+  /* PWA bottom nav if present; web page has none. */
+  --app-bottom-nav-height:0px;
+  /* Extra trail so last controls clear Safari’s collapsing bottom chrome. */
+  --scroll-breathing:10rem;
 }
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html{
+  scroll-behavior:smooth;
+  -webkit-text-size-adjust:100%;
+  height:auto;
+  /* Anchor / focus scroll lands below sticky header (updated when header height is measured). */
+  scroll-padding-top:calc(var(--header-height) + 0.75rem);
+}
+/* Document (html/body) owns vertical scrolling — no fixed full-viewport page shell. */
 body{
-  margin:0;min-height:100vh;min-height:100dvh;
+  margin:0;
+  min-height:100svh;
+  min-height:100dvh;
+  min-height:-webkit-fill-available;
   background:radial-gradient(circle at 18% 5%,rgba(87,76,159,.22),transparent 30rem),
              radial-gradient(circle at 88% 20%,rgba(213,174,105,.12),transparent 28rem),
              linear-gradient(145deg,#02030a,#0a1020 45%,#03040a);
   color:var(--paper);font-family:var(--papyrus);line-height:1.55;
-  overflow-x:hidden;
+  /* clip avoids sticky-header breakage seen with overflow-x:hidden on some Safari builds */
+  overflow-x:clip;
+  overflow-y:auto;
   padding-left:var(--safe-left);padding-right:var(--safe-right);
   overflow-wrap:break-word;word-wrap:break-word;
 }
@@ -59,14 +77,17 @@ button{cursor:pointer}
   background:var(--gold);color:#000;padding:.7rem 1rem;z-index:1000;text-decoration:none;
 }
 .skip:focus{top:calc(1rem + var(--safe-top))}
+/* Sticky keeps header in normal flow; measured height drives scroll-padding / scroll-margin. */
 .site-header{
   position:sticky;top:0;z-index:100;
-  background:rgba(5,7,14,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  background:rgba(5,7,14,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid var(--line);
   padding-top:var(--safe-top);
 }
 .head{
   min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  flex-wrap:wrap;
+  padding:.65rem 0;
 }
 .brand{color:var(--gold2);text-decoration:none;font-size:clamp(1.5rem,3.5vw,2.2rem);line-height:1.05}
 .brand small{display:block;color:var(--gold);font-size:.55rem;letter-spacing:.14em;margin-top:.15rem}
@@ -85,7 +106,24 @@ nav.primary-nav a:hover,nav.primary-nav a:focus-visible{background:rgba(213,174,
   display:inline-grid;place-items:center;min-width:1.55rem;height:1.55rem;padding:0 .3rem;
   border-radius:999px;background:var(--acid);color:#111;font-size:.78rem;
 }
+/* Primary content: natural height growth; bottom breathing room for Safari toolbar. */
+main#main{
+  position:relative;z-index:1;
+  padding-bottom:calc(
+    var(--safe-bottom) +
+    var(--app-bottom-nav-height, 0px) +
+    var(--scroll-breathing, 9rem)
+  );
+}
 section{padding:clamp(3rem,6vw,5.5rem) 0;position:relative;z-index:1}
+/* In-page anchors land clear of the sticky header (height may grow when brand wraps). */
+main > section[id],
+section[id]{
+  scroll-margin-top:calc(var(--header-height) + 0.75rem);
+}
+#ritual-result{
+  scroll-margin-top:calc(var(--header-height) + 1rem);
+}
 h1,h2,h3{margin:0;color:var(--gold2);line-height:1.08;font-weight:700}
 h1{font-size:clamp(2.6rem,8vw,5.6rem)}
 h2{font-size:clamp(1.9rem,4.5vw,3.4rem)}
@@ -161,11 +199,12 @@ p{margin:0}
   border-radius:14px;padding:.85rem 1rem;margin-top:1rem;color:var(--muted);font-size:.92rem;
 }
 .sky{
-  height:360px;position:relative;overflow:hidden;border-radius:20px;border:1px solid var(--line);
+  height:min(360px,55vh);min-height:240px;position:relative;overflow:hidden;border-radius:20px;border:1px solid var(--line);
   background:linear-gradient(#10162d,#1d2750 55%,#1b1520 75%,#07080f 76%);
+  touch-action:pan-y;
 }
 .sky::before{
-  content:"";position:absolute;inset:0;opacity:.7;
+  content:"";position:absolute;inset:0;opacity:.7;pointer-events:none;
   background-image:radial-gradient(circle at 15% 20%,#fff 0 1px,transparent 1.5px),
     radial-gradient(circle at 55% 15%,#fff 0 1px,transparent 1.5px),
     radial-gradient(circle at 80% 35%,#fff 0 1px,transparent 1.5px),
@@ -189,7 +228,7 @@ p{margin:0}
   width:100%;padding:.8rem;border-radius:12px;border:1px solid var(--line);
   background:#111522;color:var(--paper);font-family:inherit;font-size:1rem;
 }
-.jump-stage{min-height:340px;display:grid;place-items:center;text-align:center;position:relative;overflow:hidden}
+.jump-stage{min-height:340px;display:grid;place-items:center;text-align:center;position:relative;overflow:hidden;touch-action:pan-y}
 .world{font-size:clamp(4.5rem,12vw,7rem);filter:drop-shadow(0 0 24px rgba(213,174,105,.4));transition:.65s}
 .world.jump{transform:scale(.08) rotate(180deg);opacity:.15}
 .look-home{display:none;margin-top:1rem}
@@ -211,11 +250,12 @@ p{margin:0}
   border:1px solid var(--line);min-height:480px;background:#12120f;
 }
 .ritual-sky{
-  position:relative;overflow:hidden;min-height:320px;
+  position:relative;overflow:hidden;min-height:min(320px,50vh);
   background:radial-gradient(circle at 75% 25%,#76714c 0,transparent 19%),linear-gradient(175deg,#26261f 0 65%,#0e0e0c 66%);
+  touch-action:pan-y;
 }
 .ritual-sky::before{
-  content:"";position:absolute;inset:0;opacity:.28;
+  content:"";position:absolute;inset:0;opacity:.28;pointer-events:none;
   background-image:radial-gradient(#fff 1px,transparent 1.5px);background-size:63px 57px;
 }
 .horizon-line{
@@ -254,12 +294,27 @@ p{margin:0}
   margin-top:auto;border:0;border-radius:12px;background:var(--acid);color:#111;
   padding:.95rem 1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.78rem;
   display:flex;align-items:center;justify-content:center;gap:.65rem;
+  min-height:44px;width:100%;
 }
 .launch-btn.done{background:#fff}
 .launch-btn span.icon{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border:1px solid #111;border-radius:50%}
+/* Post-launch result: stays in document flow so it can scroll fully above Safari chrome. */
+.ritual-result{
+  display:none;margin-top:1rem;border:1px solid rgba(217,255,67,.4);
+  background:rgba(217,255,67,.1);border-radius:14px;padding:1rem 1.05rem;
+}
+.ritual-result.show{display:block}
+.ritual-result p{margin:0 0 .55rem;color:var(--cream);font-size:.95rem;line-height:1.45}
+.ritual-result p:last-of-type{margin-bottom:.85rem}
+.ritual-result strong{color:var(--acid)}
+.ritual-result .btn{
+  min-height:44px;justify-content:center;width:100%;max-width:20rem;
+  background:transparent;color:var(--paper);border-color:var(--line);
+}
 .solar-stage{
   position:relative;min-height:280px;border-radius:20px;border:1px solid var(--line);
   background:radial-gradient(circle at 70% 30%,rgba(217,255,67,.12),transparent 40%),#0d0d0b;overflow:hidden;
+  touch-action:pan-y;
 }
 .solar-stage .orbit{position:absolute;border:1px solid rgba(255,255,255,.08);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
 .o1{width:140px;height:140px}.o2{width:220px;height:220px}.o3{width:300px;height:300px}
@@ -310,14 +365,128 @@ p{margin:0}
 .maze-controls button{border:1px solid #171713;background:#171713;color:#fff;border-radius:10px;padding:.55rem .8rem;font-family:inherit}
 .sunrise-box{border:1px solid var(--line);border-radius:18px;padding:1.4rem;background:rgba(0,0,0,.25)}
 .sunrise-box strong{display:block;font-size:clamp(2rem,5vw,2.8rem);color:var(--gold2);margin:.5rem 0;letter-spacing:.06em}
-.postcard{
-  aspect-ratio:1.35;border-radius:18px;padding:1.5rem;color:#fff;position:relative;overflow:hidden;
-  background:linear-gradient(#c98961,#f0c47e 50%,#334539 51%);transform:rotate(-2deg);
-  box-shadow:0 20px 50px rgba(0,0,0,.35);
+/* Deep-time postcard: outer shell rotates; inner content uses normal document flow (no absolute text). */
+.postcard-stage{
+  width:100%;max-width:100%;
+  padding:.35rem .35rem 1rem;
+  touch-action:pan-y;
 }
-.postcard::before{content:"";position:absolute;inset:49% -10% auto;height:45%;border-radius:50% 50% 0 0;background:#253930}
-.postcard > *{position:relative;z-index:1}
-.postcard blockquote{margin:3.5rem 0 0;font-size:clamp(1rem,2.5vw,1.25rem);font-style:italic;line-height:1.4}
+.postcard{
+  position:relative;
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-height:min(20rem,72vw);
+  color:#fff;
+  transform:rotate(-2deg);
+  transform-origin:center center;
+  box-shadow:0 20px 50px rgba(0,0,0,.35);
+  border-radius:18px;
+  /* Do not clip text; artwork layer owns overflow. */
+  overflow:visible;
+}
+.postcard-art{
+  position:absolute;inset:0;z-index:0;border-radius:18px;overflow:hidden;pointer-events:none;
+  background:linear-gradient(#c98961,#f0c47e 50%,#334539 51%);
+}
+.postcard-art::before{
+  content:"";position:absolute;inset:52% -12% auto;height:55%;border-radius:50% 50% 0 0;
+  background:#253930;pointer-events:none;
+}
+.postcard-content{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:stretch;
+  gap:0;
+  min-height:min(20rem,72vw);
+  padding:clamp(1rem,3.5vw,1.5rem);
+  box-sizing:border-box;
+  pointer-events:none; /* decorative card — page scroll owns vertical gestures */
+  touch-action:pan-y;
+}
+.postcard-eyebrow{
+  margin:0;
+  letter-spacing:.16em;
+  font-size:clamp(.62rem,1.8vw,.72rem);
+  line-height:1.3;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.92);
+}
+.postcard-title{
+  display:block;
+  margin:.4rem 0 .2rem;
+  font-size:clamp(1.25rem,4.2vw,1.9rem);
+  line-height:1.15;
+  font-weight:700;
+  color:#fff;
+}
+.postcard-time{
+  display:block;
+  letter-spacing:.12em;
+  font-size:clamp(.62rem,1.8vw,.72rem);
+  line-height:1.3;
+  color:rgba(255,255,255,.88);
+}
+/* Flexible illustrated band between header and quote (artwork shows through). */
+.postcard-landscape{
+  flex:1 1 auto;
+  min-height:clamp(3.25rem,12vw,5.5rem);
+  margin:.65rem 0 .35rem;
+  pointer-events:none;
+}
+.postcard-quote{
+  margin:0;
+  padding:16px;
+  font-size:clamp(1.05rem,2.9vw,1.28rem);
+  font-style:italic;
+  line-height:1.35;
+  color:#fff;
+  /* Own layout region — never shares space with the footer */
+  flex:0 0 auto;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-wrap:break-word;
+}
+.postcard-footer{
+  margin:0;
+  margin-top:.5rem;
+  padding-top:.65rem;
+  align-self:flex-end;
+  text-align:right;
+  font-size:clamp(.58rem,1.7vw,.68rem);
+  letter-spacing:.12em;
+  line-height:1.3;
+  color:rgba(255,255,255,.9);
+  text-transform:uppercase;
+  flex:0 0 auto;
+  white-space:normal;
+  max-width:100%;
+}
+/* Copy column after the card — keep collection control clear of Safari chrome via main padding. */
+#postcards .postcard-copy{
+  min-width:0;
+  max-width:100%;
+}
+#postcards .postcard-copy .actions{
+  margin-top:1.25rem;
+  padding-bottom:2rem; /* local extra gap; main still supplies 10rem trail */
+}
+#postcards .postcard-copy .btn{
+  min-height:44px;
+}
+@media (max-width:390px){
+  .postcard{transform:rotate(-1deg);min-height:0}
+  .postcard-content{
+    min-height:0;
+    padding:.85rem .9rem 1rem;
+  }
+  .postcard-landscape{min-height:2.75rem;margin:.45rem 0 .25rem}
+  .postcard-quote{
+    font-size:clamp(1.05rem,4.6vw,1.15rem);
+    line-height:1.3;
+    padding:16px;
+  }
+  .postcard-stage{padding:.25rem .15rem .85rem}
+}
 .share-band{
   background:var(--acid);color:var(--ink);border-radius:24px;padding:clamp(1.4rem,3vw,2.2rem);
   display:grid;grid-template-columns:1.2fr auto auto;gap:1.25rem;align-items:center;
@@ -326,58 +495,84 @@ p{margin:0}
 .share-band .btn{background:#171713;border-color:#171713;color:#fff}
 .share-band .btn span{color:var(--acid)}
 .toast{
-  position:fixed;bottom:calc(1.2rem + var(--safe-bottom));right:calc(1.2rem + var(--safe-right));
+  /* Sit above Safari’s bottom chrome (safe-area + breathing space). */
+  position:fixed;
+  bottom:calc(1.25rem + var(--safe-bottom) + 4.5rem);
+  right:calc(1.2rem + var(--safe-right));
+  left:auto;
   z-index:80;max-width:min(360px,calc(100vw - 2rem));background:#f5f1e7;color:#171713;
   border-left:5px solid var(--acid);padding:1rem;box-shadow:0 12px 40px rgba(0,0,0,.45);
   display:none;font-size:.95rem;
 }
 .toast.show{display:block}
-.toast button{border:0;background:transparent;color:#777;margin-left:.75rem;font-family:inherit;cursor:pointer}
+.toast button{border:0;background:transparent;color:#777;margin-left:.75rem;font-family:inherit;cursor:pointer;min-height:44px;min-width:44px}
 .modal{
   position:fixed;inset:0;z-index:90;background:rgba(5,7,14,.78);
   display:none;align-items:center;justify-content:center;padding:1.25rem;
-  padding-bottom:calc(1.25rem + var(--safe-bottom));
+  padding-top:calc(1.25rem + var(--safe-top));
+  padding-bottom:calc(1.25rem + var(--safe-bottom) + 3rem);
 }
 .modal.open{display:flex}
 .modal-card{
-  width:min(520px,100%);max-height:min(80vh,720px);overflow:auto;
+  width:min(520px,100%);max-height:min(70dvh,720px);overflow:auto;
   background:var(--cream);color:var(--ink);border-radius:18px;padding:1.4rem;
+  -webkit-overflow-scrolling:touch;
 }
 .modal-card h3{color:var(--ink);margin-bottom:.5rem}
 .collection-list{list-style:none;padding:0;margin:1rem 0;display:grid;gap:.6rem}
 .collection-list li{border:1px solid #cfc9b8;background:#fffdf6;padding:.8rem;border-radius:10px;display:flex;justify-content:space-between;gap:.75rem}
 .collection-list strong{display:block}
 footer{
-  padding:2.5rem 0 calc(3.5rem + var(--safe-bottom));
+  /* Footer lives inside main’s bottom padding trail; keep modest own padding. */
+  padding:2.5rem 0 1.5rem;
   border-top:1px solid var(--line);color:var(--muted);position:relative;z-index:1;
 }
 .footer-grid{display:grid;gap:.75rem}
+.panel,.ritual-card,.ritual-panel,.now-card,.metric,.loc-bar,.notice{
+  width:100%;max-width:100%;
+}
+.btn{min-height:44px}
+.now-orbit,.ritual-sky .horizon-sun,.solar-stage .sun-blob{pointer-events:none}
+/* Large interactive regions: allow vertical page pan; prevent scroll traps. */
+.maze{touch-action:pan-y}
 @media (max-width:900px){
   nav.primary-nav{display:none}
   .hero-grid,.split,.now-pair,.control-row,.ritual-card,.epoch-grid,.labyrinth-panel,.share-band{grid-template-columns:1fr}
   .metrics{grid-template-columns:1fr}
-  .now-orbit{min-height:320px}
+  .metric-grid{grid-template-columns:1fr}
+  .now-orbit{min-height:min(320px,70vw)}
   .marker{width:78px;font-size:.62rem}
-  .sky{height:300px}
-  .epoch-grid{display:flex;overflow-x:auto;padding-bottom:.5rem}
+  .sky{height:min(300px,50vh)}
+  .epoch-grid{display:flex;overflow-x:auto;padding-bottom:.5rem;-webkit-overflow-scrolling:touch}
   .epoch-card{min-width:240px;flex:0 0 auto}
   .share-band{justify-items:start}
 }
 @media (max-width:600px){
   .shell{width:calc(100% - 1.25rem);max-width:calc(100% - 1.25rem)}
-  .head{min-height:68px;gap:.5rem}
-  .brand{font-size:1.2rem;min-width:0}
-  .brand small{font-size:.48rem;letter-spacing:.08em;white-space:normal;max-width:12rem}
+  .head{min-height:auto;gap:.5rem}
+  .brand{font-size:1.2rem;min-width:0;flex:1 1 12rem}
+  .brand small{font-size:.48rem;letter-spacing:.08em;white-space:normal;max-width:14rem}
   .streak-pill span.label{display:none}
   section{padding:2.5rem 0}
   .ritual-card{min-height:0}
+  .ritual-panel{padding:1.15rem 1rem 1.35rem}
   .you-dot span{left:0;transform:none}
-  .actions .btn{flex:1 1 auto;justify-content:center;text-align:center}
+  .actions .btn{flex:1 1 auto;justify-content:center;text-align:center;min-height:44px}
   .lead,.engine-line,.thesis,p{max-width:100%}
   h1{font-size:clamp(2.2rem,11vw,3.2rem)}
   .now-orbit{margin-inline:auto}
+  .metric-grid{grid-template-columns:1fr}
+  .toast{left:calc(1rem + var(--safe-left));right:calc(1rem + var(--safe-right));max-width:none}
+}
+/* Native WKWebView / embedded shell already supplies chrome insets — reduce extra trail. */
+html.embedded main#main{
+  padding-bottom:calc(var(--safe-bottom) + 2.5rem);
+}
+html.embedded .toast{
+  bottom:calc(1.25rem + var(--safe-bottom));
 }
 @media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
   *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
   .world.jump{transform:none;opacity:1}
   .rocket.is-launched{transform:none;opacity:.5}
@@ -522,6 +717,11 @@ footer{
           </div>
           <p class="muted" style="font-size:.85rem;margin:.5rem 0 1rem" id="ritual-note">One launch keeps your streak alive. Calculations update from your clock and coordinates.</p>
           <button class="launch-btn" type="button" id="launch-btn"><span class="icon" aria-hidden="true">↑</span>Launch &amp; correct reality</button>
+          <div id="ritual-result" class="ritual-result" role="status" aria-live="polite" hidden>
+            <p><strong>Reality corrected.</strong></p>
+            <p class="muted" id="ritual-result-detail">Your streak is preserved on this device. Metrics above stay visible—scroll to continue into Dawn and the next sections.</p>
+            <button type="button" class="btn" id="ritual-dismiss">Dismiss message</button>
+          </div>
         </div>
       </div>
     </div>
@@ -671,14 +871,21 @@ footer{
   <!-- POSTCARDS -->
   <section id="postcards">
     <div class="shell split">
-      <div class="postcard" id="active-postcard">
-        <p style="letter-spacing:.16em;font-size:.68rem">POSTCARD FROM</p>
-        <strong id="postcard-title" style="display:block;font-size:clamp(1.4rem,3vw,1.9rem);margin:.35rem 0">THE CRETACEOUS</strong>
-        <span id="postcard-age" style="letter-spacing:.12em;font-size:.68rem">86,000,000 YEARS AGO</span>
-        <blockquote id="postcard-quote">“The sky is warmer here.<br>Saturn hangs low in the east.”</blockquote>
-        <p style="position:absolute;bottom:1rem;right:1rem;font-size:.6rem;letter-spacing:.12em">TRUE HORIZON · CHRONOS LOG</p>
+      <div class="postcard-stage">
+        <div class="postcard" id="active-postcard">
+          <!-- Visual artwork only (may clip); content is a separate flex stack. -->
+          <div class="postcard-art" aria-hidden="true"></div>
+          <div class="postcard-content">
+            <p class="postcard-eyebrow">POSTCARD FROM</p>
+            <strong class="postcard-title" id="postcard-title">THE PRESENT</strong>
+            <span class="postcard-time" id="postcard-age">RIGHT NOW</span>
+            <div class="postcard-landscape" aria-hidden="true"></div>
+            <blockquote class="postcard-quote" id="postcard-quote">“Photons are still mid-flight.<br>You are already correcting.”</blockquote>
+            <p class="postcard-footer">TRUE HORIZON · CHRONOS LOG</p>
+          </div>
+        </div>
       </div>
-      <div>
+      <div class="postcard-copy">
         <p class="eyebrow">05 · Deep-time postcards</p>
         <h2>Bring something back with you.</h2>
         <p class="lead muted" style="margin-top:1rem">Every successful correction and quantum jump can create an atmospheric record from another age. Collect them on this device. Remember skies that vanished.</p>
@@ -994,16 +1201,60 @@ function updateSunrise(){
   $("sunrise-label").textContent="Visible sunrise · "+formatTime(apparent)+" · True sunrise · "+formatTime(trueRise);
 }
 
+function prefersReducedMotion(){
+  return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function showRitualResult(){
+  const panel=$("ritual-result");
+  if(!panel) return;
+  panel.hidden=false;
+  panel.classList.add("show");
+  const detail=$("ritual-result-detail");
+  if(detail){
+    detail.textContent="Your streak is preserved on this device. Metrics above stay visible—scroll to continue into Dawn and the next sections.";
+  }
+}
+
+function hideRitualResult(){
+  const panel=$("ritual-result");
+  if(!panel) return;
+  panel.classList.remove("show");
+  panel.hidden=true;
+}
+
+/** Scroll result into view below sticky header without trapping under Safari chrome. */
+function scrollToRitualResult(){
+  const panel=$("ritual-result");
+  if(!panel) return;
+  const run=()=>{
+    try{
+      panel.scrollIntoView({
+        block:"start",
+        behavior: prefersReducedMotion() ? "auto" : "smooth"
+      });
+    }catch(_){
+      panel.scrollIntoView(true);
+    }
+  };
+  // Wait a frame so layout includes the newly shown result card.
+  requestAnimationFrame(()=>requestAnimationFrame(run));
+}
+
 function markRitualDone(animate){
   const btn=$("launch-btn");
   btn.classList.add("done");
   btn.disabled=true;
   btn.innerHTML='<span class="icon" aria-hidden="true">✓</span>Today’s launch complete';
   $("ritual-note").textContent="Reality corrected. Streak preserved on this device.";
+  showRitualResult();
   if(animate){
     ["hero-rocket","ritual-rocket"].forEach(id=>{
-      const r=$(id); r.classList.remove("is-launched"); void r.offsetWidth; r.classList.add("is-launched");
+      const r=$(id); if(!r) return;
+      r.classList.remove("is-launched"); void r.offsetWidth; r.classList.add("is-launched");
     });
+    // Scroll only after a user-initiated launch, not on cold load of a saved streak.
+    scrollToRitualResult();
   }
 }
 function launchRitual(){
@@ -1015,6 +1266,41 @@ function launchRitual(){
   renderEpochs();
   toast("Reality corrected. Your streak is alive.");
   refreshSolar();
+}
+
+/** Measure sticky header (including safe-area) so anchors and scroll-padding stay correct when brand wraps. */
+function bindHeaderMetrics(){
+  const header=document.querySelector(".site-header");
+  if(!header) return;
+  const apply=()=>{
+    const h=Math.ceil(header.getBoundingClientRect().height);
+    if(h>0){
+      document.documentElement.style.setProperty("--header-height", h+"px");
+    }
+  };
+  apply();
+  if(typeof ResizeObserver!=="undefined"){
+    const ro=new ResizeObserver(()=>apply());
+    ro.observe(header);
+  }
+  window.addEventListener("orientationchange", ()=>setTimeout(apply, 200), {passive:true});
+  window.addEventListener("resize", ()=>{
+    // Safari toolbar expand/collapse can change visual viewport without reflowing sticky height much;
+    // re-measure header only (do not lock page to visualViewport height).
+    apply();
+  }, {passive:true});
+}
+
+function detectEmbeddedShell(){
+  try{
+    const params=new URLSearchParams(location.search);
+    if(params.has("embedded") || params.get("mode")==="embedded"){
+      document.documentElement.classList.add("embedded");
+      return;
+    }
+    // Standalone PWA / iOS home-screen: keep normal breathing; WKWebView may pass ?embedded=1.
+    if(document.documentElement.classList.contains("embedded")) return;
+  }catch(_){/* ignore */}
 }
 
 function epochOpen(ep){
@@ -1184,6 +1470,8 @@ function initLegacy(){
 }
 
 function init(){
+  detectEmbeddedShell();
+  bindHeaderMetrics();
   loadStreak();
   renderEpochs();
   placePhoton();
@@ -1193,6 +1481,8 @@ function init(){
 
   $("request-location").addEventListener("click", requestLocation);
   $("launch-btn").addEventListener("click", launchRitual);
+  const dismiss=$("ritual-dismiss");
+  if(dismiss) dismiss.addEventListener("click", hideRitualResult);
   $("enter-labyrinth").addEventListener("click", enterLabyrinth);
   $("maze-forward").addEventListener("click", ()=>{
     if(!state.mazeActive){

@@ -30,9 +30,17 @@ struct TimelyUNAApp: App {
                         showStartupTransition = false
                     }
                     .zIndex(1000)
+                    // Failsafe: never leave the user stuck on the opening overlay.
+                    .task {
+                        try? await Task.sleep(nanoseconds: 18_000_000_000)
+                        if showStartupTransition {
+                            showStartupTransition = false
+                        }
+                    }
                 }
             }
             .background(Color.black.ignoresSafeArea())
+            .preferredColorScheme(.dark)
             #if os(macOS)
             .frame(minWidth: 900, minHeight: 640)
             #endif
@@ -59,9 +67,8 @@ struct TimelyUNAApp: App {
     /// Keep system chrome black during cold launch to avoid white interstitial frames.
     private static func configureBlackChrome() {
         #if os(iOS)
-        // Window / hosting background before first SwiftUI frame.
-        let black = UIColor.black
-        UIWindow.appearance().backgroundColor = black
+        // Window background before first SwiftUI frame only — do not paint all UIViews black.
+        UIWindow.appearance().backgroundColor = .black
         #endif
         #if os(macOS)
         // No global NSWindow appearance change required; SwiftUI root is black.

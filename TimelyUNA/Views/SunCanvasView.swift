@@ -1,10 +1,13 @@
 import SwiftUI
 
 /// Canvas visualization of Earth, apparent Sun, actual Sun, and optional rocket flight.
+/// Labels are clamped inside the frame; the SwiftUI host reserves the title/badge band above.
 struct SunCanvasView: View {
     var rocketProgress: Double = 0
     var showRocket: Bool = false
     var showHit: Bool = false
+    /// When false, title/subtitle are drawn by the host (preferred on compact iPhone).
+    var drawsChromeLabels: Bool = false
 
     private let stars: [Star] = Star.makeField(count: 180)
 
@@ -15,20 +18,37 @@ struct SunCanvasView: View {
             }
         }
         .background(Color.black)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            "Live simulation. Earth, Apparent Sun, Actual Sun, eight minute light delay, and true direction."
+        )
     }
 
     private func drawScene(context: GraphicsContext, size: CGSize, time: Date) {
         let w = size.width
         let h = size.height
-        let scaleX = w / 720
-        let scaleY = h / 420
+        // Reserve top band so scene markers never sit under host chrome labels.
+        let topReserve: CGFloat = drawsChromeLabels ? max(48, h * 0.14) : max(12, h * 0.04)
+        let bottomReserve: CGFloat = max(20, h * 0.06)
+        let sidePad: CGFloat = max(10, w * 0.03)
+        let plot = CGRect(
+            x: sidePad,
+            y: topReserve,
+            width: max(1, w - sidePad * 2),
+            height: max(1, h - topReserve - bottomReserve)
+        )
+
+        let scaleX = plot.width / 720
+        let scaleY = plot.height / 420
         let s = min(scaleX, scaleY)
+        // Prefer slightly larger labels on small phones without shrinking the scene too far.
+        let labelScale = max(0.85, min(1.15, s / 0.45))
 
         func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
-            CGPoint(x: x * scaleX, y: y * scaleY)
+            CGPoint(x: plot.minX + x * scaleX, y: plot.minY + y * scaleY)
         }
 
-        // Stars
+        // Stars (full frame, decorative)
         for star in stars {
             var starContext = context
             starContext.opacity = star.alpha
@@ -43,113 +63,92 @@ struct SunCanvasView: View {
 
         // Faint orbital path
         var orbit = Path()
+        let earth = p(200, 230)
+        let apparent = p(500, 140)
+        let actual = p(590, 230)
         orbit.addEllipse(in: CGRect(
-            x: 400 * scaleX - 280 * s,
-            y: 210 * scaleY - 280 * s,
-            width: 560 * s,
-            height: 560 * s
+            x: earth.x - 40 * s,
+            y: earth.y - 40 * s,
+            width: 360 * s,
+            height: 360 * s
         ))
-        context.stroke(orbit, with: .color(TimelyUNATheme.accent.opacity(0.15)), lineWidth: 1)
-
-        let earth = p(220, 210)
-        let apparent = p(520, 160)
-        let actual = p(580, 210)
+        context.stroke(orbit, with: .color(TimelyUNATheme.accent.opacity(0.12)), lineWidth: 1)
 
         // Actual sun
         drawSun(
             context: context,
             center: actual,
-            radius: 28 * s,
-            glowRadius: 52 * s,
+            radius: 26 * s,
+            glowRadius: 48 * s,
             core: TimelyUNATheme.actualSun,
             glow: Color(red: 1, green: 0.97, blue: 0.8)
         )
-        drawLabel(context: context, text: "ACTUAL SUN", at: CGPoint(x: actual.x, y: actual.y + 48 * s), color: TimelyUNATheme.gold, size: 13 * s, bold: true)
-        drawLabel(context: context, text: "(where it is RIGHT NOW)", at: CGPoint(x: actual.x, y: actual.y + 63 * s), color: TimelyUNATheme.gold, size: 10 * s, bold: false)
 
         // Apparent sun
         drawSun(
             context: context,
             center: apparent,
-            radius: 24 * s,
-            glowRadius: 45 * s,
+            radius: 22 * s,
+            glowRadius: 42 * s,
             core: TimelyUNATheme.apparentSun,
             glow: Color(red: 1, green: 0.97, blue: 0.8)
         )
-        drawLabel(context: context, text: "APPARENT SUN", at: CGPoint(x: apparent.x, y: apparent.y + 42 * s), color: Color(red: 0.91, green: 0.83, blue: 0.64), size: 13 * s, bold: true)
-        drawLabel(context: context, text: "(light left 8min 19s ago)", at: CGPoint(x: apparent.x, y: apparent.y + 57 * s), color: Color(red: 0.91, green: 0.83, blue: 0.64), size: 10 * s, bold: false)
 
         // Earth glow
-        let earthGlow = CGRect(x: earth.x - 38 * s, y: earth.y - 38 * s, width: 76 * s, height: 76 * s)
+        let earthGlow = CGRect(x: earth.x - 36 * s, y: earth.y - 36 * s, width: 72 * s, height: 72 * s)
         context.fill(
             Path(ellipseIn: earthGlow),
             with: .radialGradient(
                 Gradient(colors: [Color.blue.opacity(0.35), .clear]),
                 center: earth,
                 startRadius: 0,
-                endRadius: 38 * s
+                endRadius: 36 * s
             )
         )
         context.fill(
-            Path(ellipseIn: CGRect(x: earth.x - 24 * s, y: earth.y - 24 * s, width: 48 * s, height: 48 * s)),
+            Path(ellipseIn: CGRect(x: earth.x - 22 * s, y: earth.y - 22 * s, width: 44 * s, height: 44 * s)),
             with: .color(TimelyUNATheme.earthBlue)
         )
-        // Continents
         context.fill(
-            Path(ellipseIn: CGRect(x: earth.x - 17 * s, y: earth.y - 11 * s, width: 22 * s, height: 14 * s)),
+            Path(ellipseIn: CGRect(x: earth.x - 15 * s, y: earth.y - 10 * s, width: 20 * s, height: 12 * s)),
             with: .color(TimelyUNATheme.earthGreen)
         )
         context.fill(
-            Path(ellipseIn: CGRect(x: earth.x + 0 * s, y: earth.y + 2 * s, width: 16 * s, height: 10 * s)),
+            Path(ellipseIn: CGRect(x: earth.x + 0 * s, y: earth.y + 2 * s, width: 14 * s, height: 9 * s)),
             with: .color(TimelyUNATheme.earthGreen)
         )
-        drawLabel(context: context, text: "EARTH", at: CGPoint(x: earth.x, y: earth.y + 42 * s), color: Color(red: 0.66, green: 0.83, blue: 1), size: 14 * s, bold: true)
 
         // Photon path (dashed) to apparent
+        let photonStart = CGPoint(x: earth.x + 18 * s, y: earth.y - 6 * s)
+        let photonEnd = CGPoint(x: apparent.x - 16 * s, y: apparent.y + 4 * s)
         var photonPath = Path()
-        photonPath.move(to: CGPoint(x: earth.x + 20 * s, y: earth.y - 8 * s))
-        photonPath.addLine(to: CGPoint(x: apparent.x - 18 * s, y: apparent.y + 5 * s))
+        photonPath.move(to: photonStart)
+        photonPath.addLine(to: photonEnd)
         context.stroke(
             photonPath,
             with: .color(TimelyUNATheme.actualSun),
-            style: StrokeStyle(lineWidth: 2.5 * s, dash: [6 * s, 4 * s])
-        )
-        drawLabel(
-            context: context,
-            text: "☉ photons (8min 19s)",
-            at: CGPoint(x: earth.x + 120 * s, y: earth.y - 22 * s),
-            color: Color(red: 1, green: 0.87, blue: 0.53),
-            size: 10 * s,
-            bold: false
+            style: StrokeStyle(lineWidth: 2.2 * s, dash: [6 * s, 4 * s])
         )
 
         // True direction line
+        let trueStart = CGPoint(x: earth.x + 18 * s, y: earth.y + 8 * s)
+        let trueEnd = CGPoint(x: actual.x - 22 * s, y: actual.y)
         var truePath = Path()
-        let trueEnd = CGPoint(x: actual.x - 25 * s, y: actual.y)
-        truePath.move(to: CGPoint(x: earth.x + 20 * s, y: earth.y + 10 * s))
+        truePath.move(to: trueStart)
         truePath.addLine(to: trueEnd)
         context.stroke(truePath, with: .color(TimelyUNATheme.gold), lineWidth: 2 * s)
 
         var arrow = Path()
         arrow.move(to: trueEnd)
-        arrow.addLine(to: CGPoint(x: trueEnd.x - 13 * s, y: trueEnd.y - 8 * s))
-        arrow.addLine(to: CGPoint(x: trueEnd.x - 13 * s, y: trueEnd.y + 8 * s))
+        arrow.addLine(to: CGPoint(x: trueEnd.x - 12 * s, y: trueEnd.y - 7 * s))
+        arrow.addLine(to: CGPoint(x: trueEnd.x - 12 * s, y: trueEnd.y + 7 * s))
         arrow.closeSubpath()
         context.fill(arrow, with: .color(TimelyUNATheme.gold))
 
-        drawLabel(
-            context: context,
-            text: "True current direction",
-            at: CGPoint(x: earth.x + 140 * s, y: earth.y + 28 * s),
-            color: TimelyUNATheme.gold,
-            size: 10 * s,
-            bold: false
-        )
-
         // Rocket
         if showRocket && rocketProgress > 0 {
-            let start = CGPoint(x: earth.x + 25 * s, y: earth.y + 5 * s)
-            let end = CGPoint(x: actual.x - 30 * s, y: actual.y)
+            let start = CGPoint(x: earth.x + 22 * s, y: earth.y + 4 * s)
+            let end = CGPoint(x: actual.x - 26 * s, y: actual.y)
             let t = rocketProgress
             let rx = start.x + (end.x - start.x) * t
             let ry = start.y + (end.y - start.y) * t
@@ -174,47 +173,204 @@ struct SunCanvasView: View {
                 flame.closeSubpath()
                 context.fill(flame, with: .color(Color(red: 1, green: 0.53, blue: 0)))
             }
-
-            drawLabel(context: context, text: "SPCX", at: CGPoint(x: rx + 28 * s, y: ry + 3 * s), color: .white, size: 9 * s, bold: true)
         }
 
-        // Title
-        drawLabel(
+        // Optional in-canvas chrome (wide layouts only).
+        if drawsChromeLabels {
+            drawClampedLabel(
+                context: context,
+                text: "TIMELYUNA LIGHT-TIME",
+                preferred: CGPoint(x: sidePad + 8, y: 10),
+                color: TimelyUNATheme.gold,
+                size: 13 * labelScale,
+                bold: true,
+                bounds: CGRect(x: 0, y: 0, width: w, height: h),
+                anchor: .topLeading
+            )
+            drawClampedLabel(
+                context: context,
+                text: "Correcting for the finite speed of light",
+                preferred: CGPoint(x: sidePad + 8, y: 28),
+                color: TimelyUNATheme.gold.opacity(0.85),
+                size: 10 * labelScale,
+                bold: false,
+                bounds: CGRect(x: 0, y: 0, width: w, height: h),
+                anchor: .topLeading
+            )
+        }
+
+        let frame = CGRect(x: 4, y: 4, width: w - 8, height: h - 8)
+        let compact = w < 360
+
+        // Annotation regions — separate so titles never stack on the same point.
+        // Apparent Sun: above marker, slightly left on narrow widths.
+        let apparentLabel = compact ? "Apparent Sun" : "Apparent Sun"
+        drawAnnotation(
             context: context,
-            text: "TIMELYUNA LIGHT-TIME SEXTANT",
-            at: CGPoint(x: 20 * scaleX + 140 * s, y: 28 * scaleY),
-            color: TimelyUNATheme.gold,
-            size: 15 * s,
-            bold: true,
-            centered: false
+            title: apparentLabel,
+            subtitle: compact ? "8m 19s light delay" : "8m 19s light delay",
+            anchor: apparent,
+            titleOffset: CGPoint(x: compact ? -8 : 0, y: -42 * s),
+            color: Color(red: 0.91, green: 0.83, blue: 0.64),
+            size: 12 * labelScale,
+            bounds: frame,
+            leaderTo: apparent
         )
-        drawLabel(
+
+        // Actual Sun: below-right of marker.
+        drawAnnotation(
             context: context,
-            text: "Correcting for the finite speed of light",
-            at: CGPoint(x: 20 * scaleX + 120 * s, y: 45 * scaleY),
-            color: TimelyUNATheme.gold.opacity(0.85),
-            size: 11 * s,
+            title: "Actual Sun",
+            subtitle: compact ? "True now" : "Where it is now",
+            anchor: actual,
+            titleOffset: CGPoint(x: compact ? -10 : 4, y: 34 * s),
+            color: TimelyUNATheme.gold,
+            size: 12 * labelScale,
+            bounds: frame,
+            leaderTo: actual
+        )
+
+        // Earth: below.
+        drawAnnotation(
+            context: context,
+            title: "Earth",
+            subtitle: nil,
+            anchor: earth,
+            titleOffset: CGPoint(x: 0, y: 36 * s),
+            color: Color(red: 0.66, green: 0.83, blue: 1),
+            size: 12 * labelScale,
+            bounds: frame,
+            leaderTo: nil
+        )
+
+        // Photon delay mid-path (above dashed line).
+        let midPhoton = CGPoint(
+            x: (photonStart.x + photonEnd.x) * 0.5,
+            y: (photonStart.y + photonEnd.y) * 0.5 - 16 * s
+        )
+        drawClampedLabel(
+            context: context,
+            text: "8m 19s light delay",
+            preferred: midPhoton,
+            color: Color(red: 1, green: 0.87, blue: 0.53),
+            size: 10 * labelScale,
             bold: false,
-            centered: false
+            bounds: frame,
+            anchor: .center
+        )
+
+        // True direction: under the gold line, offset toward mid.
+        let midTrue = CGPoint(
+            x: (trueStart.x + trueEnd.x) * 0.48,
+            y: (trueStart.y + trueEnd.y) * 0.5 + 16 * s
+        )
+        drawClampedLabel(
+            context: context,
+            text: "True direction",
+            preferred: midTrue,
+            color: TimelyUNATheme.gold,
+            size: 10 * labelScale,
+            bold: false,
+            bounds: frame,
+            anchor: .center
         )
 
         if showHit {
-            drawLabel(
+            drawClampedLabel(
                 context: context,
                 text: "DIRECT HIT ON TRUE POSITION!",
-                at: CGPoint(x: w * 0.5, y: h * 0.22),
+                preferred: CGPoint(x: w * 0.5, y: plot.minY + 18),
                 color: TimelyUNATheme.gold,
-                size: 18 * s,
-                bold: true
+                size: 14 * labelScale,
+                bold: true,
+                bounds: frame,
+                anchor: .center
             )
-            drawLabel(
+        }
+    }
+
+    private func drawAnnotation(
+        context: GraphicsContext,
+        title: String,
+        subtitle: String?,
+        anchor: CGPoint,
+        titleOffset: CGPoint,
+        color: Color,
+        size: CGFloat,
+        bounds: CGRect,
+        leaderTo: CGPoint?
+    ) {
+        let preferred = CGPoint(x: anchor.x + titleOffset.x, y: anchor.y + titleOffset.y)
+        let titlePoint = drawClampedLabel(
+            context: context,
+            text: title,
+            preferred: preferred,
+            color: color,
+            size: size,
+            bold: true,
+            bounds: bounds,
+            anchor: .center
+        )
+        if let subtitle {
+            _ = drawClampedLabel(
                 context: context,
-                text: "Light-delay navigation successful ★",
-                at: CGPoint(x: w * 0.5, y: h * 0.22 + 22 * s),
-                color: Color(red: 1, green: 0.87, blue: 0.53),
-                size: 12 * s,
-                bold: false
+                text: subtitle,
+                preferred: CGPoint(x: titlePoint.x, y: titlePoint.y + size + 4),
+                color: color.opacity(0.9),
+                size: max(9, size * 0.82),
+                bold: false,
+                bounds: bounds,
+                anchor: .center
             )
+        }
+        if let target = leaderTo {
+            // Short leader from label toward the body.
+            var leader = Path()
+            let start = CGPoint(x: titlePoint.x, y: titlePoint.y + size * 0.6)
+            let end = CGPoint(
+                x: target.x * 0.35 + start.x * 0.65,
+                y: target.y * 0.35 + start.y * 0.65
+            )
+            leader.move(to: start)
+            leader.addLine(to: end)
+            context.stroke(leader, with: .color(color.opacity(0.45)), lineWidth: 1)
+        }
+    }
+
+    /// Draws label and returns the final origin used (center of text for .center anchor).
+    @discardableResult
+    private func drawClampedLabel(
+        context: GraphicsContext,
+        text: String,
+        preferred: CGPoint,
+        color: Color,
+        size: CGFloat,
+        bold: Bool,
+        bounds: CGRect,
+        anchor: UnitPoint
+    ) -> CGPoint {
+        // System serif keeps Canvas resolve stable; host chrome uses Papyrus.
+        let font = Font.system(size: max(9, size), weight: bold ? .semibold : .regular, design: .serif)
+        let resolved = context.resolve(
+            Text(text).font(font).foregroundColor(color)
+        )
+        let measured = resolved.measure(in: CGSize(width: bounds.width * 0.9, height: 80))
+        let tw = measured.width
+        let th = measured.height
+
+        var origin = preferred
+        switch anchor {
+        case .topLeading:
+            origin.x = min(max(preferred.x, bounds.minX + 2), bounds.maxX - tw - 2)
+            origin.y = min(max(preferred.y, bounds.minY + 2), bounds.maxY - th - 2)
+            context.draw(resolved, at: origin, anchor: .topLeading)
+            return CGPoint(x: origin.x + tw / 2, y: origin.y + th / 2)
+        default:
+            // Center-ish: keep full glyph box inside bounds.
+            origin.x = min(max(preferred.x, bounds.minX + tw / 2 + 2), bounds.maxX - tw / 2 - 2)
+            origin.y = min(max(preferred.y, bounds.minY + th / 2 + 2), bounds.maxY - th / 2 - 2)
+            context.draw(resolved, at: origin, anchor: .center)
+            return origin
         }
     }
 
@@ -248,26 +404,6 @@ struct SunCanvasView: View {
             Path(ellipseIn: CGRect(x: center.x - radius * 0.45, y: center.y - radius * 0.45, width: highlight, height: highlight)),
             with: .color(glow.opacity(0.9))
         )
-    }
-
-    private func drawLabel(
-        context: GraphicsContext,
-        text: String,
-        at point: CGPoint,
-        color: Color,
-        size: CGFloat,
-        bold: Bool,
-        centered: Bool = true
-    ) {
-        let font = Font.system(size: max(8, size), weight: bold ? .bold : .regular, design: .serif)
-        let resolved = context.resolve(
-            Text(text).font(font).foregroundColor(color)
-        )
-        var origin = point
-        if centered {
-            origin.x -= resolved.measure(in: CGSize(width: 1000, height: 100)).width / 2
-        }
-        context.draw(resolved, at: origin, anchor: .leading)
     }
 }
 

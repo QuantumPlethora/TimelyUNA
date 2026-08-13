@@ -358,7 +358,7 @@ struct StartupTransitionView: View {
         withAnimation(ease(dTitleIn)) { productTitleOpacity = 1 }
         try? await Task.sleep(nanoseconds: titleIn)
 
-        // 11) Driven by TimelyWon
+        // 11) Driven by TimelyUNA (Brand.technologyCredit)
         guard !Task.isCancelled else { return }
         withAnimation(ease(dTechIn)) { technologyOpacity = 1 }
         try? await Task.sleep(nanoseconds: techIn)

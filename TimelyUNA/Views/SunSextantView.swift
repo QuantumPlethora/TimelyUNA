@@ -2,18 +2,29 @@ import SwiftUI
 
 struct SunSextantView: View {
     @EnvironmentObject private var simulation: SimulationState
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showingARSunrise = false
 
+    private var isCompact: Bool {
+        horizontalSizeClass == .compact
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(alignment: .leading, spacing: 20) {
                 header
 
+                // Intro copy — final words ("between them.") must clear the bottom nav via
+                // safeAreaInset on the shell + this explicit trailing content padding.
                 Text("We do not see the universe as it is — we see it as its light arrives. Correct for Light-SpaceTime. Reveal Apparent Now, Actual Position, and the Lightline between them.")
                     .font(TimelyUNATheme.bodyFont)
                     .foregroundStyle(TimelyUNATheme.papyrus)
                     .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 4)
 
                 demoLabel
 
@@ -21,36 +32,51 @@ struct SunSextantView: View {
                     Text("The Sun We See vs. The Sun That Is")
                         .font(TimelyUNATheme.sectionFont)
                         .foregroundStyle(TimelyUNATheme.gold)
+                        .lineLimit(3)
+                        .minimumScaleFactor(0.8)
+                        .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 8)
                     VStack(alignment: .trailing, spacing: 2) {
                         Text("Light-SpaceTime")
                             .font(TimelyUNATheme.captionFont)
                             .foregroundStyle(TimelyUNATheme.accent.opacity(0.8))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                         Text(LightTimeConstants.sunLightTravelDescription)
-                            .font(.system(.title3, design: .serif).weight(.bold))
+                            .font(TimelyUNATheme.subheadingFont)
                             .foregroundStyle(TimelyUNATheme.gold)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                     }
                 }
 
+                // Simulation + info: stack on compact iPhone; side-by-side when wide enough.
                 ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .top, spacing: 20) {
-                        sunCanvas
-                            .frame(minWidth: 320, maxWidth: .infinity)
-                            .frame(height: 320)
+                    HStack(alignment: .top, spacing: 16) {
+                        simulationPanel
+                            .frame(minWidth: 300, maxWidth: .infinity)
+                            .frame(minHeight: 300)
                         infoColumn
                             .frame(width: 280)
                     }
                     VStack(alignment: .leading, spacing: 16) {
-                        sunCanvas
-                            .frame(height: 300)
+                        simulationPanel
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: isCompact ? 280 : 300)
                         infoColumn
                     }
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            // Clear fixed bottom navigation (shell provides safeAreaInset; this adds breathing room).
+            .padding(.bottom, 28)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(TimelyUNATheme.background.ignoresSafeArea())
-        .navigationTitle("TimelyUNA")
+        .scrollDismissesKeyboard(.interactively)
+        .background(TimelyUNATheme.background.ignoresSafeArea().allowsHitTesting(false))
+        // Tab/nav chrome only — primary engine title is the Papyrus header below.
+        .navigationTitle("Sextant")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -60,7 +86,7 @@ struct SunSextantView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             ZStack {
                 Circle()
                     .fill(
@@ -70,32 +96,39 @@ struct SunSextantView: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 56, height: 56)
+                    .frame(width: 52, height: 52)
                 Text("☉")
-                    .font(.system(size: 28))
+                    .font(.system(size: 26))
             }
+            .accessibilityHidden(true)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text("TIMELYUNA")
                     .font(TimelyUNATheme.titleFont)
                     .foregroundStyle(TimelyUNATheme.gold)
                     .tracking(2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.65)
                 Text("LIGHT-SPACETIME SEXTANT")
                     .font(TimelyUNATheme.captionFont)
                     .foregroundStyle(TimelyUNATheme.accent)
-                    .tracking(2)
+                    .tracking(1.5)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.65)
             }
-            Spacer()
+            Spacer(minLength: 4)
             Text("v\(LightTimeConstants.appVersionLabel)")
                 .font(TimelyUNATheme.captionFont)
                 .foregroundStyle(TimelyUNATheme.accent.opacity(0.7))
+                .lineLimit(1)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("TimelyUNA Light-SpaceTime Sextant, version \(LightTimeConstants.appVersionLabel)")
+        .accessibilityLabel("TimelyUNA Light-Spacetime Sextant, version \(LightTimeConstants.appVersionLabel)")
     }
 
     private var demoLabel: some View {
         Text("DAWN-FIRST DEMONSTRATION")
-            .font(.system(size: 11, weight: .semibold, design: .serif))
+            .font(TimelyUNATheme.smallCaptionFont)
             .tracking(2)
             .foregroundStyle(TimelyUNATheme.accent)
             .padding(.horizontal, 12)
@@ -104,31 +137,75 @@ struct SunSextantView: View {
             .clipShape(Capsule())
     }
 
-    private var sunCanvas: some View {
-        ZStack(alignment: .topTrailing) {
+    /// Simulation frame with reserved chrome band (title + LIVE badge) above the canvas.
+    private var simulationPanel: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            simulationChrome
+                .padding(.horizontal, 10)
+                .padding(.top, 10)
+                .padding(.bottom, 6)
+
             SunCanvasView(
                 rocketProgress: simulation.rocketProgress,
                 showRocket: simulation.isRocketFlying || simulation.rocketProgress > 0,
-                showHit: simulation.showRocketHit
+                showHit: simulation.showRocketHit,
+                drawsChromeLabels: false
             )
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(TimelyUNATheme.accent, lineWidth: 2)
-            )
-            .accessibilityLabel("Sun Light-SpaceTime simulation showing Earth, Apparent Now, Actual Position, and the SpaceTime Offset")
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: isCompact ? 220 : 250)
+            .layoutPriority(1)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
+        }
+        .background(Color.black)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(TimelyUNATheme.accent, lineWidth: 2)
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "Sun Light-SpaceTime live simulation showing Earth, Apparent Sun, Actual Sun, light delay, and true direction"
+        )
+    }
+
+    /// Reserved vertical region so the LIVE badge never covers the title.
+    private var simulationChrome: some View {
+        HStack(alignment: .top, spacing: 8) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("TIMELYUNA LIGHT-TIME LIVE SIMULATION")
+                    .font(TimelyUNATheme.captionFont)
+                    .foregroundStyle(TimelyUNATheme.gold)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.7)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
+
+                Text("Correcting for the finite speed of light")
+                    .font(TimelyUNATheme.smallCaptionFont)
+                    .foregroundStyle(TimelyUNATheme.gold.opacity(0.85))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.75)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Text("LIVE SIMULATION")
-                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .font(.system(size: dynamicTypeSize.isAccessibilitySize ? 9 : 10, weight: .semibold, design: .monospaced))
                 .foregroundStyle(TimelyUNATheme.papyrus)
-                .padding(.horizontal, 10)
+                .lineLimit(2)
+                .minimumScaleFactor(0.7)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 8)
                 .padding(.vertical, 5)
-                .background(Color.black.opacity(0.7))
+                .background(Color.black.opacity(0.75), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .stroke(TimelyUNATheme.accent.opacity(0.5), lineWidth: 1)
                 )
-                .padding(10)
+                .fixedSize(horizontal: true, vertical: true)
+                .accessibilityLabel("Live simulation")
         }
     }
 
@@ -158,6 +235,7 @@ struct SunSextantView: View {
                 Label("OPEN AR SUNRISE", systemImage: "arkit")
             }
             .buttonStyle(AncientButtonStyle())
+            .frame(minHeight: 44)
             .accessibilityHint("Opens the camera experience showing Apparent Now, Actual Position, and the Lightline")
 
             Button {
@@ -166,6 +244,7 @@ struct SunSextantView: View {
                 Label("LAUNCH BABY SPCX ROCKET", systemImage: "airplane.departure")
             }
             .buttonStyle(AncientButtonStyle())
+            .frame(minHeight: 44)
             .disabled(simulation.isRocketFlying)
             .accessibilityHint("Launches a rocket toward Actual Position, correcting for Light-SpaceTime")
 
@@ -173,6 +252,7 @@ struct SunSextantView: View {
                 .font(TimelyUNATheme.captionFont)
                 .foregroundStyle(TimelyUNATheme.accent.opacity(0.7))
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity)
         }
     }

@@ -19,14 +19,14 @@ enum Brand {
     /// Studio mark for the first opening frame (exact spelling: Rootz ends in z).
     static let studioMark = "QuantumRootz"
 
-    /// Technology credit (exact capitalization).
-    static let technologyCredit = "Driven by TimelyWon"
+    /// Technology / engine credit (exact capitalization). Engine name is TimelyUNA.
+    static let technologyCredit = "Driven by TimelyUNA"
 
     /// Closing dedication (exact capitalization).
     static let cosmicDedication = "Congruent with the Ancestors of the Cosmos"
 
     static let productDescriptor =
-        "Light-SpaceTime Sextant • Science Literacy Engine"
+        "Light-Spacetime Sextant"
 
     static let tagline =
         "Because the Sun is always late to its own Dawn—from our perspective."
