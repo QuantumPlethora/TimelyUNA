@@ -9,6 +9,7 @@ import ARKit
 
 /// Live calibration for physical-device AR: location, heading, and tracking quality.
 /// Never reports "calibrated" when heading accuracy or AR tracking is inadequate.
+/// Latitude/longitude are held for solar placement only — never surface them in AR UI, labels, or logs.
 @MainActor
 final class ARCalibrationService: NSObject, ObservableObject {
     enum Quality: String, Equatable {

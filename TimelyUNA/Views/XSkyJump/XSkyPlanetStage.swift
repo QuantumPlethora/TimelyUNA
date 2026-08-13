@@ -88,7 +88,9 @@ struct XSkyPlanetStage: View {
             onStageFrame?(frame)
             if debugOutline {
                 #if DEBUG
+                #if DEBUG
                 print("[xSky PlanetStage] frame=\(frame.integral)")
+                #endif
                 #endif
             }
         }
@@ -337,7 +339,9 @@ enum XSkyLayoutVerifier {
             guard frame.width > 1, frame.height > 1 else { continue }
             if core.intersects(frame) {
                 #if DEBUG
+                #if DEBUG
                 print("[xSky LAYOUT ASSERT] PlanetStage intersects chrome '\(id)': planet=\(core.integral) chrome=\(frame.integral)")
+                #endif
                 #endif
             }
         }

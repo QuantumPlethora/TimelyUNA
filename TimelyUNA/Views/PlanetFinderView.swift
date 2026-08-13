@@ -9,6 +9,7 @@ import UIKit
 struct PlanetFinderView: View {
     @EnvironmentObject private var location: ObserverLocationService
     @EnvironmentObject private var clock: HorizonClock
+    @EnvironmentObject private var persistence: HorizonPersistence
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -92,9 +93,11 @@ struct PlanetFinderView: View {
             #if os(iOS)
             ARSunRocketView(selectedDate: clock.now)
                 .environmentObject(location)
+                .environmentObject(persistence)
             #else
             ARSunRocketView(selectedDate: clock.now)
                 .environmentObject(location)
+                .environmentObject(persistence)
             #endif
         }
         #if os(iOS)
@@ -189,7 +192,7 @@ struct PlanetFinderView: View {
             Text("Location required")
                 .font(TimelyUNATheme.subheadingFont)
                 .foregroundStyle(TimelyUNATheme.gold)
-            Text(location.guidanceMessage ?? "Finder needs your location to compute altitude, azimuth, and rise times for your sky. Coordinates stay on this device.")
+            Text(location.guidanceMessage ?? "Finder needs your location to compute altitude, azimuth, and rise times for your sky. Location data stays on this device.")
                 .font(TimelyUNATheme.bodyFont)
                 .foregroundStyle(TimelyUNATheme.papyrus)
                 .fixedSize(horizontal: false, vertical: true)
@@ -229,6 +232,10 @@ struct PlanetFinderView: View {
                     guidance: guidance,
                     horizontalDelta: horizontalDelta,
                     verticalDelta: verticalDelta,
+                    targetAltitude: bodySnapshot?.visible.altitude,
+                    targetAzimuth: bodySnapshot?.visible.azimuth,
+                    deviceHeading: motion.filteredHeadingDegrees ?? motion.headingDegrees,
+                    viewingElevation: motion.elevationDegrees,
                     isLocked: isLocked,
                     lockFlash: lockFlash,
                     reduceMotion: reduceMotion
@@ -243,31 +250,39 @@ struct PlanetFinderView: View {
                     .stroke(TimelyUNATheme.line, lineWidth: 1)
             )
 
-            // Turn / raise numbers
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 12) {
-                    deltaChip(
-                        title: horizontalDelta >= 0 ? "Turn right" : "Turn left",
-                        value: SolarFormat.degrees(abs(horizontalDelta)),
-                        symbol: horizontalDelta >= 0 ? "arrow.right" : "arrow.left"
-                    )
-                    deltaChip(
-                        title: verticalDelta >= 0 ? "Raise phone" : "Lower phone",
-                        value: SolarFormat.degrees(abs(verticalDelta)),
-                        symbol: verticalDelta >= 0 ? "arrow.up" : "arrow.down"
-                    )
-                }
-                VStack(spacing: 10) {
-                    deltaChip(
-                        title: horizontalDelta >= 0 ? "Turn right" : "Turn left",
-                        value: SolarFormat.degrees(abs(horizontalDelta)),
-                        symbol: horizontalDelta >= 0 ? "arrow.right" : "arrow.left"
-                    )
-                    deltaChip(
-                        title: verticalDelta >= 0 ? "Raise phone" : "Lower phone",
-                        value: SolarFormat.degrees(abs(verticalDelta)),
-                        symbol: verticalDelta >= 0 ? "arrow.up" : "arrow.down"
-                    )
+            // Turn / raise numbers — replaced when the target is under the ideal horizon
+            if guidance == .belowHorizon {
+                deltaChip(
+                    title: "Below horizon",
+                    value: bodySnapshot.map { SolarFormat.degrees($0.visible.altitude) } ?? "—",
+                    symbol: "arrow.down.to.line"
+                )
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) {
+                        deltaChip(
+                            title: horizontalDelta >= 0 ? "Turn right" : "Turn left",
+                            value: SolarFormat.degrees(abs(horizontalDelta)),
+                            symbol: horizontalDelta >= 0 ? "arrow.right" : "arrow.left"
+                        )
+                        deltaChip(
+                            title: verticalDelta >= 0 ? "Raise phone" : "Lower phone",
+                            value: SolarFormat.degrees(abs(verticalDelta)),
+                            symbol: verticalDelta >= 0 ? "arrow.up" : "arrow.down"
+                        )
+                    }
+                    VStack(spacing: 10) {
+                        deltaChip(
+                            title: horizontalDelta >= 0 ? "Turn right" : "Turn left",
+                            value: SolarFormat.degrees(abs(horizontalDelta)),
+                            symbol: horizontalDelta >= 0 ? "arrow.right" : "arrow.left"
+                        )
+                        deltaChip(
+                            title: verticalDelta >= 0 ? "Raise phone" : "Lower phone",
+                            value: SolarFormat.degrees(abs(verticalDelta)),
+                            symbol: verticalDelta >= 0 ? "arrow.up" : "arrow.down"
+                        )
+                    }
                 }
             }
 
@@ -533,12 +548,15 @@ struct PlanetFinderView: View {
 
     private var verticalDelta: Double {
         guard let snap = bodySnapshot else { return 0 }
-        let elev = motion.elevationDegrees ?? 0
-        // If elevation unavailable, still report target altitude as the "raise" cue vs horizon.
-        if motion.elevationDegrees == nil {
-            return snap.visible.altitude
+        // relativeElevation = targetAltitude − viewingElevation
+        if let elev = motion.elevationDegrees {
+            return ARCelestialMath.relativeElevation(
+                targetAltitude: snap.visible.altitude,
+                viewingElevation: elev
+            )
         }
-        return snap.visible.altitude - elev
+        // No pitch sensor: altitude itself is the offset from the instrument horizon (center).
+        return snap.visible.altitude
     }
 
     private func recompute() {
@@ -813,15 +831,58 @@ private struct FinderReticle: View {
     let guidance: FinderGuidance
     let horizontalDelta: Double
     let verticalDelta: Double
+    let targetAltitude: Double?
+    let targetAzimuth: Double?
+    let deviceHeading: Double?
+    let viewingElevation: Double?
     let isLocked: Bool
     let lockFlash: Bool
     let reduceMotion: Bool
+
+    /// Instrument half-FOV (degrees) → ±1 normalized offset at the usable edge.
+    private let halfHorizontalFOV: Double = 35
+    private let halfVerticalFOV: Double = 30
+
+    private var isBelowHorizon: Bool {
+        guidance == .belowHorizon
+            || targetAltitude.map { ARCelestialMath.isBelowHorizon(targetAltitude: $0) } == true
+    }
 
     var body: some View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
             let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
-            let arrowAngle = Angle(degrees: horizontalDelta) // 0 = up in our draw after rotation
+            let inset = max(14, side * 0.08)
+
+            // relativeElevation → normalized → screenY → edge clamp
+            // Below horizon: force bottom clamp (fixture: alt −15.38°, elev +29.69° → bottom).
+            let placement: ARCelestialMath.ScreenPlacement = {
+                if let alt = targetAltitude, let az = targetAzimuth {
+                    return ARCelestialMath.finderScreenPlacement(
+                        targetAltitude: alt,
+                        targetAzimuth: az,
+                        deviceHeading: deviceHeading,
+                        viewingElevation: viewingElevation,
+                        viewSize: geo.size,
+                        halfHorizontalFOVDegrees: halfHorizontalFOV,
+                        halfVerticalFOVDegrees: halfVerticalFOV,
+                        edgeInset: inset
+                    )
+                }
+                return ARCelestialMath.screenPlacement(
+                    relativeAzimuthDegrees: horizontalDelta,
+                    relativeElevationDegrees: verticalDelta,
+                    viewSize: geo.size,
+                    halfHorizontalFOVDegrees: halfHorizontalFOV,
+                    halfVerticalFOVDegrees: halfVerticalFOV,
+                    edgeInset: inset,
+                    forceBottomClamp: isBelowHorizon
+                )
+            }()
+            let pip = placement.screenPoint
+            let arrowAngle = Angle(degrees: horizontalDelta)
+            let pipColor = isBelowHorizon ? TimelyUNATheme.orange : TimelyUNATheme.acid
+            let guideColor = isBelowHorizon ? TimelyUNATheme.orange : TimelyUNATheme.acid
 
             ZStack {
                 // Outer ring
@@ -838,10 +899,20 @@ private struct FinderReticle: View {
                 }
                 .stroke(TimelyUNATheme.goldDeep.opacity(0.35), lineWidth: 1)
 
-                // Center reticle
+                // Ideal horizon tick (instrument center line is aim; light mark for sky horizon cue)
+                if isBelowHorizon {
+                    Path { p in
+                        p.move(to: CGPoint(x: center.x - side * 0.32, y: center.y))
+                        p.addLine(to: CGPoint(x: center.x + side * 0.32, y: center.y))
+                    }
+                    .stroke(TimelyUNATheme.orange.opacity(0.45), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                }
+
+                // Center reticle (aim point)
                 Circle()
                     .stroke(isLocked ? TimelyUNATheme.acid : TimelyUNATheme.papyrus.opacity(0.7), lineWidth: isLocked ? 3 : 1.5)
                     .frame(width: side * 0.16, height: side * 0.16)
+                    .position(center)
                     .scaleEffect(lockFlash && !reduceMotion ? 1.15 : 1.0)
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.5).repeatCount(2, autoreverses: true), value: lockFlash)
 
@@ -849,22 +920,69 @@ private struct FinderReticle: View {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: side * 0.12))
                         .foregroundStyle(TimelyUNATheme.acid)
+                        .position(center)
                         .transition(.opacity)
                 } else {
-                    // Directional arrow — angle from real horizontal delta (0° = target north of heading → point up)
-                    Image(systemName: "location.north.fill")
-                        .font(.system(size: side * 0.14, weight: .semibold))
-                        .foregroundStyle(TimelyUNATheme.acid)
-                        .rotationEffect(arrowAngle)
-                        .offset(y: -side * 0.28)
+                    // Continuous target pip — bottom-clamped when below horizon
+                    Circle()
+                        .fill(pipColor.opacity(placement.isClampedToEdge ? 0.6 : 0.92))
+                        .frame(width: side * 0.055, height: side * 0.055)
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    isBelowHorizon ? TimelyUNATheme.orange : TimelyUNATheme.gold,
+                                    lineWidth: placement.clampedBottom || placement.isClampedToEdge ? 2 : 1
+                                )
+                        )
+                        .position(pip)
+                        .animation(reduceMotion ? nil : .interactiveSpring(response: 0.22, dampingFraction: 0.86), value: pip.x)
+                        .animation(reduceMotion ? nil : .interactiveSpring(response: 0.22, dampingFraction: 0.86), value: pip.y)
                         .accessibilityHidden(true)
 
-                    // Vertical cue chevron
-                    Image(systemName: verticalDelta >= 0 ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(TimelyUNATheme.gold)
-                        .offset(y: verticalDelta >= 0 ? -side * 0.42 : side * 0.42)
-                        .opacity(abs(verticalDelta) > 4 ? 1 : 0.25)
+                    Path { p in
+                        p.move(to: center)
+                        p.addLine(to: pip)
+                    }
+                    .stroke(guideColor.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+
+                    if placement.clampedBottom || isBelowHorizon {
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(isBelowHorizon ? TimelyUNATheme.orange : TimelyUNATheme.gold)
+                            .position(x: pip.x, y: min(geo.size.height - 10, pip.y + side * 0.06))
+                    }
+                    if placement.clampedTop && !isBelowHorizon {
+                        Image(systemName: "chevron.up")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(TimelyUNATheme.gold)
+                            .position(x: pip.x, y: max(10, pip.y - side * 0.06))
+                    }
+                    if placement.clampedLeft && !isBelowHorizon {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(TimelyUNATheme.gold)
+                            .position(x: max(10, pip.x - side * 0.06), y: pip.y)
+                    }
+                    if placement.clampedRight && !isBelowHorizon {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(TimelyUNATheme.gold)
+                            .position(x: min(geo.size.width - 10, pip.x + side * 0.06), y: pip.y)
+                    }
+
+                    if isBelowHorizon {
+                        Text("Below horizon")
+                            .font(TimelyUNATheme.smallCaptionFont)
+                            .foregroundStyle(TimelyUNATheme.orange)
+                            .position(x: center.x, y: min(geo.size.height - 8, pip.y + side * 0.12))
+                    } else if abs(horizontalDelta) > halfHorizontalFOV * 0.85 {
+                        Image(systemName: "location.north.fill")
+                            .font(.system(size: side * 0.1, weight: .semibold))
+                            .foregroundStyle(TimelyUNATheme.acid.opacity(0.85))
+                            .rotationEffect(arrowAngle)
+                            .position(x: center.x, y: center.y - side * 0.36)
+                            .accessibilityHidden(true)
+                    }
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
@@ -872,7 +990,9 @@ private struct FinderReticle: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(guidance.title)
         .accessibilityValue(
-            "Horizontal \(String(format: "%.0f", abs(horizontalDelta))) degrees. Vertical \(String(format: "%.0f", abs(verticalDelta))) degrees."
+            isBelowHorizon
+                ? "Target below ideal horizon. Altitude \(targetAltitude.map { String(format: "%.1f", $0) } ?? "—") degrees."
+                : "Horizontal \(String(format: "%.0f", abs(horizontalDelta))) degrees. Vertical \(String(format: "%.0f", abs(verticalDelta))) degrees."
         )
     }
 }

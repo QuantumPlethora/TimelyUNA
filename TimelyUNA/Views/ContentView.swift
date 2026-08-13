@@ -198,7 +198,8 @@ struct CosmicBackground: View {
 private struct CompactHeader: View {
     var body: some View {
         HStack(spacing: 12) {
-            Text("True Horizon")
+            // Compact chrome — short name avoids truncation on small phones.
+            Text(Brand.productShortName)
                 .font(TimelyUNATheme.sectionFont)
                 .foregroundStyle(TimelyUNATheme.gold)
                 .lineLimit(1)

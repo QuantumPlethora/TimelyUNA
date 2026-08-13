@@ -40,6 +40,10 @@
 		A1B2C3D4E5F60718293A0015 /* XSkyPlanetStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293F0015 /* XSkyPlanetStage.swift */; };
 		C684FBC42F2E4CF6B167B047 /* PhotonLabyrinthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5439159981D8417DAB2EF8C8 /* PhotonLabyrinthView.swift */; };
 		EF71F2E0E8384D9A848B7D5B /* LightTimeConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76ACA30747814220AEDA0E17 /* LightTimeConstants.swift */; };
+		D1E2F3A4B5C60718293A0100 /* StartupTransitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C60718293F0100 /* StartupTransitionView.swift */; };
+		D1E2F3A4B5C60718293A0101 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C60718293F0101 /* LaunchScreen.storyboard */; platformFilter = ios; };
+		D1E2F3A4B5C60718293A0102 /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C60718293F0102 /* Brand.swift */; };
+		D1E2F3A4B5C60718293A0103 /* BabyXLaunchController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C60718293F0103 /* BabyXLaunchController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +76,10 @@
 		BF428BF3B1394AB6927D5FAC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CE6A45433D5E4AF89E89C591 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED8C1E728DD84453A8E41D2D /* ChronosCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChronosCanvasView.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C60718293F0100 /* StartupTransitionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupTransitionView.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C60718293F0101 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		D1E2F3A4B5C60718293F0102 /* Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brand.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C60718293F0103 /* BabyXLaunchController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BabyXLaunchController.swift; sourceTree = "<group>"; };
 
 		A1B2C3D4E5F60718293F0010 /* XSkyJumpState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XSkyJumpState.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293F0011 /* XSkyJumpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XSkyJumpView.swift; path = XSkyJump/XSkyJumpView.swift; sourceTree = "<group>"; };
@@ -97,6 +105,7 @@
 			children = (
 				BF428BF3B1394AB6927D5FAC /* Assets.xcassets */,
 				CE6A45433D5E4AF89E89C591 /* PrivacyInfo.xcprivacy */,
+				D1E2F3A4B5C60718293F0101 /* LaunchScreen.storyboard */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -105,6 +114,7 @@
 			isa = PBXGroup;
 			children = (
 				07E219CC715B417F9089CAD0 /* TimelyUNATheme.swift */,
+				D1E2F3A4B5C60718293F0102 /* Brand.swift */,
 			);
 			path = Theme;
 			sourceTree = "<group>";
@@ -141,6 +151,7 @@
 				A1B2C3D4E5F60718293F0008 /* ARCelestialMath.swift */,
 				A1B2C3D4E5F60718293F0009 /* ARCalibrationService.swift */,
 				C6847DC6F1284E318E8F4494 /* FinderMotionService.swift */,
+				D1E2F3A4B5C60718293F0103 /* BabyXLaunchController.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -169,6 +180,7 @@
 			isa = PBXGroup;
 			children = (
 				3411C322674949F9AD8459CE /* ContentView.swift */,
+				D1E2F3A4B5C60718293F0100 /* StartupTransitionView.swift */,
 				58C697F3D4AD48CA9FB11237 /* PlanetFinderView.swift */,
 				A1B2C3D4E5F60718293F0005 /* TrueHorizonView.swift */,
 				A1B2C3D4E5F60718293F0014 /* XSkyPlanetTextures.swift */,
@@ -249,6 +261,7 @@
 			files = (
 				212AC45B314B4363A075E02A /* Assets.xcassets in Resources */,
 				0E39C053B7D444228EABB683 /* PrivacyInfo.xcprivacy in Resources */,
+				D1E2F3A4B5C60718293A0101 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,6 +303,9 @@
 				FC8941AE99A54AFDBDBEB87A /* PlanetaryEphemeris.swift in Sources */,
 				A05CF3C4532043518E9CF5B3 /* FinderMotionService.swift in Sources */,
 				24CEB05F743142D180DCAAF4 /* PlanetFinderView.swift in Sources */,
+				D1E2F3A4B5C60718293A0100 /* StartupTransitionView.swift in Sources */,
+				D1E2F3A4B5C60718293A0102 /* Brand.swift in Sources */,
+				D1E2F3A4B5C60718293A0103 /* BabyXLaunchController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -317,7 +333,7 @@
 				INFOPLIST_KEY_NSLocationUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -389,7 +405,7 @@
 				INFOPLIST_KEY_NSLocationUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "True Horizon uses your location to calculate educational Sun altitude, azimuth, and sunrise for your horizon. Coordinates stay on this device and are never invented as live GPS.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

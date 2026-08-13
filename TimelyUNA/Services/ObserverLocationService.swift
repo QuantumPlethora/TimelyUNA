@@ -10,7 +10,13 @@ import UIKit
 #endif
 
 /// Observer coordinates for educational solar calculations.
-/// Coordinates exist only after a live Core Location fix — never silent Cupertino fallback.
+///
+/// ## Location privacy (True Horizon policy)
+/// - Raw `latitude` / `longitude` exist only after a live Core Location fix (never a silent fallback).
+/// - Exact values may be **visibly displayed only on True Horizon’s observer strip / same-screen metrics**.
+/// - Use `coordinateLabel` solely for that approved UI. Prefer `locationAvailabilityLabel` for
+///   diagnostics, AR, Finder gates, and any non-approved surface.
+/// - Do not put coordinates in share text, notifications, URLs, UserDefaults keys, analytics, or logs.
 @MainActor
 final class ObserverLocationService: NSObject, ObservableObject {
     enum AuthorizationState: Equatable {
@@ -36,12 +42,15 @@ final class ObserverLocationService: NSObject, ObservableObject {
         case fixFailed
     }
 
+    /// Precise device latitude — **internal astronomy only**. Do not format for UI outside True Horizon.
     @Published private(set) var latitude: Double?
+    /// Precise device longitude — **internal astronomy only**. Do not format for UI outside True Horizon.
     @Published private(set) var longitude: Double?
     @Published private(set) var source: Source = .notRequested
     @Published private(set) var authorization: AuthorizationState = .notDetermined
     @Published private(set) var statusMessage: String = "Location needed for your horizon"
     @Published private(set) var lastUpdate: Date?
+    /// User-facing errors must never embed numeric latitude/longitude.
     @Published var lastErrorMessage: String?
 
     private let manager = CLLocationManager()
@@ -74,6 +83,8 @@ final class ObserverLocationService: NSObject, ObservableObject {
 
     var isLive: Bool { hasLiveCoordinates }
 
+    /// **APPROVED DISPLAY ONLY** — True Horizon observer strip / same-screen metrics.
+    /// Never use this in Finder, AR, xSky, share, notifications, accessibility outside True Horizon, or logs.
     var coordinateLabel: String {
         guard let latitude, let longitude, hasLiveCoordinates else {
             return "—"
@@ -81,9 +92,31 @@ final class ObserverLocationService: NSObject, ObservableObject {
         return String(format: "%.4f°, %.4f°", latitude, longitude)
     }
 
+    /// Redacted location state for diagnostics, gates, and non-approved UI.
+    /// Values: `available`, `acquiring`, `denied`, `unavailable`, `not set`, `fix failed`.
+    var locationAvailabilityLabel: String {
+        switch source {
+        case .liveGPS where hasLiveCoordinates:
+            return "available"
+        case .liveGPS:
+            return "acquiring"
+        case .requesting:
+            return "acquiring"
+        case .denied:
+            return "denied"
+        case .unavailable:
+            return "unavailable"
+        case .fixFailed:
+            return "fix failed"
+        case .notRequested:
+            return "not set"
+        }
+    }
+
+    /// Short badge without numeric coordinates (safe for Finder / AR chrome).
     var sourceBadge: String {
         switch source {
-        case .liveGPS: return "Live GPS"
+        case .liveGPS: return "Live location"
         case .notRequested: return "Not set"
         case .requesting: return "Requesting…"
         case .denied: return "Permission denied"
@@ -116,12 +149,13 @@ final class ObserverLocationService: NSObject, ObservableObject {
     }
 
     /// Guidance when the user cannot get a live fix yet.
+    /// Never embeds numeric latitude/longitude.
     var guidanceMessage: String? {
         switch source {
         case .notRequested:
-            return "True Horizon needs your location to compute altitude, azimuth, and sunrise for your sky. Coordinates stay on this device."
+            return "True Horizon needs your location to compute altitude, azimuth, and sunrise for your sky. Location data stays on this device."
         case .requesting:
-            return "Waiting for permission or the first GPS fix…"
+            return "Waiting for permission or the first location fix…"
         case .denied:
             #if os(iOS)
             return "Location access is off for True Horizon. Open Settings → Privacy & Security → Location Services, enable True Horizon, then return and tap Refresh."
@@ -135,7 +169,7 @@ final class ObserverLocationService: NSObject, ObservableObject {
             return "Location Services appear to be off. Enable them in System Settings, then try again."
             #endif
         case .fixFailed:
-            return "Could not get a fix. Check that Location Services are on, then try again."
+            return "Could not get a location fix. Check that Location Services are on, then try again."
         case .liveGPS:
             return nil
         }
@@ -283,7 +317,7 @@ extension ObserverLocationService: CLLocationManagerDelegate {
             self.latitude = coord.latitude
             self.longitude = coord.longitude
             self.source = .liveGPS
-            self.statusMessage = "Live GPS horizon locked"
+            self.statusMessage = "Live location horizon locked"
             self.lastUpdate = location.timestamp
             self.lastErrorMessage = nil
             self.manager.stopUpdatingLocation()
@@ -294,12 +328,13 @@ extension ObserverLocationService: CLLocationManagerDelegate {
         Task { @MainActor in
             // Keep a previous live fix if we already have one (transient error).
             if self.source == .liveGPS, self.latitude != nil {
-                self.lastErrorMessage = error.localizedDescription
-                self.statusMessage = "Live GPS · last fix kept (update failed)"
+                // Never embed coordinates; keep prior fix for astronomy, surface redacted status only.
+                self.lastErrorMessage = "Location update failed; using last known fix"
+                self.statusMessage = "Live location · last fix kept (update failed)"
                 return
             }
             self.clearCoordinates(source: .fixFailed, message: "Could not get a location fix")
-            self.lastErrorMessage = error.localizedDescription
+            self.lastErrorMessage = "Location fix failed"
         }
     }
 }

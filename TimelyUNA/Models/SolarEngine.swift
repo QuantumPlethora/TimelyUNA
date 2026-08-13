@@ -21,7 +21,9 @@ enum SolarEngine {
 
     struct Snapshot: Equatable, Sendable {
         var date: Date
+        /// Observer latitude used for this calculation — **internal only**; never format for UI/share/logs outside True Horizon’s approved coordinate display.
         var latitude: Double
+        /// Observer longitude used for this calculation — **internal only**; never format for UI/share/logs outside True Horizon’s approved coordinate display.
         var longitude: Double
         var apparent: HorizontalCoordinates
         var truePosition: HorizontalCoordinates

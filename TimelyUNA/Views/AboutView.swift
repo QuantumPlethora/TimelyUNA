@@ -6,14 +6,22 @@ struct AboutView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Text("This is only\nthe beginning.")
+                Text(Brand.productDisplayName)
                     .font(TimelyUNATheme.titleFont)
                     .foregroundStyle(TimelyUNATheme.gold)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.75)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("This is only\nthe beginning.")
+                    .font(TimelyUNATheme.subheadingFont)
+                    .foregroundStyle(TimelyUNATheme.papyrus)
                     .multilineTextAlignment(.center)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("TimelyUNA is a living concept — a light-time sextant that reveals the true positions of stars and planets by correcting for the finite speed of light, with playful extensions into deep-time observation and guided rocket navigation.")
+                Text("\(Brand.productDisplayName) is a living concept — a light-time sextant that reveals the true positions of stars and planets by correcting for the finite speed of light, with playful extensions into deep-time observation and guided rocket navigation.")
                     .font(TimelyUNATheme.bodyFont)
                     .foregroundStyle(TimelyUNATheme.papyrus)
                     .multilineTextAlignment(.center)
@@ -22,6 +30,9 @@ struct AboutView: View {
                     .padding(.horizontal, 6)
 
                 VStack(alignment: .leading, spacing: 12) {
+                    aboutRow(title: "Product", value: Brand.productDisplayName)
+                    aboutRow(title: "Studio", value: Brand.studioCredit)
+                    aboutRow(title: "Technology", value: Brand.technologyCredit)
                     aboutRow(title: "Sun light delay", value: LightTimeConstants.sunLightTravelDescription)
                     aboutRow(title: "Demo angular offset", value: "~\(Int(LightTimeConstants.demoAngularOffsetDegrees))° (educational)")
                     aboutRow(title: "Chronos distance", value: LightTimeConstants.chronosDistanceLabel)

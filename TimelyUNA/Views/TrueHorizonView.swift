@@ -348,7 +348,7 @@ struct TrueHorizonView: View {
         .buttonStyle(.plain)
         .disabled(location.source == .requesting)
         .accessibilityLabel(location.actionButtonTitle)
-        .accessibilityHint("Requests Core Location for live educational solar calculations. No coordinates are shown until a live fix arrives.")
+        .accessibilityHint("Requests Core Location for live educational solar calculations. Exact latitude and longitude appear only in this screen’s observer strip after a live fix.")
     }
 
     private func stripCell(_ title: String, _ value: String) -> some View {
@@ -454,7 +454,7 @@ struct TrueHorizonView: View {
         Actual Now: altitude \(SolarFormat.degrees(snapshot.truePosition.altitude)), \
         azimuth \(SolarFormat.degrees(snapshot.truePosition.azimuth)). \
         Photon delay \(SolarFormat.lightDelayWords(snapshot.lightTimeSeconds)). \
-        Distance \(SolarFormat.au(snapshot.distanceAU)) astronomical units. Live GPS calculation.
+        Distance \(SolarFormat.au(snapshot.distanceAU)) astronomical units. Computed from live location.
         """
     }
 
@@ -991,10 +991,12 @@ struct TrueHorizonView: View {
                 }
                 .padding(.top, 16)
 
+                // Approved same-screen coordinate display (True Horizon only).
                 Text("Live calculation · \(location.coordinateLabel)")
                     .font(TimelyUNATheme.smallCaptionFont)
                     .foregroundStyle(TimelyUNATheme.acid.opacity(0.85))
                     .padding(.top, 10)
+                    .accessibilityLabel("Live calculation · \(location.coordinateLabel)")
             } else {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("— MIN  — SEC")
@@ -1256,10 +1258,12 @@ struct TrueHorizonView: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("True Horizon · powered by the TimelyUNA light-time engine · Educational estimate")
+            Text("\(Brand.productDisplayName) · \(Brand.technologyCredit) · Educational estimate")
                 .font(TimelyUNATheme.captionFont)
                 .foregroundStyle(TimelyUNATheme.muted)
                 .multilineTextAlignment(.center)
+                .lineLimit(3)
+                .minimumScaleFactor(0.8)
         }
     }
 
