@@ -12,7 +12,7 @@ struct SunCanvasView: View {
     private let stars: [Star] = Star.makeField(count: 180)
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: !showRocket && !showHit)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 24.0, paused: false)) { timeline in
             Canvas { context, size in
                 drawScene(context: context, size: size, time: timeline.date)
             }
@@ -118,12 +118,12 @@ struct SunCanvasView: View {
             with: .color(TimelyUNATheme.earthGreen)
         )
 
-        // Photon path (dashed) to apparent
-        let photonStart = CGPoint(x: earth.x + 18 * s, y: earth.y - 6 * s)
-        let photonEnd = CGPoint(x: apparent.x - 16 * s, y: apparent.y + 4 * s)
+        // Lightlike path: Apparent (emission) → Earth. Photon travels this way.
+        let photonFrom = CGPoint(x: apparent.x - 16 * s, y: apparent.y + 4 * s)
+        let photonTo = CGPoint(x: earth.x + 18 * s, y: earth.y - 6 * s)
         var photonPath = Path()
-        photonPath.move(to: photonStart)
-        photonPath.addLine(to: photonEnd)
+        photonPath.move(to: photonFrom)
+        photonPath.addLine(to: photonTo)
         context.stroke(
             photonPath,
             with: .color(TimelyUNATheme.actualSun),
@@ -243,10 +243,20 @@ struct SunCanvasView: View {
             leaderTo: nil
         )
 
+        // Shared emission, two independent trajectories.
+        drawDivergingEmission(
+            context: context,
+            emission: photonFrom,
+            photonEnd: photonTo,
+            ghostEnd: CGPoint(x: actual.x - 22 * s, y: actual.y),
+            time: time,
+            scale: s
+        )
+
         // Photon delay mid-path (above dashed line).
         let midPhoton = CGPoint(
-            x: (photonStart.x + photonEnd.x) * 0.5,
-            y: (photonStart.y + photonEnd.y) * 0.5 - 16 * s
+            x: (photonFrom.x + photonTo.x) * 0.5,
+            y: (photonFrom.y + photonTo.y) * 0.5 - 16 * s
         )
         drawClampedLabel(
             context: context,
@@ -287,6 +297,59 @@ struct SunCanvasView: View {
                 anchor: .center
             )
         }
+    }
+
+    private func drawDivergingEmission(
+        context: GraphicsContext,
+        emission: CGPoint,
+        photonEnd: CGPoint,
+        ghostEnd: CGPoint,
+        time: Date,
+        scale s: CGFloat
+    ) {
+        let period = 4.2
+        let raw = time.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: period) / period
+        let fly: CGFloat
+        if raw < 0.12 {
+            fly = 0
+        } else {
+            let u = (raw - 0.12) / 0.88
+            fly = u * u * (3 - 2 * u)
+        }
+        let px = emission.x + (photonEnd.x - emission.x) * fly
+        let py = emission.y + (photonEnd.y - emission.y) * fly
+        let gx = emission.x + (ghostEnd.x - emission.x) * fly
+        let gy = emission.y + (ghostEnd.y - emission.y) * fly
+
+        context.fill(
+            Path(ellipseIn: CGRect(x: px - 3 * s, y: py - 3 * s, width: 6 * s, height: 6 * s)),
+            with: .color(TimelyUNATheme.actualSun)
+        )
+        context.fill(
+            Path(ellipseIn: CGRect(x: px - 9 * s, y: py - 9 * s, width: 18 * s, height: 18 * s)),
+            with: .radialGradient(
+                Gradient(colors: [TimelyUNATheme.actualSun.opacity(0.4), .clear]),
+                center: CGPoint(x: px, y: py),
+                startRadius: 0,
+                endRadius: 10 * s
+            )
+        )
+
+        let gr = 8 * s
+        context.fill(
+            Path(ellipseIn: CGRect(x: gx - gr, y: gy - gr, width: gr * 2, height: gr * 2)),
+            with: .radialGradient(
+                Gradient(colors: [Color.white.opacity(0.5), TimelyUNATheme.gold.opacity(0.35), .clear]),
+                center: CGPoint(x: gx, y: gy),
+                startRadius: 0,
+                endRadius: gr * 1.4
+            )
+        )
+        context.stroke(
+            Path(ellipseIn: CGRect(x: gx - gr, y: gy - gr, width: gr * 2, height: gr * 2)),
+            with: .color(TimelyUNATheme.gold.opacity(0.55)),
+            style: StrokeStyle(lineWidth: 0.8 * s, dash: [2 * s, 2 * s])
+        )
     }
 
     private func drawAnnotation(

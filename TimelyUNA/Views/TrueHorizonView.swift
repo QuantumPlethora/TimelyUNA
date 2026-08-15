@@ -454,7 +454,8 @@ struct TrueHorizonView: View {
         Actual Now: altitude \(SolarFormat.degrees(snapshot.truePosition.altitude)), \
         azimuth \(SolarFormat.degrees(snapshot.truePosition.azimuth)). \
         Photon delay \(SolarFormat.lightDelayWords(snapshot.lightTimeSeconds)). \
-        Distance \(SolarFormat.au(snapshot.distanceAU)) astronomical units. Computed from live location.
+        A photon leaves Apparent Now toward you while a ghost Sun continues toward Actual Now. \
+        Distance \(SolarFormat.au(snapshot.distanceAU)) astronomical units. Computed from live location. Educational visualization, not for navigation.
         """
     }
 
@@ -510,44 +511,43 @@ struct TrueHorizonView: View {
         let apparent = CGPoint(x: w * 0.22, y: h * 0.48)
         let actual = CGPoint(x: w * 0.78, y: h * 0.30)
 
-        // Photon path Visible
+        // Lightlike geodesic: Apparent (emission) → observer. Not a two-way commute.
         drawDashedLine(
             context: context,
-            from: you,
-            to: apparent,
+            from: apparent,
+            to: you,
             color: TimelyUNATheme.gold.opacity(0.75),
             phase: photonDash,
             width: 1.8
         )
-        // Correction path Actual
+        // Sun’s continuing trajectory after emission: Apparent → Actual Now.
+        drawDashedLine(
+            context: context,
+            from: apparent,
+            to: actual,
+            color: TimelyUNATheme.acid.opacity(0.55),
+            phase: photonDash + 12,
+            width: 1.6
+        )
+        // Where you would look if you aimed at Actual Now (not the photon path).
         drawDashedLine(
             context: context,
             from: you,
             to: actual,
-            color: TimelyUNATheme.acid.opacity(0.9),
-            phase: photonDash + 12,
-            width: 2.2
+            color: TimelyUNATheme.acid.opacity(0.28),
+            phase: photonDash + 24,
+            width: 1.1
         )
 
-        // Animated photon mote along apparent path
-        if !reduceMotion {
-            let t = (sin(time.timeIntervalSinceReferenceDate * 0.7) + 1) / 2
-            let px = you.x + (apparent.x - you.x) * t
-            let py = you.y + (apparent.y - you.y) * t
-            context.fill(
-                Path(ellipseIn: CGRect(x: px - 3, y: py - 3, width: 6, height: 6)),
-                with: .color(TimelyUNATheme.gold)
-            )
-            context.fill(
-                Path(ellipseIn: CGRect(x: px - 10, y: py - 10, width: 20, height: 20)),
-                with: .radialGradient(
-                    Gradient(colors: [TimelyUNATheme.gold.opacity(0.35), .clear]),
-                    center: CGPoint(x: px, y: py),
-                    startRadius: 0,
-                    endRadius: 12
-                )
-            )
-        }
+        // Shared emission, two independent vectors — photon toward YOU, ghost Sun toward Actual.
+        drawEmissionChronology(
+            context: context,
+            emission: apparent,
+            photonEnd: you,
+            ghostEnd: actual,
+            time: time,
+            reduceMotion: reduceMotion
+        )
 
         // APPARENT (Visible Now) — softer, smaller
         drawSun(
@@ -613,6 +613,88 @@ struct TrueHorizonView: View {
         if simulation.showRocketHit {
             label(context, "REALITY CORRECTED", at: CGPoint(x: w * 0.5, y: h * 0.14), color: TimelyUNATheme.acid, size: 16, bold: true)
             label(context, "Light-time navigation complete", at: CGPoint(x: w * 0.5, y: h * 0.14 + 18), color: TimelyUNATheme.gold, size: 11)
+        }
+    }
+
+    /// Photon and ghost Sun share an emission moment at Apparent Now, then
+    /// follow independent vectors. Ghost is not parented to the photon.
+    private func drawEmissionChronology(
+        context: GraphicsContext,
+        emission: CGPoint,
+        photonEnd: CGPoint,
+        ghostEnd: CGPoint,
+        time: Date,
+        reduceMotion: Bool
+    ) {
+        let period: Double = reduceMotion ? 5.4 : 3.8
+        let raw = time.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: period) / period
+        // 0…0.14 hold at emission, 0.14…1.0 travel.
+        let fly: Double
+        if raw < 0.14 {
+            fly = 0
+        } else {
+            let u = (raw - 0.14) / 0.86
+            fly = u * u * (3 - 2 * u)
+        }
+
+        let px = emission.x + (photonEnd.x - emission.x) * fly
+        let py = emission.y + (photonEnd.y - emission.y) * fly
+        let gx = emission.x + (ghostEnd.x - emission.x) * fly
+        let gy = emission.y + (ghostEnd.y - emission.y) * fly
+
+        // Emission flash (shared origin).
+        let flash = raw < 0.18 ? (1 - raw / 0.18) : 0
+        if flash > 0.05 {
+            context.fill(
+                Path(ellipseIn: CGRect(x: emission.x - 14, y: emission.y - 14, width: 28, height: 28)),
+                with: .radialGradient(
+                    Gradient(colors: [Color.white.opacity(0.45 * flash), .clear]),
+                    center: emission,
+                    startRadius: 0,
+                    endRadius: 18
+                )
+            )
+        }
+
+        // Photon — to the observer / retina.
+        context.fill(
+            Path(ellipseIn: CGRect(x: px - 3.2, y: py - 3.2, width: 6.4, height: 6.4)),
+            with: .color(TimelyUNATheme.gold)
+        )
+        context.fill(
+            Path(ellipseIn: CGRect(x: px - 11, y: py - 11, width: 22, height: 22)),
+            with: .radialGradient(
+                Gradient(colors: [TimelyUNATheme.gold.opacity(0.38), .clear]),
+                center: CGPoint(x: px, y: py),
+                startRadius: 0,
+                endRadius: 13
+            )
+        )
+
+        // Ghost Sun — independent disc continuing along the Sun’s trajectory.
+        let gr = 11.0 + 3.0 * fly
+        context.fill(
+            Path(ellipseIn: CGRect(x: gx - gr, y: gy - gr, width: gr * 2, height: gr * 2)),
+            with: .radialGradient(
+                Gradient(colors: [
+                    Color.white.opacity(0.55),
+                    TimelyUNATheme.acid.opacity(0.45),
+                    .clear
+                ]),
+                center: CGPoint(x: gx, y: gy),
+                startRadius: 0,
+                endRadius: gr * 1.35
+            )
+        )
+        context.stroke(
+            Path(ellipseIn: CGRect(x: gx - gr, y: gy - gr, width: gr * 2, height: gr * 2)),
+            with: .color(TimelyUNATheme.acid.opacity(0.55)),
+            style: StrokeStyle(lineWidth: 0.8, dash: [3, 3])
+        )
+
+        if fly > 0.18 {
+            label(context, "PHOTON → YOU", at: CGPoint(x: px, y: py - 16), color: TimelyUNATheme.gold, size: 8)
+            label(context, "GHOST SUN CONTINUES", at: CGPoint(x: gx, y: gy - gr - 12), color: TimelyUNATheme.acid.opacity(0.9), size: 8)
         }
     }
 

@@ -24,6 +24,7 @@ enum StartupColdLaunchGate {
 /// Cinematic cold-launch bridge: studio credit → darkened QuantumRootz tree → True Horizon title card.
 /// App initialization continues underneath; this view is presentation only.
 struct StartupTransitionView: View {
+    var onCrystalStart: () -> Void = {}
     var onFinished: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -37,32 +38,53 @@ struct StartupTransitionView: View {
     @State private var productTitleOpacity: Double = 0
     @State private var technologyOpacity: Double = 0
     @State private var dedicationOpacity: Double = 0
-    @State private var overlayOpacity: Double = 1
+    @State private var plateOpacity: Double = 1
+    @State private var crystalProgress: Double = 0
+    @State private var isCrystallizing = false
+    @State private var didFinish = false
     @State private var sequenceTask: Task<Void, Never>?
+    @State private var crystalSeed = UInt64.random(in: 1...UInt64.max)
 
     private let textColor = TimelyUNATheme.papyrus.opacity(0.90)
 
     var body: some View {
-        ZStack {
-            Color.black
-                .ignoresSafeArea()
+        GeometryReader { geo in
+            let presentation = OpeningArtworkPresentation.resolve(
+                size: geo.size,
+                horizontalSizeClass: horizontalSizeClass
+            )
+            ZStack {
+                Color.black
+                    .ignoresSafeArea()
 
-            // Phase: darkened tree artwork
-            artworkLayer
-                .opacity(artworkOpacity)
-                .accessibilityHidden(true)
+                // Live plate — remains visible until shards cover it, then fades
+                // as the breakup reveals ContentView behind this overlay.
+                artworkLayer(presentation: presentation)
+                    .opacity(artworkOpacity * plateOpacity)
+                    .accessibilityHidden(true)
 
-            // Phase: studio mark + credit
-            studioComposition
-                .accessibilityHidden(true)
+                if isCrystallizing || crystalProgress > 0 {
+                    OpeningCrystalBreakupView(
+                        progress: crystalProgress,
+                        reduceMotion: reduceMotion,
+                        presentation: presentation,
+                        seed: crystalSeed
+                    )
+                    .ignoresSafeArea()
+                }
 
-            // Phase: product title card
-            productComposition
-                .accessibilityHidden(true)
+                studioComposition
+                    .opacity(plateOpacity)
+                    .accessibilityHidden(true)
+
+                productComposition
+                    .opacity(plateOpacity)
+                    .accessibilityHidden(true)
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
         }
-        .opacity(overlayOpacity)
         .ignoresSafeArea()
-        .allowsHitTesting(true)
+        .allowsHitTesting(!didFinish)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(Brand.studioMark). \(Brand.studioCredit). \(Brand.productDisplayName). \(Brand.technologyCredit). \(Brand.cosmicDedication)")
         .onAppear { startSequenceIfNeeded() }
@@ -154,34 +176,25 @@ struct StartupTransitionView: View {
     // MARK: Artwork
 
     @ViewBuilder
-    private var artworkLayer: some View {
-        ZStack {
-            Color.black
-
-            #if os(macOS)
-            Image("QuantumRootzTree")
-                .resizable()
-                .interpolation(.high)
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: 520, maxHeight: 680)
-                .opacity(0.55)
-                .padding(32)
-            #else
-            Image("QuantumRootzTree")
-                .resizable()
-                .interpolation(.high)
-                .scaledToFill()
-                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                .clipped()
-                .opacity(0.55)
-            #endif
-
-            Color.black
-                .opacity(artworkDimOpacity)
-                .allowsHitTesting(false)
-
-            vignetteOverlay
-                .allowsHitTesting(false)
+    private func artworkLayer(presentation: OpeningArtworkPresentation) -> some View {
+        GeometryReader { geo in
+            let frame = presentation.imageFrame(in: geo.size)
+            ZStack {
+                Color.black
+                Image("QuantumRootzTree")
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: frame.width, height: frame.height)
+                    .position(x: frame.midX, y: frame.midY)
+                    .opacity(0.92)
+                Color.black
+                    .opacity(artworkDimOpacity)
+                    .allowsHitTesting(false)
+                vignetteOverlay
+                    .allowsHitTesting(false)
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+            .clipped()
         }
         .ignoresSafeArea()
     }
@@ -258,7 +271,8 @@ struct StartupTransitionView: View {
     // MARK: Sequence
 
     private func startSequenceIfNeeded() {
-        sequenceTask?.cancel()
+        // Deterministic: never restart after finish, never overlap a running sequence.
+        guard !didFinish, sequenceTask == nil else { return }
         studioMarkOpacity = 0
         studioCreditOpacity = 0
         artworkOpacity = 0
@@ -266,7 +280,9 @@ struct StartupTransitionView: View {
         productTitleOpacity = 0
         technologyOpacity = 0
         dedicationOpacity = 0
-        overlayOpacity = 1
+        plateOpacity = 1
+        crystalProgress = 0
+        isCrystallizing = false
         sequenceTask = Task { @MainActor in
             await runSequence()
         }
@@ -289,7 +305,7 @@ struct StartupTransitionView: View {
         let techIn: UInt64 = rm ? 80_000_000 : 550_000_000
         let dedicIn: UInt64 = rm ? 90_000_000 : 650_000_000
         let finalHold: UInt64 = rm ? 200_000_000 : 750_000_000
-        let crossOut: UInt64 = rm ? 120_000_000 : 900_000_000
+        let crystalOut: UInt64 = rm ? 380_000_000 : 1_150_000_000
 
         func ease(_ d: Double) -> Animation { .easeInOut(duration: d) }
         let dMarkIn = rm ? 0.12 : 0.90
@@ -300,7 +316,7 @@ struct StartupTransitionView: View {
         let dTitleIn = rm ? 0.12 : 0.90
         let dTechIn = rm ? 0.08 : 0.55
         let dDedicIn = rm ? 0.09 : 0.65
-        let dCross = rm ? 0.12 : 0.90
+        let dCrystal = rm ? 0.38 : 1.15
 
         // 1) Pure black
         guard !Task.isCancelled else { return }
@@ -341,19 +357,18 @@ struct StartupTransitionView: View {
         withAnimation(ease(rm ? 0.10 : 0.40)) { artworkDimOpacity = 0.80 }
         try? await Task.sleep(nanoseconds: artIn - artIn / 2)
 
-        // 8) Hold artwork
+        // 8) Hold artwork — keep the still visible under the title card (no black gap).
         guard !Task.isCancelled else { return }
         try? await Task.sleep(nanoseconds: artHold)
 
-        // 9) Fade artwork toward black
+        // 9) Lift dim slightly so the still remains the crystalline artifact.
         guard !Task.isCancelled else { return }
         withAnimation(ease(dArtOut)) {
-            artworkDimOpacity = 0.94
-            artworkOpacity = 0
+            artworkDimOpacity = 0.62
         }
-        try? await Task.sleep(nanoseconds: artOut)
+        try? await Task.sleep(nanoseconds: artOut / 2)
 
-        // 10) True Horizon
+        // 10) True Horizon over the still-visible tree
         guard !Task.isCancelled else { return }
         withAnimation(ease(dTitleIn)) { productTitleOpacity = 1 }
         try? await Task.sleep(nanoseconds: titleIn)
@@ -368,22 +383,22 @@ struct StartupTransitionView: View {
         withAnimation(ease(dDedicIn)) { dedicationOpacity = 1 }
         try? await Task.sleep(nanoseconds: dedicIn)
 
-        // 13) Hold final composition
+        // 13) Hold final composition — still + title remain for the breakup.
         guard !Task.isCancelled else { return }
         try? await Task.sleep(nanoseconds: finalHold)
 
-        // 14) Crossfade into app
-        guard !Task.isCancelled else { return }
-        withAnimation(ease(dCross)) {
-            productTitleOpacity = 0
-            technologyOpacity = 0
-            dedicationOpacity = 0
-            overlayOpacity = 0
+        // 14) Crystalline breakup into the already-mounted main interface.
+        guard !Task.isCancelled, !didFinish else { return }
+        isCrystallizing = true
+        onCrystalStart()
+        withAnimation(ease(dCrystal)) {
+            crystalProgress = 1
+            plateOpacity = 0
         }
-        try? await Task.sleep(nanoseconds: crossOut)
+        try? await Task.sleep(nanoseconds: crystalOut)
 
-        guard !Task.isCancelled else { return }
-        // Remove from hierarchy via parent flag — cannot intercept touches after finish.
+        guard !Task.isCancelled, !didFinish else { return }
+        didFinish = true
         onFinished()
     }
 }

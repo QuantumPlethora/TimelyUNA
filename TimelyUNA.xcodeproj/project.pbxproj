@@ -44,6 +44,8 @@
 		D1E2F3A4B5C60718293A0101 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C60718293F0101 /* LaunchScreen.storyboard */; platformFilter = ios; };
 		D1E2F3A4B5C60718293A0102 /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C60718293F0102 /* Brand.swift */; };
 		D1E2F3A4B5C60718293A0103 /* BabyXLaunchController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C60718293F0103 /* BabyXLaunchController.swift */; };
+		D1E2F3A4B5C60718293A0105 /* OpeningArtworkPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C60718293F0105 /* OpeningArtworkPresentation.swift */; };
+		D1E2F3A4B5C60718293A0106 /* OpeningCrystalBreakupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C60718293F0106 /* OpeningCrystalBreakupView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -80,6 +82,8 @@
 		D1E2F3A4B5C60718293F0101 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D1E2F3A4B5C60718293F0102 /* Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brand.swift; sourceTree = "<group>"; };
 		D1E2F3A4B5C60718293F0103 /* BabyXLaunchController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BabyXLaunchController.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C60718293F0105 /* OpeningArtworkPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpeningArtworkPresentation.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C60718293F0106 /* OpeningCrystalBreakupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpeningCrystalBreakupView.swift; sourceTree = "<group>"; };
 
 		A1B2C3D4E5F60718293F0010 /* XSkyJumpState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XSkyJumpState.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293F0011 /* XSkyJumpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XSkyJumpView.swift; path = XSkyJump/XSkyJumpView.swift; sourceTree = "<group>"; };
@@ -181,6 +185,8 @@
 			children = (
 				3411C322674949F9AD8459CE /* ContentView.swift */,
 				D1E2F3A4B5C60718293F0100 /* StartupTransitionView.swift */,
+				D1E2F3A4B5C60718293F0105 /* OpeningArtworkPresentation.swift */,
+				D1E2F3A4B5C60718293F0106 /* OpeningCrystalBreakupView.swift */,
 				58C697F3D4AD48CA9FB11237 /* PlanetFinderView.swift */,
 				A1B2C3D4E5F60718293F0005 /* TrueHorizonView.swift */,
 				A1B2C3D4E5F60718293F0014 /* XSkyPlanetTextures.swift */,
@@ -304,6 +310,8 @@
 				A05CF3C4532043518E9CF5B3 /* FinderMotionService.swift in Sources */,
 				24CEB05F743142D180DCAAF4 /* PlanetFinderView.swift in Sources */,
 				D1E2F3A4B5C60718293A0100 /* StartupTransitionView.swift in Sources */,
+				D1E2F3A4B5C60718293A0105 /* OpeningArtworkPresentation.swift in Sources */,
+				D1E2F3A4B5C60718293A0106 /* OpeningCrystalBreakupView.swift in Sources */,
 				D1E2F3A4B5C60718293A0102 /* Brand.swift in Sources */,
 				D1E2F3A4B5C60718293A0103 /* BabyXLaunchController.swift in Sources */,
 			);

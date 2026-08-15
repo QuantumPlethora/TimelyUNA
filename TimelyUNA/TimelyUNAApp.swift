@@ -7,10 +7,19 @@ import UIKit
 import AppKit
 #endif
 
+/// Process-lifetime opening ownership. Cannot skip mid-crystal or run twice.
+private enum OpeningSessionPhase: Equatable {
+    case playing
+    case crystallizing
+    case revealed
+}
+
 @main
 struct TimelyUNAApp: App {
     /// True only for this process’s first composition — not persisted across launches.
-    @State private var showStartupTransition = StartupColdLaunchGate.claimIfNeeded()
+    @State private var openingPhase: OpeningSessionPhase = StartupColdLaunchGate.claimIfNeeded()
+        ? .playing
+        : .revealed
 
     init() {
         Self.configureBlackChrome()
@@ -20,21 +29,30 @@ struct TimelyUNAApp: App {
         WindowGroup(Brand.productDisplayName) {
             ZStack {
                 // Root stays black so LaunchScreen → transition → app never flashes white.
+                // ContentView is mounted underneath for the entire opening so the
+                // crystalline breakup reveals the live interface, not a black plate.
                 Color.black
                     .ignoresSafeArea()
 
                 ContentView()
 
-                if showStartupTransition {
-                    StartupTransitionView {
-                        showStartupTransition = false
-                    }
+                if openingPhase != .revealed {
+                    StartupTransitionView(
+                        onCrystalStart: {
+                            if openingPhase == .playing {
+                                openingPhase = .crystallizing
+                            }
+                        },
+                        onFinished: {
+                            openingPhase = .revealed
+                        }
+                    )
                     .zIndex(1000)
-                    // Failsafe: never leave the user stuck on the opening overlay.
+                    // Failsafe only if the sequence never reached the breakup.
                     .task {
-                        try? await Task.sleep(nanoseconds: 18_000_000_000)
-                        if showStartupTransition {
-                            showStartupTransition = false
+                        try? await Task.sleep(nanoseconds: 22_000_000_000)
+                        if openingPhase == .playing {
+                            openingPhase = .revealed
                         }
                     }
                 }
