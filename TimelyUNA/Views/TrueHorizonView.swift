@@ -1101,7 +1101,12 @@ struct TrueHorizonView: View {
                 }
                 .stroke(
                     TimelyUNATheme.cosmicPurple.opacity(0.9),
-                    style: StrokeStyle(lineWidth: 2.5, lineCap: .round, dash: [7, 6], dashPhase: photonDash)
+                    style: StrokeStyle(
+                        lineWidth: 2.5,
+                        lineCap: .round,
+                        dash: [7, 6],
+                        dashPhase: reduceMotion ? 0 : -CGFloat(simulation.rocketProgress) * 48
+                    )
                 )
 
                 VStack(spacing: 2) {
