@@ -1,5 +1,17 @@
 import SwiftUI
 
+private struct HorizonInterfaceRevealedKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+extension EnvironmentValues {
+    /// False while the cold-launch opening still covers the live interface.
+    var horizonInterfaceRevealed: Bool {
+        get { self[HorizonInterfaceRevealedKey.self] }
+        set { self[HorizonInterfaceRevealedKey.self] = newValue }
+    }
+}
+
 /// True Horizon daily screen — cinematic native composition.
 /// Visible Now / Actual Now is the central story; the daily ritual lives below.
 struct TrueHorizonView: View {
@@ -10,12 +22,15 @@ struct TrueHorizonView: View {
     @EnvironmentObject private var sunriseReminder: SunriseReminderService
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.horizonInterfaceRevealed) private var horizonInterfaceRevealed
 
     @State private var snapshot: SolarEngine.Snapshot?
     @State private var toastMessage: String?
-    @State private var photonDash: CGFloat = 0
     @State private var launchAnimating = false
     @State private var skyPulse = false
+
+    private static let rocketClass = "BABY SPCX"
+    private static let rocketName = "BEAUTEOUS MAXIMUS"
 
     var body: some View {
         GeometryReader { geo in
@@ -54,6 +69,10 @@ struct TrueHorizonView: View {
                         .padding(.horizontal, pad)
                         .padding(.top, 18)
 
+                    replayLightLineButton
+                        .padding(.horizontal, pad)
+                        .padding(.top, 10)
+
                     nowLegend
                         .padding(.horizontal, pad)
                         .padding(.top, 14)
@@ -87,7 +106,15 @@ struct TrueHorizonView: View {
             location.resumeIfAuthorized()
             recomputeSolar()
             startMotion()
+            if horizonInterfaceRevealed {
+                simulation.beginLightLineIfNeeded()
+            }
             Task { await sunriseReminder.refreshStatus() }
+        }
+        .onChange(of: horizonInterfaceRevealed) { _, revealed in
+            if revealed {
+                simulation.beginLightLineIfNeeded()
+            }
         }
         .onReceive(clock.solarTick) { _ in
             recomputeSolar()
@@ -396,11 +423,12 @@ struct TrueHorizonView: View {
                 )
 
             // Orbits + scene
-            TimelineView(.animation(minimumInterval: reduceMotion ? 1.0 : 1.0 / 30.0, paused: reduceMotion && !launchAnimating)) { timeline in
+            TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: simulation.lightLineFinished)) { timeline in
                 Canvas { context, size in
                     drawSolarStage(context: context, size: size, time: timeline.date)
                 }
             }
+            .id(simulation.lightLineGeneration)
 
             // Corner labels (editorial, not cards)
             VStack {
@@ -454,7 +482,9 @@ struct TrueHorizonView: View {
         Actual Now: altitude \(SolarFormat.degrees(snapshot.truePosition.altitude)), \
         azimuth \(SolarFormat.degrees(snapshot.truePosition.azimuth)). \
         Photon delay \(SolarFormat.lightDelayWords(snapshot.lightTimeSeconds)). \
-        Distance \(SolarFormat.au(snapshot.distanceAU)) astronomical units. Computed from live location.
+        A photon leaves the emission Sun toward you. A full-sized ghost Sun continues along the Sun’s path for the same light-delay interval. VISIBLE NOW and ACTUAL NOW appear together when the photon arrives. \
+        Distance \(SolarFormat.au(snapshot.distanceAU)) astronomical units. Computed from live location. \
+        Baby SPCX rocket Beauteous Maximus travels across the TimelyUNA gap from Apparent Now to Actual Now. Educational visualization, not for navigation.
         """
     }
 
@@ -507,76 +537,85 @@ struct TrueHorizonView: View {
 
         // Positions — story geometry
         let you = CGPoint(x: w * 0.42, y: h * 0.86)
-        let apparent = CGPoint(x: w * 0.22, y: h * 0.48)
+        let emission = CGPoint(x: w * 0.22, y: h * 0.48)
         let actual = CGPoint(x: w * 0.78, y: h * 0.30)
+        let sunRadius = min(w, h) * 0.088
+        let ghostPathLength = hypot(actual.x - emission.x, actual.y - emission.y)
+        let lightTime = snapshot?.lightTimeSeconds ?? SolarEngine.lightSecondsPerAU
+        let lesson = HorizonLightLesson.resolve(
+            lightTimeSeconds: lightTime,
+            visualPathLength: ghostPathLength,
+            elapsed: simulation.lightLineElapsed(now: time),
+            reduceMotion: reduceMotion,
+            lockedComplete: simulation.lightLineFinished
+        )
+        if lesson.phase == .labelsRevealed, lesson.labelReveal >= 1, !simulation.lightLineFinished {
+            DispatchQueue.main.async {
+                simulation.markLightLineFinished()
+            }
+        }
+        let progress = lesson.progress
+        let photonPos = HorizonLightLesson.position(from: emission, to: you, at: progress)
+        let ghostPos = HorizonLightLesson.position(from: emission, to: actual, at: progress)
+        let photonDash = lightLineDashPhase(at: time)
 
-        // Photon path Visible
+        // Photon geodesic is always the light path. Sun-trajectory and gap
+        // lines wait for arrival so the result is not pre-drawn.
         drawDashedLine(
             context: context,
-            from: you,
-            to: apparent,
+            from: emission,
+            to: you,
             color: TimelyUNATheme.gold.opacity(0.75),
             phase: photonDash,
             width: 1.8
         )
-        // Correction path Actual
-        drawDashedLine(
-            context: context,
-            from: you,
-            to: actual,
-            color: TimelyUNATheme.acid.opacity(0.9),
-            phase: photonDash + 12,
-            width: 2.2
-        )
-
-        // Animated photon mote along apparent path
-        if !reduceMotion {
-            let t = (sin(time.timeIntervalSinceReferenceDate * 0.7) + 1) / 2
-            let px = you.x + (apparent.x - you.x) * t
-            let py = you.y + (apparent.y - you.y) * t
-            context.fill(
-                Path(ellipseIn: CGRect(x: px - 3, y: py - 3, width: 6, height: 6)),
-                with: .color(TimelyUNATheme.gold)
+        if lesson.phase == .labelsRevealed {
+            drawDashedLine(
+                context: context,
+                from: emission,
+                to: actual,
+                color: TimelyUNATheme.gold.opacity(0.55),
+                phase: photonDash + 12,
+                width: 1.8
             )
-            context.fill(
-                Path(ellipseIn: CGRect(x: px - 10, y: py - 10, width: 20, height: 20)),
-                with: .radialGradient(
-                    Gradient(colors: [TimelyUNATheme.gold.opacity(0.35), .clear]),
-                    center: CGPoint(x: px, y: py),
-                    startRadius: 0,
-                    endRadius: 12
-                )
+            drawDashedLine(
+                context: context,
+                from: you,
+                to: actual,
+                color: TimelyUNATheme.acid.opacity(0.28),
+                phase: photonDash + 24,
+                width: 1.1
+            )
+            label(
+                context,
+                "TIMELYUNA GAP",
+                at: CGPoint(x: (emission.x + actual.x) * 0.5, y: (emission.y + actual.y) * 0.5 - 14),
+                color: TimelyUNATheme.gold,
+                size: 10,
+                bold: true
             )
         }
 
-        // APPARENT (Visible Now) — softer, smaller
+        // Starting Sun (emission / what will become Visible Now).
         drawSun(
             context: context,
-            center: apparent,
-            radius: min(w, h) * 0.075,
+            center: emission,
+            radius: sunRadius,
             coreTop: Color(red: 1.0, green: 0.96, blue: 0.67),
             coreMid: Color(red: 0.89, green: 0.89, blue: 0.38),
             coreEdge: Color(red: 0.36, green: 0.38, blue: 0.16),
-            glow: TimelyUNATheme.gold.opacity(0.35),
-            opacity: 0.72
+            glow: TimelyUNATheme.gold.opacity(0.40),
+            opacity: 0.92
         )
-        label(context, "APPARENT", at: CGPoint(x: apparent.x, y: apparent.y + min(w, h) * 0.095), color: TimelyUNATheme.papyrus, size: 12, bold: true)
-        label(context, "VISIBLE NOW", at: CGPoint(x: apparent.x, y: apparent.y + min(w, h) * 0.095 + 14), color: TimelyUNATheme.muted, size: 10)
 
-        // TRUE (Actual Now) — electric acid, larger
-        let pulse = reduceMotion ? 1.0 : (skyPulse ? 1.06 : 1.0)
-        drawSun(
+        drawHorizonLightLesson(
             context: context,
-            center: actual,
-            radius: min(w, h) * 0.11 * pulse,
-            coreTop: Color(red: 1.0, green: 0.98, blue: 0.78),
-            coreMid: TimelyUNATheme.acid,
-            coreEdge: Color(red: 0.52, green: 0.59, blue: 0.12),
-            glow: TimelyUNATheme.acid.opacity(0.45),
-            opacity: 1
+            lesson: lesson,
+            emission: emission,
+            photonPos: photonPos,
+            ghostPos: ghostPos,
+            sunRadius: sunRadius
         )
-        label(context, "TRUE SUN", at: CGPoint(x: actual.x, y: actual.y + min(w, h) * 0.13), color: TimelyUNATheme.acid, size: 12, bold: true)
-        label(context, "ACTUAL NOW", at: CGPoint(x: actual.x, y: actual.y + min(w, h) * 0.13 + 14), color: TimelyUNATheme.acid.opacity(0.85), size: 10)
 
         // YOU
         context.fill(
@@ -595,25 +634,151 @@ struct TrueHorizonView: View {
         )
         label(context, "YOU", at: CGPoint(x: you.x, y: you.y + 24), color: TimelyUNATheme.papyrus, size: 10, bold: true)
 
-        // Rocket along actual path during launch
-        let progress = simulation.rocketProgress
-        if (simulation.isRocketFlying || launchAnimating || simulation.showRocketHit) && progress > 0.01 {
-            let t = min(1, max(0.02, progress))
-            let rx = you.x + (actual.x - you.x) * t
-            let ry = you.y + (actual.y - you.y) * t
+        // Beauteous Maximus crosses TimelyUNA's signature Apparent Now → Actual Now gap.
+        let rocketProgress = simulation.rocketProgress
+        if (simulation.isRocketFlying || launchAnimating || simulation.showRocketHit) && rocketProgress > 0.01 {
+            let t = min(1, max(0.02, rocketProgress))
+            let rx = emission.x + (actual.x - emission.x) * t
+            let ry = emission.y + (actual.y - emission.y) * t
             drawRocket(
                 context: context,
                 at: CGPoint(x: rx, y: ry),
-                angle: atan2(actual.y - you.y, actual.x - you.x),
+                angle: atan2(actual.y - emission.y, actual.x - emission.x),
                 time: time,
                 flame: t < 0.96 && !simulation.showRocketHit
             )
+            if !simulation.showRocketHit {
+                label(
+                    context,
+                    Self.rocketName,
+                    at: CGPoint(x: rx, y: ry + 28),
+                    color: TimelyUNATheme.papyrus,
+                    size: 9,
+                    bold: true
+                )
+            }
         }
 
         if simulation.showRocketHit {
-            label(context, "REALITY CORRECTED", at: CGPoint(x: w * 0.5, y: h * 0.14), color: TimelyUNATheme.acid, size: 16, bold: true)
-            label(context, "Light-time navigation complete", at: CGPoint(x: w * 0.5, y: h * 0.14 + 18), color: TimelyUNATheme.gold, size: 11)
+            label(context, "BEAUTEOUS MAXIMUS · REALITY CORRECTED", at: CGPoint(x: w * 0.5, y: h * 0.14), color: TimelyUNATheme.acid, size: 15, bold: true)
+            label(context, "Apparent Now → Actual Now complete", at: CGPoint(x: w * 0.5, y: h * 0.14 + 18), color: TimelyUNATheme.gold, size: 11)
         }
+    }
+
+    /// Shared emission clock. Photon and ghost Sun both sample `lesson.progress`.
+    private func drawHorizonLightLesson(
+        context: GraphicsContext,
+        lesson: HorizonLightLesson,
+        emission: CGPoint,
+        photonPos: CGPoint,
+        ghostPos: CGPoint,
+        sunRadius: CGFloat
+    ) {
+        if lesson.phase == .ready {
+            context.fill(
+                Path(ellipseIn: CGRect(x: emission.x - sunRadius, y: emission.y - sunRadius, width: sunRadius * 2, height: sunRadius * 2)),
+                with: .radialGradient(
+                    Gradient(colors: [Color.white.opacity(0.35), .clear]),
+                    center: emission,
+                    startRadius: 0,
+                    endRadius: sunRadius * 1.6
+                )
+            )
+        }
+
+        // Photon — a compact mote, never confused with the Sun.
+        let pr: CGFloat = 3.4
+        context.fill(
+            Path(ellipseIn: CGRect(x: photonPos.x - pr, y: photonPos.y - pr, width: pr * 2, height: pr * 2)),
+            with: .color(TimelyUNATheme.gold)
+        )
+        context.fill(
+            Path(ellipseIn: CGRect(x: photonPos.x - 10, y: photonPos.y - 10, width: 20, height: 20)),
+            with: .radialGradient(
+                Gradient(colors: [TimelyUNATheme.gold.opacity(0.40), .clear]),
+                center: photonPos,
+                startRadius: 0,
+                endRadius: 12
+            )
+        )
+
+        // Ghost Sun — full solar disc, same radius as the emission Sun.
+        if lesson.progress > 0.002 || lesson.phase != .ready {
+            drawGhostSun(
+                context: context,
+                center: ghostPos,
+                radius: sunRadius,
+                trailFrom: emission,
+                progress: lesson.progress,
+                reduceMotion: reduceMotion
+            )
+        }
+
+        if lesson.phase == .labelsRevealed {
+            let fade = lesson.labelReveal
+            var labeled = context
+            labeled.opacity = fade
+            label(
+                labeled,
+                "VISIBLE NOW",
+                at: CGPoint(x: emission.x, y: emission.y + sunRadius + 16),
+                color: TimelyUNATheme.papyrus,
+                size: 12,
+                bold: true
+            )
+            label(
+                labeled,
+                "ACTUAL NOW",
+                at: CGPoint(x: ghostPos.x, y: ghostPos.y + sunRadius + 16),
+                color: TimelyUNATheme.gold,
+                size: 12,
+                bold: true
+            )
+        }
+    }
+
+    /// Full-sized ethereal Sun: disc + glow + corona. Never a waypoint dot.
+    private func drawGhostSun(
+        context: GraphicsContext,
+        center: CGPoint,
+        radius: CGFloat,
+        trailFrom: CGPoint,
+        progress: CGFloat,
+        reduceMotion: Bool
+    ) {
+        if !reduceMotion, progress > 0.04 {
+            for echo in [0.18, 0.34] as [CGFloat] {
+                let t = max(0, progress - echo)
+                let ex = trailFrom.x + (center.x - trailFrom.x) * (t / max(progress, 0.001))
+                let ey = trailFrom.y + (center.y - trailFrom.y) * (t / max(progress, 0.001))
+                drawSun(
+                    context: context,
+                    center: CGPoint(x: ex, y: ey),
+                    radius: radius,
+                    coreTop: Color(red: 1.0, green: 0.97, blue: 0.78),
+                    coreMid: Color(red: 0.92, green: 0.82, blue: 0.42),
+                    coreEdge: Color(red: 0.45, green: 0.38, blue: 0.16),
+                    glow: TimelyUNATheme.gold.opacity(0.16),
+                    opacity: 0.10
+                )
+            }
+        }
+
+        drawSun(
+            context: context,
+            center: center,
+            radius: radius,
+            coreTop: Color(red: 1.0, green: 0.98, blue: 0.82),
+            coreMid: Color(red: 0.94, green: 0.86, blue: 0.48),
+            coreEdge: Color(red: 0.50, green: 0.42, blue: 0.18),
+            glow: TimelyUNATheme.gold.opacity(0.38),
+            opacity: 0.55
+        )
+        context.stroke(
+            Path(ellipseIn: CGRect(x: center.x - radius * 1.18, y: center.y - radius * 1.18, width: radius * 2.36, height: radius * 2.36)),
+            with: .color(Color.white.opacity(0.22)),
+            style: StrokeStyle(lineWidth: 1.1, dash: [4, 5])
+        )
     }
 
     private func drawDashedLine(
@@ -736,20 +901,58 @@ struct TrueHorizonView: View {
 
     // MARK: - Now legend (inline story, not sidebar cards)
 
-    private var nowLegend: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .top, spacing: 28) {
-                legendItem(title: "VISIBLE NOW", accent: TimelyUNATheme.papyrus, body: "Where arriving light tells you to look.")
-                legendItem(title: "ACTUAL NOW", accent: TimelyUNATheme.acid, body: "Where the Sun is modeled to be after light-time correction.")
-                legendItem(title: "SPACETIME OFFSET", accent: TimelyUNATheme.cosmicPurple, body: "The gap between those positions—light still in flight.")
-            }
-            VStack(alignment: .leading, spacing: 12) {
-                legendItem(title: "VISIBLE NOW", accent: TimelyUNATheme.papyrus, body: "Where arriving light tells you to look.")
-                legendItem(title: "ACTUAL NOW", accent: TimelyUNATheme.acid, body: "Where the Sun is modeled to be after light-time correction.")
-                legendItem(title: "SPACETIME OFFSET", accent: TimelyUNATheme.cosmicPurple, body: "The gap between those positions—light still in flight.")
+    private var replayLightLineButton: some View {
+        Group {
+            if simulation.lightLineFinished {
+                Button("Replay LightLine") {
+                    simulation.replayLightLine()
+                }
+                .buttonStyle(.plain)
+                .font(TimelyUNATheme.captionFont)
+                .tracking(1.2)
+                .foregroundStyle(TimelyUNATheme.ink)
+                .padding(.horizontal, 16)
+                .frame(minHeight: 40)
+                .background(TimelyUNATheme.gold, in: Capsule())
+                .disabled(!simulation.lightLineFinished)
+                .accessibilityLabel("Replay LightLine")
             }
         }
-        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var nowLegend: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 20.0, paused: simulation.lightLineFinished)) { timeline in
+            let lesson = HorizonLightLesson.resolve(
+                lightTimeSeconds: snapshot?.lightTimeSeconds ?? SolarEngine.lightSecondsPerAU,
+                visualPathLength: 1,
+                elapsed: simulation.lightLineElapsed(now: timeline.date),
+                reduceMotion: reduceMotion,
+                lockedComplete: simulation.lightLineFinished
+            )
+            Group {
+                if lesson.phase == .labelsRevealed {
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .top, spacing: 28) {
+                            legendItem(title: "VISIBLE NOW", accent: TimelyUNATheme.papyrus, body: "Where arriving light tells you to look.")
+                            legendItem(title: "ACTUAL NOW", accent: TimelyUNATheme.gold, body: "Where the Sun has progressed during the photon’s flight.")
+                            legendItem(title: "TIMELYUNA GAP", accent: TimelyUNATheme.cosmicPurple, body: "The separation between those two positions—Beauteous Maximus’s flight corridor.")
+                        }
+                        VStack(alignment: .leading, spacing: 12) {
+                            legendItem(title: "VISIBLE NOW", accent: TimelyUNATheme.papyrus, body: "Where arriving light tells you to look.")
+                            legendItem(title: "ACTUAL NOW", accent: TimelyUNATheme.gold, body: "Where the Sun has progressed during the photon’s flight.")
+                            legendItem(title: "TIMELYUNA GAP", accent: TimelyUNATheme.cosmicPurple, body: "The separation between those two positions—Beauteous Maximus’s flight corridor.")
+                        }
+                    }
+                } else {
+                    Text("A photon is traveling to the observer. The Sun continues on its own path.")
+                        .font(TimelyUNATheme.captionFont)
+                        .foregroundStyle(TimelyUNATheme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.vertical, 4)
+        }
     }
 
     private func legendItem(title: String, accent: Color, body: String) -> some View {
@@ -882,49 +1085,70 @@ struct TrueHorizonView: View {
                     .foregroundStyle(TimelyUNATheme.acid)
                     .position(x: g.size.width * 0.78, y: g.size.height * 0.40 + 72)
 
-                // Launch pad rocket — flies toward true position
-                VStack(spacing: 4) {
-                    RitualRocketMark(lit: simulation.isRocketFlying || launchAnimating || simulation.showRocketHit)
-                        .offset(y: ritualRocketOffset)
-                        .opacity(ritualRocketOpacity)
-                        .animation(
-                            reduceMotion ? nil : .easeInOut(duration: 0.12),
-                            value: simulation.rocketProgress
-                        )
-                    Text(persistence.ritualCompleteToday ? "CORRECTED" : "LAUNCH")
-                        .font(TimelyUNATheme.smallCaptionFont)
-                        .tracking(1.2)
-                        .foregroundStyle(persistence.ritualCompleteToday ? TimelyUNATheme.acid : TimelyUNATheme.muted)
-                        .opacity(simulation.isRocketFlying ? 0 : 1)
-                }
-                .position(x: g.size.width * 0.28, y: g.size.height * 0.72)
+                // Beauteous Maximus launches at Apparent Now and crosses the TimelyUNA gap.
+                let gapStart = CGPoint(x: g.size.width * 0.58, y: g.size.height * 0.58)
+                let gapEnd = CGPoint(x: g.size.width * 0.78, y: g.size.height * 0.40)
+                let gapProgress = ritualRocketProgress
+                let rocketPoint = CGPoint(
+                    x: gapStart.x + (gapEnd.x - gapStart.x) * gapProgress,
+                    y: gapStart.y + (gapEnd.y - gapStart.y) * gapProgress
+                )
+                let rocketAngle = atan2(gapEnd.y - gapStart.y, gapEnd.x - gapStart.x)
 
-                if simulation.showRocketHit {
-                    Text("DIRECT HIT · TRUE POSITION")
-                        .font(TimelyUNATheme.captionFont)
-                        .tracking(1.4)
-                        .foregroundStyle(TimelyUNATheme.acid)
-                        .position(x: g.size.width * 0.55, y: g.size.height * 0.18)
+                Path { path in
+                    path.move(to: gapStart)
+                    path.addLine(to: gapEnd)
                 }
+                .stroke(
+                    TimelyUNATheme.cosmicPurple.opacity(0.9),
+                    style: StrokeStyle(
+                        lineWidth: 2.5,
+                        lineCap: .round,
+                        dash: [7, 6],
+                        dashPhase: reduceMotion ? 0 : -CGFloat(simulation.rocketProgress) * 48
+                    )
+                )
+
+                VStack(spacing: 2) {
+                    RitualRocketMark(lit: simulation.isRocketFlying || launchAnimating || simulation.showRocketHit)
+                        .scaleEffect(0.72)
+                        .rotationEffect(.radians(Double(rocketAngle + .pi / 2)))
+                        .opacity(simulation.showRocketHit ? 0.45 : 1)
+                    Text(Self.rocketName)
+                        .font(TimelyUNATheme.smallCaptionFont)
+                        .tracking(0.8)
+                        .foregroundStyle(TimelyUNATheme.papyrus)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                }
+                .position(rocketPoint)
+                .animation(
+                    reduceMotion ? nil : .linear(duration: 0.08),
+                    value: simulation.rocketProgress
+                )
+
+                Text(ritualRocketStatus)
+                    .font(TimelyUNATheme.smallCaptionFont)
+                    .tracking(1.1)
+                    .foregroundStyle(simulation.showRocketHit ? TimelyUNATheme.acid : TimelyUNATheme.gold)
+                    .position(x: g.size.width * 0.50, y: g.size.height * 0.18)
             }
         }
         .accessibilityHidden(true)
     }
 
-    private var ritualRocketOffset: CGFloat {
-        if simulation.showRocketHit {
-            return -CGFloat(0.92) * 240
-        }
+    private var ritualRocketProgress: CGFloat {
+        if simulation.showRocketHit { return 1 }
         if simulation.isRocketFlying || launchAnimating {
-            return -CGFloat(simulation.rocketProgress) * 240
+            return CGFloat(simulation.rocketProgress)
         }
         return 0
     }
 
-    private var ritualRocketOpacity: Double {
-        if simulation.showRocketHit { return 0.35 }
-        if simulation.isRocketFlying { return 1 }
-        return 1
+    private var ritualRocketStatus: String {
+        if simulation.showRocketHit { return "ACTUAL NOW ACQUIRED" }
+        if simulation.isRocketFlying || launchAnimating { return "CROSSING TIMELYUNA GAP" }
+        return "READY AT APPARENT NOW"
     }
 
     private func sunDisc(size: CGFloat, acid: Bool) -> some View {
@@ -945,6 +1169,12 @@ struct TrueHorizonView: View {
 
     private var ritualPanel: some View {
         VStack(alignment: .leading, spacing: 0) {
+            Text("\(Self.rocketClass) · \(Self.rocketName)")
+                .font(TimelyUNATheme.smallCaptionFont)
+                .tracking(1.4)
+                .foregroundStyle(TimelyUNATheme.orange)
+                .padding(.bottom, 8)
+
             Text("PHOTON DELAY TODAY")
                 .font(TimelyUNATheme.captionFont)
                 .tracking(2)
@@ -1020,7 +1250,7 @@ struct TrueHorizonView: View {
 
             Text(persistence.ritualCompleteToday
                  ? "Reality corrected. Streak preserved on this device."
-                 : "One launch keeps your streak alive. Scroll here for the full daily ritual.")
+                 : "One Beauteous Maximus launch across the TimelyUNA gap keeps your streak alive.")
                 .font(TimelyUNATheme.captionFont)
                 .foregroundStyle(Color(red: 0.66, green: 0.65, blue: 0.62))
                 .fixedSize(horizontal: false, vertical: true)
@@ -1040,7 +1270,7 @@ struct TrueHorizonView: View {
                             .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(TimelyUNATheme.ink)
                     }
-                    Text(persistence.ritualCompleteToday ? "TODAY’S LAUNCH COMPLETE" : "LAUNCH & CORRECT REALITY")
+                    Text(persistence.ritualCompleteToday ? "BEAUTEOUS MAXIMUS · MISSION COMPLETE" : "LAUNCH BEAUTEOUS MAXIMUS")
                         .font(TimelyUNATheme.captionFont)
                         .tracking(1.2)
                         .foregroundStyle(TimelyUNATheme.ink)
@@ -1062,7 +1292,7 @@ struct TrueHorizonView: View {
             .accessibilityHint(
                 persistence.ritualCompleteToday
                 ? "Already completed today"
-                : "Launches the rocket toward Actual Now and records your daily streak"
+                : "Launches Baby SPCX rocket Beauteous Maximus from Apparent Now across the TimelyUNA gap to Actual Now"
             )
         }
         .padding(22)
@@ -1291,14 +1521,17 @@ struct TrueHorizonView: View {
 
     private func startMotion() {
         guard !reduceMotion else {
-            photonDash = 0
             skyPulse = false
             return
         }
-        withAnimation(.linear(duration: 2.2).repeatForever(autoreverses: false)) {
-            photonDash = 48
-        }
         skyPulse = true
+    }
+
+    /// Dash crawl is derived from the one-shot LightLine clock so it cannot loop
+    /// independently or restart on redraw / tab reappearance.
+    private func lightLineDashPhase(at time: Date) -> CGFloat {
+        if simulation.lightLineFinished { return 48 }
+        return CGFloat(simulation.lightLineElapsed(now: time) * 22)
     }
 
     private func performRitual() {
@@ -1306,7 +1539,7 @@ struct TrueHorizonView: View {
         launchAnimating = true
         simulation.launchRocket()
         persistence.completeRitual()
-        showToast("Reality corrected. Your streak is alive.")
+        showToast("Beauteous Maximus crossed the TimelyUNA gap. Reality corrected.")
         if reduceMotion {
             launchAnimating = false
             return
@@ -1318,14 +1551,14 @@ struct TrueHorizonView: View {
     }
 
     private func shareText(for snapshot: SolarEngine.Snapshot?) -> String {
-        let ritual = persistence.ritualCompleteToday ? "Rocket launched" : "Ready to launch"
+        let ritual = persistence.ritualCompleteToday ? "Beauteous Maximus launched" : "Beauteous Maximus ready to launch"
         if let snapshot {
             let delay = SolarFormat.lightDelayCompact(snapshot.lightTimeSeconds)
             let alt = SolarFormat.degrees(snapshot.truePosition.altitude)
             let au = SolarFormat.au(snapshot.distanceAU)
             return "I saw the Sun where it actually is on True Horizon. Light delay \(delay) · Earth–Sun \(au) AU · true altitude \(alt). \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
         }
-        return "True Horizon — Visible Now vs Actual Now. Powered by the TimelyUNA light-time engine. \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
+        return "True Horizon — Apparent Now vs Actual Now, with Beauteous Maximus crossing the TimelyUNA gap. Powered by the TimelyUNA light-time engine. \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
     }
 
     private func showToast(_ message: String) {
@@ -1380,6 +1613,86 @@ private struct RitualRocketMark: View {
             }
         }
         .frame(width: 40, height: 70)
+    }
+}
+
+/// Shared emission clock for the Horizon light-time lesson.
+/// Physical travel uses SolarEngine light delay; screen travel uses an isolated scale factor.
+enum HorizonLightPhase: Equatable {
+    case ready
+    case photonInFlight
+    case photonArrived
+    case labelsRevealed
+}
+
+struct HorizonLightLesson {
+    /// Physical photon flight time (s) from SolarEngine / mean AU.
+    let lightTimeSeconds: Double
+    /// How far the Sun travels on its orbit during that photon flight (km).
+    let physicalSunTravelKilometers: Double
+    /// Isolated visual exaggeration: screen points shown per physical km.
+    let visualPointsPerKilometer: Double
+    /// Shared 0…1 sample for photon path and sun trajectory.
+    let progress: CGFloat
+    let phase: HorizonLightPhase
+    /// 0…1 fade for the paired arrival labels (only after progress == 1).
+    let labelReveal: CGFloat
+
+    /// Compress ~499 s of light time into a watchable shared flight.
+    static let educationalTimeCompression: Double = 80
+
+    static func position(from: CGPoint, to: CGPoint, at t: CGFloat) -> CGPoint {
+        let u = min(1, max(0, t))
+        return CGPoint(x: from.x + (to.x - from.x) * u, y: from.y + (to.y - from.y) * u)
+    }
+
+    static func resolve(
+        lightTimeSeconds: Double,
+        visualPathLength: CGFloat,
+        elapsed: TimeInterval,
+        reduceMotion: Bool,
+        lockedComplete: Bool
+    ) -> HorizonLightLesson {
+        let lt = lightTimeSeconds > 1 ? lightTimeSeconds : SolarEngine.lightSecondsPerAU
+        let physicalKm = SolarEngine.meanSolarOrbitalSpeedKMS * lt
+        let visualLen = max(1, Double(visualPathLength))
+        let pointsPerKm = visualLen / max(physicalKm, 1)
+        let flightSeconds = max(3.6, lt / educationalTimeCompression)
+        let holdSeconds = flightSeconds * 0.12
+        let revealSeconds = flightSeconds * 0.16
+
+        let progress: CGFloat
+        let phase: HorizonLightPhase
+        let labelReveal: CGFloat
+        if lockedComplete {
+            progress = 1
+            phase = .labelsRevealed
+            labelReveal = 1
+        } else if elapsed < holdSeconds {
+            progress = 0
+            phase = .ready
+            labelReveal = 0
+        } else if elapsed < holdSeconds + flightSeconds {
+            let u = (elapsed - holdSeconds) / flightSeconds
+            let shaped = reduceMotion ? u : u * u * (3 - 2 * u)
+            progress = CGFloat(shaped)
+            phase = .photonInFlight
+            labelReveal = 0
+        } else {
+            progress = 1
+            let u = min(1, (elapsed - holdSeconds - flightSeconds) / revealSeconds)
+            labelReveal = CGFloat(u)
+            phase = labelReveal < 0.02 ? .photonArrived : .labelsRevealed
+        }
+
+        return HorizonLightLesson(
+            lightTimeSeconds: lt,
+            physicalSunTravelKilometers: physicalKm,
+            visualPointsPerKilometer: pointsPerKm,
+            progress: progress,
+            phase: phase,
+            labelReveal: labelReveal
+        )
     }
 }
 

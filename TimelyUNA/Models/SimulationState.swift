@@ -15,7 +15,41 @@ final class SimulationState: ObservableObject {
     @Published var chronosPhase: ChronosPhase = .idle
     @Published var showShareCopied = false
 
+    /// Horizon LightLine — process-lifetime, not reset by tab redraws.
+    @Published var lightLineStartedAt: Date?
+    @Published var lightLineFinished = false
+    @Published private(set) var lightLineGeneration: Int = 0
+
     private var rocketTask: Task<Void, Never>?
+
+    func beginLightLineIfNeeded() {
+        // First appearance only. Tab remounts, redraws, and later onAppear
+        // calls must not start a second run.
+        if lightLineStartedAt == nil, !lightLineFinished {
+            lightLineStartedAt = Date()
+        }
+    }
+
+    func markLightLineFinished() {
+        lightLineFinished = true
+    }
+
+    var isLightLineRunning: Bool {
+        lightLineStartedAt != nil && !lightLineFinished
+    }
+
+    /// Starts a single new run. Ignored while a run is still in flight.
+    func replayLightLine() {
+        guard !isLightLineRunning else { return }
+        lightLineFinished = false
+        lightLineGeneration += 1
+        lightLineStartedAt = Date()
+    }
+
+    func lightLineElapsed(now: Date) -> TimeInterval {
+        guard let start = lightLineStartedAt else { return 0 }
+        return max(0, now.timeIntervalSince(start))
+    }
 
     func launchRocket() {
         rocketTask?.cancel()
