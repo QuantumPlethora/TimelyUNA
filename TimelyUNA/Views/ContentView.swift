@@ -9,6 +9,10 @@ struct ContentView: View {
     @State private var selectedTab: AppTab = ProcessInfo.processInfo.arguments.contains("-openXSkyJump")
         ? .jump
         : .horizon
+    /// Trails `selectedTab` until CrystalTabHost reveals the destination.
+    @State private var displayedTab: AppTab = ProcessInfo.processInfo.arguments.contains("-openXSkyJump")
+        ? .jump
+        : .horizon
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     enum AppTab: String, CaseIterable, Identifiable {
@@ -64,7 +68,6 @@ struct ContentView: View {
         .font(TimelyUNATheme.bodyFont)
         .tint(TimelyUNATheme.gold)
         .preferredColorScheme(.dark)
-        .animation(.easeInOut(duration: 0.24), value: selectedTab)
         .animation(.easeInOut(duration: 0.2), value: usesBottomTabs)
         .onAppear {
             clock.start()
@@ -77,14 +80,14 @@ struct ContentView: View {
 
     private var wideShell: some View {
         VStack(spacing: 0) {
-            if selectedTab != .horizon {
+            if displayedTab != .horizon {
                 CompactHeader()
                     .transition(.opacity)
             }
 
             CosmicTabBar(selection: $selectedTab, compact: false)
 
-            tabContent
+            crystalTabBody
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
@@ -95,11 +98,11 @@ struct ContentView: View {
         // Bottom navigation participates in layout via safeAreaInset so ScrollViews
         // (including Sextant) can scroll their last content above the bar + home indicator.
         VStack(spacing: 0) {
-            if selectedTab != .horizon {
+            if displayedTab != .horizon {
                 CompactHeader()
             }
 
-            tabContent
+            crystalTabBody
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -113,9 +116,15 @@ struct ContentView: View {
         }
     }
 
+    private var crystalTabBody: some View {
+        CrystalTabHost(selection: $selectedTab, displayed: $displayedTab, order: AppTab.allCases) { tab in
+            tabRoot(for: tab)
+        }
+    }
+
     @ViewBuilder
-    private var tabContent: some View {
-        switch selectedTab {
+    private func tabRoot(for tab: AppTab) -> some View {
+        switch tab {
         case .horizon:
             TrueHorizonView()
         case .dawn:

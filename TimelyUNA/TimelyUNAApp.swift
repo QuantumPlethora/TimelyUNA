@@ -59,6 +59,7 @@ struct TimelyUNAApp: App {
             }
             .background(Color.black.ignoresSafeArea())
             .preferredColorScheme(.dark)
+            .environment(\.horizonInterfaceRevealed, openingPhase == .revealed)
             #if os(macOS)
             .frame(minWidth: 900, minHeight: 640)
             #endif
