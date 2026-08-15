@@ -928,7 +928,7 @@ struct TrueHorizonView: View {
                 VStack(spacing: 2) {
                     RitualRocketMark(lit: simulation.isRocketFlying || launchAnimating || simulation.showRocketHit)
                         .scaleEffect(0.72)
-                        .rotationEffect(.radians(rocketAngle + .pi / 2))
+                        .rotationEffect(.radians(Double(rocketAngle + .pi / 2)))
                         .opacity(simulation.showRocketHit ? 0.45 : 1)
                     Text(Self.rocketName)
                         .font(TimelyUNATheme.smallCaptionFont)
