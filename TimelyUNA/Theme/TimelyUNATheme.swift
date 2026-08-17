@@ -55,15 +55,15 @@ enum TimelyUNATheme {
     static let heroMetricFont = Font.custom("Papyrus", size: 42, relativeTo: .largeTitle)
 }
 
-/// One quiet selection tick for deliberate button and tab activations.
+/// One medium impact for deliberate button and tab activations.
 /// UIKit honors the device's system haptic settings; macOS is a silent no-op.
 @MainActor
 enum AppHaptics {
     static func selection() {
         #if canImport(UIKit)
-        let generator = UISelectionFeedbackGenerator()
+        let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.prepare()
-        generator.selectionChanged()
+        generator.impactOccurred()
         #endif
     }
 }
