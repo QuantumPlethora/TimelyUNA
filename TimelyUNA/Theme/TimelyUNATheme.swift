@@ -1,5 +1,9 @@
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 /// True Horizon / TimelyUNA shared palette and Papyrus typography.
 /// Palette mirrors macsafedevelopersapple.io: black, warm cream, electric yellow-green, orange, cosmic purple.
 enum TimelyUNATheme {
@@ -49,4 +53,17 @@ enum TimelyUNATheme {
     static let buttonFont = Font.custom("Papyrus", size: 18, relativeTo: .headline)
     static let metricFont = Font.custom("Papyrus", size: 28, relativeTo: .title)
     static let heroMetricFont = Font.custom("Papyrus", size: 42, relativeTo: .largeTitle)
+}
+
+/// One quiet selection tick for deliberate button and tab activations.
+/// UIKit honors the device's system haptic settings; macOS is a silent no-op.
+@MainActor
+enum AppHaptics {
+    static func selection() {
+        #if canImport(UIKit)
+        let generator = UISelectionFeedbackGenerator()
+        generator.prepare()
+        generator.selectionChanged()
+        #endif
+    }
 }

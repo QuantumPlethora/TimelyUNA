@@ -75,6 +75,7 @@ struct PhotonLabyrinthView: View {
 
                 if puzzleSolved {
                     Button {
+                        AppHaptics.selection()
                         journeyMessage = simulateJourney(to: selectedDate)
                         #if os(iOS)
                         showAR = true
@@ -115,8 +116,9 @@ struct PhotonLabyrinthView: View {
                 }
 
                 if puzzleSolved {
-                    Button("Reset Labyrinth") {
-                        withAnimation {
+                Button("Reset Labyrinth") {
+                    AppHaptics.selection()
+                    withAnimation {
                             puzzleSolved = false
                             journeyMessage = ""
                             showAR = false

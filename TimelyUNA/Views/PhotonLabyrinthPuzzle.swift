@@ -113,6 +113,7 @@ struct PhotonLabyrinthPuzzle: View {
 
             HStack {
                 Button("Clear Path") {
+                    AppHaptics.selection()
                     resetPath(keepSolved: false)
                 }
                 .font(.system(.subheadline, design: .serif))
@@ -122,6 +123,7 @@ struct PhotonLabyrinthPuzzle: View {
                 Spacer()
 
                 Button("Shuffle") {
+                    AppHaptics.selection()
                     withAnimation {
                         board.shuffle()
                         if status != .solved {
@@ -214,6 +216,7 @@ struct PhotonLabyrinthPuzzle: View {
         let isNext = status != .solved && solution[safe: path.count] == node
 
         return Button {
+            AppHaptics.selection()
             tap(node)
         } label: {
             VStack(spacing: 6) {

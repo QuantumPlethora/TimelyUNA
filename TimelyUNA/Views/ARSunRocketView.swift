@@ -623,7 +623,10 @@ struct ARSunRocketView: View {
             }
         }()
 
-        return Button(action: action) {
+        return Button {
+            AppHaptics.selection()
+            action()
+        } label: {
             Group {
                 if prefersIconToolbar {
                     Image(systemName: systemImage)
@@ -687,6 +690,7 @@ struct ARSunRocketView: View {
                 .minimumScaleFactor(0.75)
             Spacer(minLength: 4)
             Button {
+                AppHaptics.selection()
                 showCalibrationDetail = true
             } label: {
                 Image(systemName: "info.circle")
@@ -700,6 +704,7 @@ struct ARSunRocketView: View {
 
             if calibration.quality == .calibrated || calibration.quality == .limited {
                 Button {
+                    AppHaptics.selection()
                     withAnimation(.easeInOut(duration: 0.2)) {
                         statusBannerVisible = false
                     }
@@ -773,6 +778,7 @@ struct ARSunRocketView: View {
                         .foregroundStyle(TimelyUNATheme.gold)
                     if !location.hasLiveCoordinates {
                         Button {
+                            AppHaptics.selection()
                             location.requestLocation()
                         } label: {
                             Text(location.actionButtonTitle)
@@ -792,7 +798,10 @@ struct ARSunRocketView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { showCalibrationDetail = false }
+                    Button("Done") {
+                        AppHaptics.selection()
+                        showCalibrationDetail = false
+                    }
                 }
             }
         }
@@ -1080,6 +1089,7 @@ struct ARSunRocketView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Button {
+                AppHaptics.selection()
                 withAnimation(.easeInOut(duration: 0.2)) {
                     isExpanded.wrappedValue.toggle()
                 }
@@ -1147,6 +1157,7 @@ struct ARSunRocketView: View {
                 .fixedSize(horizontal: false, vertical: true)
             if !location.hasLiveCoordinates {
                 Button {
+                    AppHaptics.selection()
                     location.requestLocation()
                 } label: {
                     Text(location.actionButtonTitle)
@@ -1160,6 +1171,7 @@ struct ARSunRocketView: View {
                 .buttonStyle(.plain)
             }
             Button {
+                AppHaptics.selection()
                 showCalibrationDetail = true
             } label: {
                 Text("Open full calibration tips")
@@ -1560,7 +1572,10 @@ private struct ARUnavailableGate: View {
                     .foregroundStyle(TimelyUNATheme.papyrus)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                Button(action: onContinue) {
+                Button {
+                    AppHaptics.selection()
+                    onContinue()
+                } label: {
                     Text("Continue without AR")
                         .font(TimelyUNATheme.buttonFont)
                         .foregroundStyle(TimelyUNATheme.ink)
@@ -1571,6 +1586,7 @@ private struct ARUnavailableGate: View {
                 .buttonStyle(.plain)
                 if reason == .cameraDenied {
                     Button("Open Settings") {
+                        AppHaptics.selection()
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             UIApplication.shared.open(url)
                         }
@@ -1579,7 +1595,10 @@ private struct ARUnavailableGate: View {
                     .foregroundStyle(TimelyUNATheme.gold)
                     .frame(minHeight: 44)
                 }
-                Button("Close", action: onClose)
+                Button("Close") {
+                    AppHaptics.selection()
+                    onClose()
+                }
                     .font(TimelyUNATheme.calloutFont)
                     .foregroundStyle(TimelyUNATheme.muted)
                     .frame(minHeight: 44)
@@ -3043,7 +3062,10 @@ struct ARSunRocketView: View {
                 hit: hit,
                 onLaunch: launch
             )
-            Button { dismiss() } label: {
+            Button {
+                AppHaptics.selection()
+                dismiss()
+            } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 28))
                     .foregroundStyle(TimelyUNATheme.gold)
@@ -3065,7 +3087,10 @@ struct ARSunRocketView: View {
                 }
                 .toggleStyle(.button)
                 .font(TimelyUNATheme.calloutFont)
-                Button("Continue without AR / Launch") { launch() }
+                Button("Continue without AR / Launch") {
+                    AppHaptics.selection()
+                    launch()
+                }
                     .font(TimelyUNATheme.calloutFont)
                     .frame(minHeight: 44)
             }

@@ -61,6 +61,7 @@ struct ChronosModeView: View {
 
                 if simulation.chronosPhase != .idle {
                     Button("Reset Chronos Mode") {
+                        AppHaptics.selection()
                         simulation.resetChronos()
                     }
                     .buttonStyle(AncientButtonStyle())
@@ -80,6 +81,7 @@ struct ChronosModeView: View {
     private var controls: some View {
         VStack(spacing: 12) {
             Button {
+                AppHaptics.selection()
                 simulation.engageQuantumJump()
             } label: {
                 Label("ENGAGE QUANTUM JUMP", systemImage: "atom")
@@ -122,6 +124,7 @@ struct ChronosModeView: View {
 
             if simulation.chronosPhase == .jumped || simulation.chronosPhase == .telescopeActive {
                 Button {
+                    AppHaptics.selection()
                     simulation.deployTelescope()
                 } label: {
                     Label(

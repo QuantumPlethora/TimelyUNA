@@ -478,7 +478,10 @@ struct XSkyJumpView: View {
     }
 
     private func secondaryButton(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        Button {
+            AppHaptics.selection()
+            action()
+        } label: {
             Label(title, systemImage: systemImage)
                 .font(TimelyUNATheme.captionFont)
                 .foregroundStyle(TimelyUNATheme.papyrus)
@@ -494,6 +497,7 @@ struct XSkyJumpView: View {
 
     private func togglePill(_ title: String, _ binding: Binding<Bool>, _ color: Color) -> some View {
         Button {
+            AppHaptics.selection()
             binding.wrappedValue.toggle()
         } label: {
             Text("\(title) \(binding.wrappedValue ? "On" : "Off")")

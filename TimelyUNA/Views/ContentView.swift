@@ -329,6 +329,7 @@ private struct CosmicTabBar: View {
 
     private func tabButton(_ tab: ContentView.AppTab, compact: Bool) -> some View {
         Button {
+            AppHaptics.selection()
             selection = tab
         } label: {
             VStack(spacing: 3) {
@@ -406,6 +407,7 @@ private struct DawnExperienceView: View {
                             .fixedSize(horizontal: false, vertical: true)
 
                         Button(showActual ? "Hide Actual Now" : "Show Actual Now") {
+                            AppHaptics.selection()
                             withAnimation { showActual.toggle() }
                         }
                         .buttonStyle(CosmicButtonStyle())

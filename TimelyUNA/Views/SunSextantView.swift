@@ -230,6 +230,7 @@ struct SunSextantView: View {
             )
 
             Button {
+                AppHaptics.selection()
                 showingARSunrise = true
             } label: {
                 Label("OPEN AR SUNRISE", systemImage: "arkit")
@@ -239,6 +240,7 @@ struct SunSextantView: View {
             .accessibilityHint("Opens the camera experience showing Apparent Now, Actual Position, and the Lightline")
 
             Button {
+                AppHaptics.selection()
                 simulation.launchRocket()
             } label: {
                 Label("LAUNCH BABY SPCX ROCKET", systemImage: "airplane.departure")

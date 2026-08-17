@@ -331,6 +331,7 @@ struct TrueHorizonView: View {
 
     private var howToEnableButton: some View {
         Button {
+            AppHaptics.selection()
             location.openSystemLocationSettings()
         } label: {
             Text("How to enable")
@@ -347,6 +348,7 @@ struct TrueHorizonView: View {
 
     private var locationButton: some View {
         Button {
+            AppHaptics.selection()
             let before = location.source
             location.requestLocation()
             if before == .notRequested || before == .fixFailed {
@@ -905,6 +907,7 @@ struct TrueHorizonView: View {
         Group {
             if simulation.lightLineFinished {
                 Button("Replay LightLine") {
+                    AppHaptics.selection()
                     simulation.replayLightLine()
                 }
                 .buttonStyle(.plain)
@@ -1259,6 +1262,7 @@ struct TrueHorizonView: View {
             Spacer(minLength: 16)
 
             Button {
+                AppHaptics.selection()
                 performRitual()
             } label: {
                 HStack(spacing: 12) {
@@ -1426,6 +1430,7 @@ struct TrueHorizonView: View {
 
     private func reminderButton(trueSunrise: Date?) -> some View {
         Button {
+            AppHaptics.selection()
             Task {
                 if sunriseReminder.isScheduled || persistence.sunriseReminderArmed {
                     await sunriseReminder.disarm(persistence: persistence)

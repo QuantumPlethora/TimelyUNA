@@ -136,6 +136,7 @@ struct PlanetFinderView: View {
                 HStack(spacing: 8) {
                     ForEach(PlanetaryEphemeris.Body.allCases) { body in
                         Button {
+                            AppHaptics.selection()
                             target = body
                         } label: {
                             Label(body.rawValue, systemImage: body.symbol)
@@ -198,6 +199,7 @@ struct PlanetFinderView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Button {
+                AppHaptics.selection()
                 location.requestLocation()
             } label: {
                 Label(location.actionButtonTitle, systemImage: location.needsSettings ? "gear" : "location.fill")
@@ -502,6 +504,7 @@ struct PlanetFinderView: View {
 
         VStack(spacing: 10) {
             Button {
+                AppHaptics.selection()
                 showAR = true
             } label: {
                 Label(
