@@ -48,17 +48,24 @@ struct TimelyUNAApp: App {
                         }
                     )
                     .zIndex(1000)
-                    // Failsafe only if the sequence never reached the breakup.
-                    .task {
-                        try? await Task.sleep(nanoseconds: 22_000_000_000)
-                        if openingPhase == .playing {
-                            openingPhase = .revealed
-                        }
-                    }
                 }
             }
             .background(Color.black.ignoresSafeArea())
             .preferredColorScheme(.dark)
+            // Stable root-owned failsafe. It survives redraws of the opening overlay and
+            // releases either an interrupted title phase or an interrupted breakup.
+            .task {
+                guard openingPhase != .revealed else { return }
+                do {
+                    try await Task.sleep(nanoseconds: 22_000_000_000)
+                } catch {
+                    return
+                }
+                guard !Task.isCancelled else { return }
+                if openingPhase != .revealed {
+                    openingPhase = .revealed
+                }
+            }
             .environment(\.horizonInterfaceRevealed, openingPhase == .revealed)
             #if os(macOS)
             .frame(minWidth: 900, minHeight: 640)

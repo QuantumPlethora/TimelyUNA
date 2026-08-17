@@ -42,7 +42,7 @@ struct StartupTransitionView: View {
     @State private var crystalProgress: Double = 0
     @State private var isCrystallizing = false
     @State private var didFinish = false
-    @State private var sequenceTask: Task<Void, Never>?
+    @State private var isSequenceRunning = false
     @State private var crystalSeed = UInt64.random(in: 1...UInt64.max)
 
     private let textColor = TimelyUNATheme.papyrus.opacity(0.90)
@@ -87,8 +87,7 @@ struct StartupTransitionView: View {
         .allowsHitTesting(!didFinish)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(Brand.studioMark). \(Brand.studioCredit). \(Brand.productDisplayName). \(Brand.technologyCredit). \(Brand.cosmicDedication)")
-        .onAppear { startSequenceIfNeeded() }
-        .onDisappear { sequenceTask?.cancel() }
+        .task { await startSequenceIfNeeded() }
     }
 
     // MARK: Studio phase
@@ -270,9 +269,11 @@ struct StartupTransitionView: View {
 
     // MARK: Sequence
 
-    private func startSequenceIfNeeded() {
+    @MainActor
+    private func startSequenceIfNeeded() async {
         // Deterministic: never restart after finish, never overlap a running sequence.
-        guard !didFinish, sequenceTask == nil else { return }
+        guard !didFinish, !isSequenceRunning else { return }
+        isSequenceRunning = true
         studioMarkOpacity = 0
         studioCreditOpacity = 0
         artworkOpacity = 0
@@ -283,8 +284,11 @@ struct StartupTransitionView: View {
         plateOpacity = 1
         crystalProgress = 0
         isCrystallizing = false
-        sequenceTask = Task { @MainActor in
-            await runSequence()
+        await runSequence()
+        if !didFinish {
+            // A lifecycle cancellation may interrupt the task. Clear ownership so a
+            // legitimate re-entry can begin one fresh sequence rather than staying frozen.
+            isSequenceRunning = false
         }
     }
 
