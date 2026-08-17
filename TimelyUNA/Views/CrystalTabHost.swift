@@ -59,6 +59,11 @@ struct CrystalTabHost<Selection: Hashable, Content: View>: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
+                if phase == .shattering {
+                    TransitionUniverseBackdrop()
+                        .zIndex(0)
+                }
+
                 content(displayed)
                     .frame(width: geo.size.width, height: geo.size.height)
                     .opacity(incomingOpacity)
@@ -275,6 +280,24 @@ struct CrystalTabHost<Selection: Hashable, Content: View>: View {
         let x = 0.24 + rng.unit() * 0.52
         let y = 0.28 + rng.unit() * 0.40
         return UnitPoint(x: x, y: y)
+    }
+}
+
+/// Text-free eclipse artwork shown only beneath the outgoing crystalline shards.
+/// `scaledToFit` keeps the complete surrounding universe visible on every canvas;
+/// the black base naturally fills any letterboxed space without stretching the art.
+private struct TransitionUniverseBackdrop: View {
+    var body: some View {
+        ZStack {
+            Color.black
+
+            Image("TimelyUNATransitionBackdrop")
+                .resizable()
+                .scaledToFit()
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
