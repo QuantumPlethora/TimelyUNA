@@ -12,7 +12,7 @@ extension EnvironmentValues {
     }
 }
 
-/// True Horizon daily screen — cinematic native composition.
+/// TimelyUNA daily screen — cinematic native composition.
 /// Visible Now / Actual Now is the central story; the daily ritual lives below.
 struct TrueHorizonView: View {
     @EnvironmentObject private var simulation: SimulationState
@@ -154,7 +154,7 @@ struct TrueHorizonView: View {
 
     private func topChrome(wide: Bool, narrow: Bool) -> some View {
         let titleBlock = VStack(alignment: .leading, spacing: 8) {
-            Text("01 · DAILY RITUAL · TRUE HORIZON")
+            Text("01 · DAILY RITUAL · TIMELYUNA")
                 .font(TimelyUNATheme.captionFont)
                 .tracking(narrow ? 1.4 : 2.4)
                 .foregroundStyle(TimelyUNATheme.goldDeep)
@@ -1224,7 +1224,7 @@ struct TrueHorizonView: View {
                 }
                 .padding(.top, 16)
 
-                // Approved same-screen coordinate display (True Horizon only).
+                // Approved same-screen coordinate display (TimelyUNA only).
                 Text("Live calculation · \(location.coordinateLabel)")
                     .font(TimelyUNATheme.smallCaptionFont)
                     .foregroundStyle(TimelyUNATheme.acid.opacity(0.85))
@@ -1561,9 +1561,9 @@ struct TrueHorizonView: View {
             let delay = SolarFormat.lightDelayCompact(snapshot.lightTimeSeconds)
             let alt = SolarFormat.degrees(snapshot.truePosition.altitude)
             let au = SolarFormat.au(snapshot.distanceAU)
-            return "I saw the Sun where it actually is on True Horizon. Light delay \(delay) · Earth–Sun \(au) AU · true altitude \(alt). \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
+            return "I saw the Sun where it actually is in TimelyUNA. Light delay \(delay) · Earth–Sun \(au) AU · true altitude \(alt). \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
         }
-        return "True Horizon — Apparent Now vs Actual Now, with Beauteous Maximus crossing the TimelyUNA gap. Powered by the TimelyUNA light-time engine. \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
+        return "TimelyUNA — Apparent Now vs Actual Now, with Beauteous Maximus crossing the TimelyUNA Gap. \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
     }
 
     private func showToast(_ message: String) {

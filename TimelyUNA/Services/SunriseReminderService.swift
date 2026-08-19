@@ -124,7 +124,7 @@ final class SunriseReminderService: ObservableObject {
         let effective = fire > now.addingTimeInterval(30) ? fire : now.addingTimeInterval(60)
 
         let content = UNMutableNotificationContent()
-        content.title = "True Horizon"
+        content.title = "TimelyUNA"
         content.body = "True sunrise is near. The Sun is late to its own horizon—Visible Now is already history."
         content.sound = .default
 

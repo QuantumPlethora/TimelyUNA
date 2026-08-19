@@ -11,9 +11,9 @@ import UIKit
 
 /// Observer coordinates for educational solar calculations.
 ///
-/// ## Location privacy (True Horizon policy)
+/// ## Location privacy (TimelyUNA policy)
 /// - Raw `latitude` / `longitude` exist only after a live Core Location fix (never a silent fallback).
-/// - Exact values may be **visibly displayed only on True Horizon’s observer strip / same-screen metrics**.
+/// - Exact values may be **visibly displayed only on TimelyUNA’s observer strip / same-screen metrics**.
 /// - Use `coordinateLabel` solely for that approved UI. Prefer `locationAvailabilityLabel` for
 ///   diagnostics, AR, Finder gates, and any non-approved surface.
 /// - Do not put coordinates in share text, notifications, URLs, UserDefaults keys, analytics, or logs.
@@ -42,9 +42,9 @@ final class ObserverLocationService: NSObject, ObservableObject {
         case fixFailed
     }
 
-    /// Precise device latitude — **internal astronomy only**. Do not format for UI outside True Horizon.
+    /// Precise device latitude — **internal astronomy only**. Do not format for UI outside TimelyUNA.
     @Published private(set) var latitude: Double?
-    /// Precise device longitude — **internal astronomy only**. Do not format for UI outside True Horizon.
+    /// Precise device longitude — **internal astronomy only**. Do not format for UI outside TimelyUNA.
     @Published private(set) var longitude: Double?
     @Published private(set) var source: Source = .notRequested
     @Published private(set) var authorization: AuthorizationState = .notDetermined
@@ -83,8 +83,8 @@ final class ObserverLocationService: NSObject, ObservableObject {
 
     var isLive: Bool { hasLiveCoordinates }
 
-    /// **APPROVED DISPLAY ONLY** — True Horizon observer strip / same-screen metrics.
-    /// Never use this in Finder, AR, xSky, share, notifications, accessibility outside True Horizon, or logs.
+    /// **APPROVED DISPLAY ONLY** — TimelyUNA observer strip / same-screen metrics.
+    /// Never use this in Finder, AR, xSky, share, notifications, accessibility outside TimelyUNA, or logs.
     var coordinateLabel: String {
         guard let latitude, let longitude, hasLiveCoordinates else {
             return "—"
@@ -153,14 +153,14 @@ final class ObserverLocationService: NSObject, ObservableObject {
     var guidanceMessage: String? {
         switch source {
         case .notRequested:
-            return "True Horizon needs your location to compute altitude, azimuth, and sunrise for your sky. Location data stays on this device."
+            return "TimelyUNA needs your location to compute altitude, azimuth, and sunrise for your sky. Location data stays on this device."
         case .requesting:
             return "Waiting for permission or the first location fix…"
         case .denied:
             #if os(iOS)
-            return "Location access is off for True Horizon. Open Settings → Privacy & Security → Location Services, enable True Horizon, then return and tap Refresh."
+            return "Location access is off for TimelyUNA. Open Settings → Privacy & Security → Location Services, enable TimelyUNA, then return and tap Refresh."
             #else
-            return "Location access is off for True Horizon. Open System Settings → Privacy & Security → Location Services, enable True Horizon, then return and refresh."
+            return "Location access is off for TimelyUNA. Open System Settings → Privacy & Security → Location Services, enable TimelyUNA, then return and refresh."
             #endif
         case .unavailable:
             #if os(iOS)

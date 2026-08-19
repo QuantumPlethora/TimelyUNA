@@ -1,7 +1,7 @@
 import Foundation
 
 /// Educational NOAA/Meeus-style solar engine (offline).
-/// Ported from the True Horizon web engine. Not navigation-grade.
+/// Ported from the TimelyUNA web engine. Not navigation-grade.
 enum SolarEngine {
     /// Mean light-seconds per astronomical unit (~AU / c).
     static let lightSecondsPerAU: Double = 499.0047838
@@ -21,9 +21,9 @@ enum SolarEngine {
 
     struct Snapshot: Equatable, Sendable {
         var date: Date
-        /// Observer latitude used for this calculation — **internal only**; never format for UI/share/logs outside True Horizon’s approved coordinate display.
+        /// Observer latitude used for this calculation — **internal only**; never format for UI/share/logs outside TimelyUNA’s approved coordinate display.
         var latitude: Double
-        /// Observer longitude used for this calculation — **internal only**; never format for UI/share/logs outside True Horizon’s approved coordinate display.
+        /// Observer longitude used for this calculation — **internal only**; never format for UI/share/logs outside TimelyUNA’s approved coordinate display.
         var longitude: Double
         var apparent: HorizontalCoordinates
         var truePosition: HorizontalCoordinates

@@ -482,7 +482,7 @@ struct ARSunRocketView: View {
 
     private func arLifecycleLog(_ message: String) {
         #if DEBUG
-        print("[TrueHorizon AR] \(message)")
+        print("[TimelyUNA AR] \(message)")
         #endif
     }
 
@@ -1795,7 +1795,7 @@ private struct CelestialARContainer: UIViewRepresentable {
 
     private static func arLifecycleStaticLog(_ message: String) {
         #if DEBUG
-        print("[TrueHorizon AR] \(message)")
+        print("[TimelyUNA AR] \(message)")
         #endif
     }
 
@@ -2073,7 +2073,7 @@ private struct CelestialARContainer: UIViewRepresentable {
 
         private func arLog(_ message: String) {
             #if DEBUG
-            print("[TrueHorizon AR] \(message)")
+            print("[TimelyUNA AR] \(message)")
             #endif
         }
 

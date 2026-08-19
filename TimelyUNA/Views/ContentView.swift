@@ -439,7 +439,7 @@ private struct ScienceLiteracyView: View {
                 FactCard(title: "Actual Now", text: "The object's modeled present location after accounting for light-travel delay.")
                 FactCard(title: "xSky Jump", text: "Change the observer and the entire sky changes with it.")
                 FactCard(title: "Mars Perspective", text: "From Mars, Earth becomes a wandering planet. Venus and Mercury occupy a different geometry.")
-                FactCard(title: "Educational boundary", text: "True Horizon calculations are educational estimates—not navigation-grade results.")
+                FactCard(title: "Educational boundary", text: "TimelyUNA calculations are educational estimates—not navigation-grade results.")
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 30)

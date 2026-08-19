@@ -1,14 +1,14 @@
 import SwiftUI
 
 enum Brand {
-    /// Compact / legacy engine name (not the product-facing title).
+    /// Canonical app and product name.
     static let appName = "TimelyUNA"
 
     /// Official singular product-facing name.
-    static let productDisplayName = "True Horizon"
+    static let productDisplayName = "TimelyUNA"
 
     /// Compact chrome / headers when space is limited.
-    static let productShortName = "True Horizon"
+    static let productShortName = "TimelyUNA"
 
     /// Navigation tab label (may stay shorter than full product name).
     static let productNavLabel = "Horizon"
@@ -19,8 +19,8 @@ enum Brand {
     /// Studio mark for the first opening frame (exact spelling: Rootz ends in z).
     static let studioMark = "QuantumRootz"
 
-    /// Technology / engine credit (exact capitalization). Engine name is TimelyUNA.
-    static let technologyCredit = "Driven by TimelyUNA"
+    /// Supporting technology descriptor shown beneath the product name.
+    static let technologyCredit = "Light-Time Engine"
 
     /// Closing dedication (exact capitalization).
     static let cosmicDedication = "Congruent with the Ancestors of the Cosmos"

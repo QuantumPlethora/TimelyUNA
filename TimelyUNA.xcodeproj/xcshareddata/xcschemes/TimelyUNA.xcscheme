@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "51176D9009E2448C9185A33A"
-               BuildableName = "True Horizon.app"
+               BuildableName = "TimelyUNA.app"
                BlueprintName = "TimelyUNA"
                ReferencedContainer = "container:TimelyUNA.xcodeproj">
             </BuildableReference>
@@ -44,7 +44,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "51176D9009E2448C9185A33A"
-            BuildableName = "True Horizon.app"
+            BuildableName = "TimelyUNA.app"
             BlueprintName = "TimelyUNA"
             ReferencedContainer = "container:TimelyUNA.xcodeproj">
          </BuildableReference>
@@ -61,7 +61,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "51176D9009E2448C9185A33A"
-            BuildableName = "True Horizon.app"
+            BuildableName = "TimelyUNA.app"
             BlueprintName = "TimelyUNA"
             ReferencedContainer = "container:TimelyUNA.xcodeproj">
          </BuildableReference>

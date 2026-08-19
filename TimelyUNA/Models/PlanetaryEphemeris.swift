@@ -32,9 +32,9 @@ enum PlanetaryEphemeris {
     struct BodySnapshot: Equatable, Sendable {
         var body: Body
         var date: Date
-        /// Observer latitude for this snapshot — **internal only** (never show outside True Horizon approved strip).
+        /// Observer latitude for this snapshot — **internal only** (never show outside TimelyUNA’s approved strip).
         var latitude: Double
-        /// Observer longitude for this snapshot — **internal only** (never show outside True Horizon approved strip).
+        /// Observer longitude for this snapshot — **internal only** (never show outside TimelyUNA’s approved strip).
         var longitude: Double
         /// Apparent direction of photons arriving now (observer frame).
         var visible: SolarEngine.HorizontalCoordinates

@@ -356,7 +356,7 @@ struct PlanetFinderView: View {
         ) : nil
 
         return VStack(alignment: .leading, spacing: 12) {
-            Text("TRUE HORIZON SUNRISE")
+            Text("TIMELYUNA SUNRISE")
                 .font(TimelyUNATheme.captionFont)
                 .tracking(1.2)
                 .foregroundStyle(TimelyUNATheme.goldDeep)
@@ -420,7 +420,7 @@ struct PlanetFinderView: View {
                 )
                 .frame(height: 72)
 
-                Text("The Sun’s modeled Actual Now position has crossed the True Horizon. Its updated light has not reached you yet.")
+                Text("The Sun’s modeled Actual Now position has crossed the modeled horizon. Its updated light has not reached you yet.")
                     .font(TimelyUNATheme.bodyFont)
                     .foregroundStyle(TimelyUNATheme.papyrus)
                     .fixedSize(horizontal: false, vertical: true)

@@ -4,7 +4,7 @@ import SwiftUI
 import UIKit
 #endif
 
-/// True Horizon / TimelyUNA shared palette and Papyrus typography.
+/// TimelyUNA shared palette and Papyrus typography.
 /// Palette mirrors macsafedevelopersapple.io: black, warm cream, electric yellow-green, orange, cosmic purple.
 enum TimelyUNATheme {
     // MARK: Surfaces

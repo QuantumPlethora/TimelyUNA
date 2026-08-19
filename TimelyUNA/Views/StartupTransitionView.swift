@@ -21,7 +21,7 @@ enum StartupColdLaunchGate {
 
 // MARK: - Startup transition
 
-/// Cinematic cold-launch bridge: studio credit → darkened QuantumRootz tree → True Horizon title card.
+/// Cinematic cold-launch bridge: studio credit → darkened QuantumRootz tree → TimelyUNA title card.
 /// App initialization continues underneath; this view is presentation only.
 struct StartupTransitionView: View {
     var onCrystalStart: () -> Void = {}
@@ -372,12 +372,12 @@ struct StartupTransitionView: View {
         }
         try? await Task.sleep(nanoseconds: artOut / 2)
 
-        // 10) True Horizon over the still-visible tree
+        // 10) TimelyUNA over the still-visible tree
         guard !Task.isCancelled else { return }
         withAnimation(ease(dTitleIn)) { productTitleOpacity = 1 }
         try? await Task.sleep(nanoseconds: titleIn)
 
-        // 11) Driven by TimelyUNA (Brand.technologyCredit)
+        // 11) Light-Time Engine (Brand.technologyCredit)
         guard !Task.isCancelled else { return }
         withAnimation(ease(dTechIn)) { technologyOpacity = 1 }
         try? await Task.sleep(nanoseconds: techIn)
