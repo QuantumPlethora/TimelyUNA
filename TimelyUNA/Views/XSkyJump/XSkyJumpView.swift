@@ -97,7 +97,7 @@ struct XSkyJumpView: View {
     }
 
     // MARK: - iPhone portrait
-    // Full-page ScrollView: title → summary → PlanetStage → caption → controls
+    // Full-page ScrollView: title → summary → PlanetStage → caption → jump → controls
     // Vertical drag over the planet scrolls this ScrollView.
 
     private func phonePortraitLayout(available: CGSize) -> some View {
@@ -124,6 +124,8 @@ struct XSkyJumpView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     activeWorldCaption
                         .xSkyChromeFrame("caption")
+
+                    reachablePrimaryJumpButton
 
                     controlsStack
                         .opacity(state.showChrome ? 1 : 0)
@@ -168,6 +170,7 @@ struct XSkyJumpView: View {
                         .xSkyChromeFrame("summary")
                     activeWorldCaption
                         .xSkyChromeFrame("caption")
+                    reachablePrimaryJumpButton
                     controlsStack
                         .opacity(state.showChrome ? 1 : 0)
                         .allowsHitTesting(state.showChrome && !state.isJumping)
@@ -207,6 +210,7 @@ struct XSkyJumpView: View {
                         .xSkyChromeFrame("summary")
                     activeWorldCaption
                         .xSkyChromeFrame("caption")
+                    reachablePrimaryJumpButton
                     controlsStack
                         .opacity(state.showChrome ? 1 : 0)
                         .allowsHitTesting(state.showChrome && !state.isJumping)
@@ -249,10 +253,11 @@ struct XSkyJumpView: View {
             let proposed = availableHeight * 0.58
             return min(availableHeight * 0.72, max(360, proposed))
         }
-        // Compact iPhone: ~50–55% of the available content height (post safe areas).
-        let proposed = availableHeight * 0.52
-        let lower = availableHeight * 0.48
-        let upper = availableHeight * 0.55
+        // Compact iPhone: preserve a substantial sky while keeping the landing caption
+        // and primary jump action in the same viewport above the bottom tab bar.
+        let proposed = availableHeight * 0.43
+        let lower = availableHeight * 0.40
+        let upper = availableHeight * 0.47
         return min(upper, max(lower, proposed))
     }
 
@@ -376,21 +381,23 @@ struct XSkyJumpView: View {
             }
             .accessibilityLabel("Observer World")
 
-            if state.observer == .mars {
-                Text("Look toward")
-                    .font(TimelyUNATheme.captionFont)
-                    .tracking(1.2)
-                    .foregroundStyle(TimelyUNATheme.goldDeep)
+            Text("Look toward")
+                .font(TimelyUNATheme.captionFont)
+                .tracking(1.2)
+                .foregroundStyle(TimelyUNATheme.goldDeep)
 
-                Picker("Look toward", selection: $state.lookTarget) {
+            Picker("Look toward", selection: $state.lookTarget) {
+                if state.observer == .mars {
                     Text("Earth").tag(XSkyJumpState.LookTarget.earth)
-                    Text("Venus").tag(XSkyJumpState.LookTarget.venus)
-                    Text("Mercury").tag(XSkyJumpState.LookTarget.mercury)
-                    Text("Sun").tag(XSkyJumpState.LookTarget.sun)
+                } else {
+                    Text("Mars").tag(XSkyJumpState.LookTarget.mars)
                 }
-                .pickerStyle(.segmented)
-                .accessibilityLabel("Look toward from Mars")
+                Text("Venus").tag(XSkyJumpState.LookTarget.venus)
+                Text("Mercury").tag(XSkyJumpState.LookTarget.mercury)
+                Text("Sun").tag(XSkyJumpState.LookTarget.sun)
             }
+            .pickerStyle(.segmented)
+            .accessibilityLabel("Look toward from \(state.observer.rawValue)")
 
             // Visible Now / Actual Now / Lightline
             ViewThatFits(in: .horizontal) {
@@ -421,10 +428,9 @@ struct XSkyJumpView: View {
             }
             .tint(TimelyUNATheme.acid)
 
-            // Primary actions — must scroll fully above bottom safeAreaInset nav.
+            // Secondary actions remain in the detail panel. The primary jump action
+            // lives directly below PlanetStage so it is reachable with the sky visible.
             VStack(spacing: 10) {
-                primaryJumpButton
-
                 HStack(spacing: 10) {
                     secondaryButton("Reset View", systemImage: "arrow.counterclockwise") {
                         state.resetView()
@@ -439,7 +445,9 @@ struct XSkyJumpView: View {
                 }
             }
 
-            Text("Drag planet horizontally to orbit · pinch or scroll-wheel to zoom · swipe vertically to scroll · offline educational model")
+            Text(state.isOnSurface
+                 ? "Select a world above to inspect the surface sky · swipe vertically to scroll · offline educational model"
+                 : "Drag planet horizontally to orbit · pinch or scroll-wheel to zoom · swipe vertically to scroll · offline educational model")
                 .font(TimelyUNATheme.smallCaptionFont)
                 .foregroundStyle(TimelyUNATheme.muted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -475,6 +483,16 @@ struct XSkyJumpView: View {
         .buttonStyle(.plain)
         .disabled(state.isJumping)
         .accessibilityHint("Begins the cinematic light-time journey between worlds")
+    }
+
+    /// Kept adjacent to PlanetStage instead of buried beneath the detail controls.
+    /// This remains fully reachable while Earth or the Martian sky is still visible.
+    private var reachablePrimaryJumpButton: some View {
+        primaryJumpButton
+            .opacity(state.showChrome ? 1 : 0)
+            .allowsHitTesting(state.showChrome && !state.isJumping)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 0.28), value: state.showChrome)
+            .xSkyChromeFrame("primaryAction")
     }
 
     private func secondaryButton(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {

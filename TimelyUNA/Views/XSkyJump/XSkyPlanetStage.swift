@@ -22,28 +22,34 @@ struct XSkyPlanetStage: View {
             // GeometryReader sizes the stage; camera distance keeps disc ≤76% of min side
             // with ≥8% diameter empty margin around the atmospheric rim.
             ZStack {
-                // Starfield is clipped to the stage; the planet renderer is not.
-                XSkyStarfieldView(
-                    parallax: CGSize(
-                        width: state.orbitYaw * 12,
-                        height: state.orbitPitch * 10
-                    ),
-                    intensity: state.phase == .corridor ? 1.15 : 1.0
-                )
-                .frame(width: geo.size.width, height: geo.size.height)
-                .clipped()
-                .allowsHitTesting(false)
-
-                XSkyPlanetSceneView(state: state, stageSize: geo.size)
+                if state.isOnSurface {
+                    XSkySurfaceSkyView(state: state)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .transition(.opacity)
+                } else {
+                    // Starfield is clipped to the stage; the planet renderer is not.
+                    XSkyStarfieldView(
+                        parallax: CGSize(
+                            width: state.orbitYaw * 12,
+                            height: state.orbitPitch * 10
+                        ),
+                        intensity: state.phase == .corridor ? 1.15 : 1.0
+                    )
                     .frame(width: geo.size.width, height: geo.size.height)
-                    // Never clip the planet / atmospheric rim.
-                    .compositingGroup()
-                    // SceneKit view does not own touches; gesture overlay + ScrollView do.
                     .allowsHitTesting(false)
 
-                // Transparent interaction layer: directional orbit + pinch.
-                XSkyPlanetInteractionOverlay(state: state)
-                    .frame(width: geo.size.width, height: geo.size.height)
+                    XSkyPlanetSceneView(state: state, stageSize: geo.size)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        // Never clip the planet / atmospheric rim.
+                        .compositingGroup()
+                        // SceneKit view does not own touches; gesture overlay + ScrollView do.
+                        .allowsHitTesting(false)
+
+                    // Transparent interaction layer: directional orbit + pinch.
+                    XSkyPlanetInteractionOverlay(state: state)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                }
 
                 // No journey labels inside PlanetStage — text lives in chrome below/beside.
 
@@ -57,7 +63,8 @@ struct XSkyPlanetStage: View {
             .contentShape(Rectangle())
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(accessibilityPlanetLabel)
-            .accessibilityHint("Drag horizontally to orbit. Pinch or scroll to zoom. Swipe vertically to scroll the page.")
+            .accessibilityHint(accessibilityStageHint)
+            .animation(.easeInOut(duration: 0.3), value: state.isOnSurface)
             .onAppear {
                 reportFrame(geo.frame(in: .global))
             }
@@ -98,14 +105,284 @@ struct XSkyPlanetStage: View {
 
     private var accessibilityPlanetLabel: String {
         switch state.phase {
-        case .mars: return "Mars, slowly rotating"
-        case .earth: return "Earth, slowly rotating"
+        case .mars: return "Standing on the Martian surface, viewing Earth, Venus, Mercury, and the Sun"
+        case .earth: return "Standing on Earth's surface, viewing Mars, Venus, Mercury, and the Sun"
         default: return "Planet stage during xSky Jump"
         }
     }
 
+    private var accessibilityStageHint: String {
+        state.isOnSurface
+            ? "Use the Look toward selector below to inspect a celestial body. Swipe vertically to scroll the page."
+            : "Drag horizontally to orbit. Pinch or scroll to zoom. Swipe vertically to scroll the page."
+    }
+
     private func reportFrame(_ frame: CGRect) {
         onStageFrame?(frame)
+    }
+}
+
+// MARK: - Destination surface skies
+
+/// Ground-level educational view shown after arrival. All principal inner-sky targets
+/// remain visible together; the Look toward picker selects which body demonstrates the
+/// TimelyUNA Visible Now / Actual Now separation.
+private struct XSkySurfaceSkyView: View {
+    @ObservedObject var state: XSkyJumpState
+
+    private var isMars: Bool { state.observer == .mars }
+
+    private var visibleTargets: [XSkyJumpState.LookTarget] {
+        isMars
+            ? [.earth, .venus, .mercury, .sun]
+            : [.mars, .venus, .mercury, .sun]
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                LinearGradient(
+                    colors: skyColors,
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+
+                surfaceStars
+
+                RadialGradient(
+                    colors: [hazeColor.opacity(0.38), .clear],
+                    center: isMars ? .trailing : .topTrailing,
+                    startRadius: 4,
+                    endRadius: max(geo.size.width, geo.size.height) * 0.72
+                )
+
+                ForEach(visibleTargets, id: \.rawValue) { target in
+                    celestialMarker(for: target)
+                        .position(position(for: target, in: geo.size))
+                }
+
+                XSkySurfaceTerrain(isMars: isMars)
+                    .fill(
+                        LinearGradient(
+                            colors: terrainColors,
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .overlay(alignment: .bottom) {
+                        terrainDetails(in: geo.size)
+                    }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(isMars ? "MARTIAN SURFACE SKY" : "EARTH SURFACE SKY")
+                        .font(TimelyUNATheme.captionFont)
+                        .tracking(1.1)
+                        .foregroundStyle(isMars ? Color(red: 0.35, green: 0.12, blue: 0.07) : TimelyUNATheme.papyrus)
+                    Text(isMars ? "Earth · Venus · Mercury" : "Mars · Venus · Mercury")
+                        .font(TimelyUNATheme.smallCaptionFont)
+                        .foregroundStyle(isMars ? Color.black.opacity(0.62) : TimelyUNATheme.gold)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .background(Color.black.opacity(isMars ? 0.12 : 0.34), in: Capsule())
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(10)
+
+                Text("Illustrative surface view · positions not to scale")
+                    .font(TimelyUNATheme.smallCaptionFont)
+                    .foregroundStyle(TimelyUNATheme.papyrus.opacity(0.9))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.black.opacity(0.46), in: Capsule())
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(10)
+            }
+            .accessibilityHidden(true)
+        }
+    }
+
+    private var skyColors: [Color] {
+        if isMars {
+            return [
+                Color(red: 0.22, green: 0.13, blue: 0.22),
+                Color(red: 0.58, green: 0.31, blue: 0.23),
+                Color(red: 0.84, green: 0.55, blue: 0.36),
+                Color(red: 0.95, green: 0.70, blue: 0.46)
+            ]
+        }
+        return [
+            Color(red: 0.015, green: 0.025, blue: 0.10),
+            Color(red: 0.08, green: 0.12, blue: 0.28),
+            Color(red: 0.34, green: 0.20, blue: 0.32),
+            Color(red: 0.72, green: 0.42, blue: 0.28)
+        ]
+    }
+
+    private var terrainColors: [Color] {
+        isMars
+            ? [Color(red: 0.48, green: 0.21, blue: 0.12), Color(red: 0.16, green: 0.07, blue: 0.05)]
+            : [Color(red: 0.09, green: 0.16, blue: 0.16), Color(red: 0.015, green: 0.035, blue: 0.04)]
+    }
+
+    private var hazeColor: Color {
+        isMars ? Color.orange : Color(red: 0.35, green: 0.55, blue: 1)
+    }
+
+    private var surfaceStars: some View {
+        Canvas { context, size in
+            for index in 0..<(isMars ? 34 : 70) {
+                let x = deterministicFraction(index * 37 + (isMars ? 7 : 19)) * size.width
+                let y = deterministicFraction(index * 71 + 5) * size.height * 0.64
+                let diameter = 0.7 + deterministicFraction(index * 13) * 1.5
+                context.fill(
+                    Path(ellipseIn: CGRect(x: x, y: y, width: diameter, height: diameter)),
+                    with: .color(Color.white.opacity(isMars ? 0.34 : 0.72))
+                )
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    @ViewBuilder
+    private func celestialMarker(for target: XSkyJumpState.LookTarget) -> some View {
+        let selected = state.lookTarget == target
+        let offset = state.lookAngularOffsetDegrees()
+        let separation = selected ? min(34, max(9, CGFloat(offset.displaySep) * 3.2)) : 0
+        let diameter = markerDiameter(for: target)
+
+        VStack(spacing: 3) {
+            ZStack {
+                if selected && state.showLightline {
+                    Path { path in
+                        path.move(to: CGPoint(x: 40 - separation / 2, y: 24))
+                        path.addLine(to: CGPoint(x: 40 + separation / 2, y: 24))
+                    }
+                    .stroke(
+                        TimelyUNATheme.gold,
+                        style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [3, 3])
+                    )
+                }
+
+                if !selected || state.showVisibleNow {
+                    bodyDisc(for: target, diameter: diameter)
+                        .overlay(Circle().stroke(selected ? TimelyUNATheme.apparentSun : .white.opacity(0.55), lineWidth: selected ? 2 : 1))
+                        .offset(x: selected ? -separation / 2 : 0)
+                }
+
+                if selected && state.showActualNow {
+                    bodyDisc(for: target, diameter: diameter)
+                        .overlay(Circle().stroke(TimelyUNATheme.acid, lineWidth: 2))
+                        .offset(x: separation / 2)
+                }
+            }
+            .frame(width: 80, height: 48)
+
+            Text(target.rawValue)
+                .font(TimelyUNATheme.smallCaptionFont)
+                .foregroundStyle(TimelyUNATheme.papyrus)
+                .lineLimit(1)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.black.opacity(selected ? 0.62 : 0.34), in: Capsule())
+        }
+        .scaleEffect(selected ? 1.08 : 1)
+    }
+
+    private func bodyDisc(for target: XSkyJumpState.LookTarget, diameter: CGFloat) -> some View {
+        Circle()
+            .fill(markerColor(for: target))
+            .frame(width: diameter, height: diameter)
+            .shadow(color: markerColor(for: target).opacity(0.9), radius: target == .sun ? 10 : 4)
+    }
+
+    private func position(for target: XSkyJumpState.LookTarget, in size: CGSize) -> CGPoint {
+        let coordinates: (CGFloat, CGFloat)
+        if isMars {
+            switch target {
+            case .venus: coordinates = (0.22, 0.31)
+            case .mercury: coordinates = (0.43, 0.46)
+            case .earth: coordinates = (0.66, 0.28)
+            case .sun: coordinates = (0.84, 0.42)
+            case .mars: coordinates = (0.50, 0.32)
+            }
+        } else {
+            switch target {
+            case .venus: coordinates = (0.22, 0.35)
+            case .mercury: coordinates = (0.43, 0.49)
+            case .mars: coordinates = (0.66, 0.27)
+            case .sun: coordinates = (0.84, 0.43)
+            case .earth: coordinates = (0.50, 0.32)
+            }
+        }
+        return CGPoint(x: size.width * coordinates.0, y: size.height * coordinates.1)
+    }
+
+    private func markerDiameter(for target: XSkyJumpState.LookTarget) -> CGFloat {
+        switch target {
+        case .sun: return 22
+        case .earth: return 15
+        case .venus: return 13
+        case .mars: return 12
+        case .mercury: return 9
+        }
+    }
+
+    private func markerColor(for target: XSkyJumpState.LookTarget) -> Color {
+        switch target {
+        case .earth: return Color(red: 0.32, green: 0.74, blue: 1)
+        case .venus: return Color(red: 0.96, green: 0.80, blue: 0.52)
+        case .mercury: return Color(red: 0.69, green: 0.67, blue: 0.62)
+        case .sun: return Color(red: 1, green: 0.88, blue: 0.42)
+        case .mars: return Color(red: 0.89, green: 0.33, blue: 0.18)
+        }
+    }
+
+    private func terrainDetails(in size: CGSize) -> some View {
+        ZStack(alignment: .bottom) {
+            Ellipse()
+                .fill(Color.black.opacity(0.18))
+                .frame(width: size.width * 0.22, height: 14)
+                .offset(x: -size.width * 0.24, y: -18)
+            Ellipse()
+                .fill(Color.black.opacity(0.13))
+                .frame(width: size.width * 0.14, height: 10)
+                .offset(x: size.width * 0.27, y: -35)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func deterministicFraction(_ seed: Int) -> CGFloat {
+        let value = sin(Double(seed) * 12.9898) * 43758.5453
+        return CGFloat(value - floor(value))
+    }
+}
+
+private struct XSkySurfaceTerrain: Shape {
+    let isMars: Bool
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let horizon = rect.height * (isMars ? 0.70 : 0.74)
+        path.move(to: CGPoint(x: 0, y: horizon))
+        path.addCurve(
+            to: CGPoint(x: rect.width * 0.34, y: horizon - rect.height * 0.08),
+            control1: CGPoint(x: rect.width * 0.12, y: horizon - rect.height * 0.01),
+            control2: CGPoint(x: rect.width * 0.22, y: horizon - rect.height * 0.07)
+        )
+        path.addCurve(
+            to: CGPoint(x: rect.width * 0.68, y: horizon + rect.height * 0.01),
+            control1: CGPoint(x: rect.width * 0.46, y: horizon - rect.height * 0.11),
+            control2: CGPoint(x: rect.width * 0.56, y: horizon + rect.height * 0.02)
+        )
+        path.addCurve(
+            to: CGPoint(x: rect.width, y: horizon - rect.height * 0.045),
+            control1: CGPoint(x: rect.width * 0.80, y: horizon + rect.height * 0.02),
+            control2: CGPoint(x: rect.width * 0.90, y: horizon - rect.height * 0.05)
+        )
+        path.addLine(to: CGPoint(x: rect.width, y: rect.height))
+        path.addLine(to: CGPoint(x: 0, y: rect.height))
+        path.closeSubpath()
+        return path
     }
 }
 

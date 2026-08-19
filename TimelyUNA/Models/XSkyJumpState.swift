@@ -81,6 +81,10 @@ final class XSkyJumpState: ObservableObject {
     var departureName: String { observer == .earth ? "Earth" : "Mars" }
     var destinationName: String { observer == .earth ? "Mars" : "Earth" }
 
+    var isOnSurface: Bool {
+        phase == .earth || phase == .mars
+    }
+
     var phaseLabel: String {
         switch phase {
         case .earth: return "Standing on Earth"
