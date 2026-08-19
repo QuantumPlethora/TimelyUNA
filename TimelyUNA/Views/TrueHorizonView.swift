@@ -486,7 +486,7 @@ struct TrueHorizonView: View {
         Photon delay \(SolarFormat.lightDelayWords(snapshot.lightTimeSeconds)). \
         A photon leaves the emission Sun toward you. A full-sized ghost Sun continues along the Sun’s path for the same light-delay interval. VISIBLE NOW and ACTUAL NOW appear together when the photon arrives. \
         Distance \(SolarFormat.au(snapshot.distanceAU)) astronomical units. Computed from live location. \
-        Baby SPCX rocket Beauteous Maximus travels across the TimelyUNA gap from Apparent Now to Actual Now. Educational visualization, not for navigation.
+        Baby SPCX rocket Beauteous Maximus launches from Earth’s outer limb, crosses the TimelyUNA gap, and arrives at Actual Now. Educational visualization, not for navigation.
         """
     }
 
@@ -636,16 +636,28 @@ struct TrueHorizonView: View {
         )
         label(context, "YOU", at: CGPoint(x: you.x, y: you.y + 24), color: TimelyUNATheme.papyrus, size: 10, bold: true)
 
-        // Beauteous Maximus crosses TimelyUNA's signature Apparent Now → Actual Now gap.
+        // A mostly off-screen Earth establishes the distant launch origin without
+        // competing with the Apparent Now / Actual Now solar lesson.
+        let earthRadius = min(w, h) * 0.16
+        let earthCenter = CGPoint(x: -earthRadius * 0.56, y: h * 0.92)
+        drawEarthLimb(
+            context: context,
+            center: earthCenter,
+            radius: earthRadius
+        )
+
+        // Beauteous Maximus enters from Earth's outer limb and intercepts Actual Now.
+        // The Apparent → Actual TimelyUNA Gap remains separately visible above.
+        let rocketLaunch = CGPoint(x: max(18, earthCenter.x + earthRadius * 0.92), y: h * 0.86)
         let rocketProgress = simulation.rocketProgress
         if (simulation.isRocketFlying || launchAnimating || simulation.showRocketHit) && rocketProgress > 0.01 {
             let t = min(1, max(0.02, rocketProgress))
-            let rx = emission.x + (actual.x - emission.x) * t
-            let ry = emission.y + (actual.y - emission.y) * t
+            let rx = rocketLaunch.x + (actual.x - rocketLaunch.x) * t
+            let ry = rocketLaunch.y + (actual.y - rocketLaunch.y) * t
             drawRocket(
                 context: context,
                 at: CGPoint(x: rx, y: ry),
-                angle: atan2(actual.y - emission.y, actual.x - emission.x),
+                angle: atan2(actual.y - rocketLaunch.y, actual.x - rocketLaunch.x),
                 time: time,
                 flame: t < 0.96 && !simulation.showRocketHit
             )
@@ -663,7 +675,7 @@ struct TrueHorizonView: View {
 
         if simulation.showRocketHit {
             label(context, "BEAUTEOUS MAXIMUS · REALITY CORRECTED", at: CGPoint(x: w * 0.5, y: h * 0.14), color: TimelyUNATheme.acid, size: 15, bold: true)
-            label(context, "Apparent Now → Actual Now complete", at: CGPoint(x: w * 0.5, y: h * 0.14 + 18), color: TimelyUNATheme.gold, size: 11)
+            label(context, "Earth limb → Actual Now complete", at: CGPoint(x: w * 0.5, y: h * 0.14 + 18), color: TimelyUNATheme.gold, size: 11)
         }
     }
 
@@ -839,6 +851,51 @@ struct TrueHorizonView: View {
         )
     }
 
+    private func drawEarthLimb(
+        context: GraphicsContext,
+        center: CGPoint,
+        radius: CGFloat
+    ) {
+        let disc = Path(
+            ellipseIn: CGRect(
+                x: center.x - radius,
+                y: center.y - radius,
+                width: radius * 2,
+                height: radius * 2
+            )
+        )
+        context.fill(
+            disc,
+            with: .radialGradient(
+                Gradient(colors: [
+                    Color(red: 0.38, green: 0.72, blue: 0.96),
+                    Color(red: 0.10, green: 0.32, blue: 0.58),
+                    Color.black
+                ]),
+                center: CGPoint(x: center.x + radius * 0.25, y: center.y - radius * 0.28),
+                startRadius: 0,
+                endRadius: radius * 1.15
+            )
+        )
+        context.stroke(
+            disc,
+            with: .color(Color.white.opacity(0.24)),
+            lineWidth: 1
+        )
+
+        context.fill(
+            Path(
+                ellipseIn: CGRect(
+                    x: center.x + radius * 0.05,
+                    y: center.y - radius * 0.30,
+                    width: radius * 0.72,
+                    height: radius * 0.34
+                )
+            ),
+            with: .color(Color(red: 0.28, green: 0.52, blue: 0.30).opacity(0.82))
+        )
+    }
+
     private func drawRocket(context: GraphicsContext, at point: CGPoint, angle: CGFloat, time: Date, flame: Bool) {
         var ctx = context
         ctx.translateBy(x: point.x, y: point.y)
@@ -939,12 +996,12 @@ struct TrueHorizonView: View {
                         HStack(alignment: .top, spacing: 28) {
                             legendItem(title: "VISIBLE NOW", accent: TimelyUNATheme.papyrus, body: "Where arriving light tells you to look.")
                             legendItem(title: "ACTUAL NOW", accent: TimelyUNATheme.gold, body: "Where the Sun has progressed during the photon’s flight.")
-                            legendItem(title: "TIMELYUNA GAP", accent: TimelyUNATheme.cosmicPurple, body: "The separation between those two positions—Beauteous Maximus’s flight corridor.")
+                            legendItem(title: "TIMELYUNA GAP", accent: TimelyUNATheme.cosmicPurple, body: "The separation between those solar positions—crossed by Beauteous Maximus on final approach.")
                         }
                         VStack(alignment: .leading, spacing: 12) {
                             legendItem(title: "VISIBLE NOW", accent: TimelyUNATheme.papyrus, body: "Where arriving light tells you to look.")
                             legendItem(title: "ACTUAL NOW", accent: TimelyUNATheme.gold, body: "Where the Sun has progressed during the photon’s flight.")
-                            legendItem(title: "TIMELYUNA GAP", accent: TimelyUNATheme.cosmicPurple, body: "The separation between those two positions—Beauteous Maximus’s flight corridor.")
+                            legendItem(title: "TIMELYUNA GAP", accent: TimelyUNATheme.cosmicPurple, body: "The separation between those solar positions—crossed by Beauteous Maximus on final approach.")
                         }
                     }
                 } else {
@@ -982,16 +1039,14 @@ struct TrueHorizonView: View {
         Group {
             if wide {
                 HStack(alignment: .top, spacing: 0) {
-                    ritualSky
+                    ritualFlightColumn(skyHeight: 420)
                         .frame(maxWidth: .infinity)
-                        .frame(minHeight: 420)
                     ritualPanel
                         .frame(width: min(400, 380))
                 }
             } else {
                 VStack(spacing: 0) {
-                    ritualSky
-                        .frame(height: 280)
+                    ritualFlightColumn(skyHeight: 300)
                     ritualPanel
                 }
             }
@@ -1004,6 +1059,88 @@ struct TrueHorizonView: View {
         )
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Daily correction ritual")
+    }
+
+    private func ritualFlightColumn(skyHeight: CGFloat) -> some View {
+        VStack(spacing: 0) {
+            ritualSky
+                .frame(height: skyHeight)
+
+            ritualLaunchButton
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+        }
+        .background(Color(red: 0.071, green: 0.071, blue: 0.059))
+    }
+
+    private var ritualLaunchButton: some View {
+        Button {
+            AppHaptics.selection()
+            performRitual()
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .stroke(TimelyUNATheme.ink, lineWidth: 1.5)
+                        .frame(width: 30, height: 30)
+                    Image(
+                        systemName: ritualLaunchSymbol
+                    )
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(TimelyUNATheme.ink)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(ritualLaunchTitle)
+                    .font(TimelyUNATheme.captionFont)
+                    .tracking(1.0)
+
+                    Text(Self.rocketName)
+                        .font(TimelyUNATheme.smallCaptionFont)
+                        .tracking(1.2)
+                }
+                .foregroundStyle(TimelyUNATheme.ink)
+                .multilineTextAlignment(.leading)
+
+                Spacer(minLength: 4)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 56)
+            .background(
+                persistence.ritualCompleteToday && !simulation.isRocketFlying
+                    ? Color.white
+                    : TimelyUNATheme.acid,
+                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+            )
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(persistence.ritualCompleteToday || simulation.isRocketFlying)
+        .accessibilityLabel(
+            simulation.isRocketFlying
+                ? "Baby SPCX Beauteous Maximus in flight"
+                : persistence.ritualCompleteToday
+                    ? "Baby SPCX Beauteous Maximus mission complete"
+                    : "Launch Baby SPCX Beauteous Maximus"
+        )
+        .accessibilityHint(
+            persistence.ritualCompleteToday
+                ? "Already completed today"
+                : "Launches Beauteous Maximus from Earth’s outer limb to the Actual Now Sun"
+        )
+    }
+
+    private var ritualLaunchSymbol: String {
+        if simulation.isRocketFlying { return "arrow.up.right" }
+        if persistence.ritualCompleteToday { return "checkmark" }
+        return "arrow.up"
+    }
+
+    private var ritualLaunchTitle: String {
+        if simulation.isRocketFlying { return "BABY SPCX · IN FLIGHT" }
+        if persistence.ritualCompleteToday { return "BABY SPCX · MISSION COMPLETE" }
+        return "LAUNCH BABY SPCX"
     }
 
     private var ritualSky: some View {
@@ -1064,14 +1201,39 @@ struct TrueHorizonView: View {
 
             // Suns on sky
             GeometryReader { g in
+                let apparentPoint = CGPoint(x: g.size.width * 0.50, y: g.size.height * 0.62)
+                let actualPoint = CGPoint(x: g.size.width * 0.78, y: g.size.height * 0.36)
+                let earthSize = min(124, max(86, g.size.width * 0.30))
+                let earthCenter = CGPoint(x: -earthSize * 0.28, y: g.size.height * 0.88)
+                let rocketStart = CGPoint(x: 18, y: g.size.height * 0.82)
+
+                // Earth remains mostly beyond the frame; only its outer limb and the
+                // Baby SPCX launch point enter the composition.
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color(red: 0.43, green: 0.76, blue: 0.98),
+                                Color(red: 0.12, green: 0.36, blue: 0.64),
+                                Color.black
+                            ],
+                            center: UnitPoint(x: 0.68, y: 0.30),
+                            startRadius: 0,
+                            endRadius: earthSize * 0.62
+                        )
+                    )
+                    .overlay(Circle().stroke(Color.white.opacity(0.22), lineWidth: 1))
+                    .frame(width: earthSize, height: earthSize)
+                    .position(earthCenter)
+
                 // Apparent — soft
                 sunDisc(size: 68, acid: false)
-                    .position(x: g.size.width * 0.58, y: g.size.height * 0.58)
+                    .position(apparentPoint)
                     .opacity(0.45)
 
                 // Actual — acid
                 sunDisc(size: 118, acid: true)
-                    .position(x: g.size.width * 0.78, y: g.size.height * 0.40)
+                    .position(actualPoint)
                     .scaleEffect(reduceMotion ? 1 : (skyPulse ? 1.04 : 1))
                     .animation(reduceMotion ? nil : .easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: skyPulse)
 
@@ -1080,23 +1242,23 @@ struct TrueHorizonView: View {
                     .font(TimelyUNATheme.smallCaptionFont)
                     .tracking(1.5)
                     .foregroundStyle(TimelyUNATheme.muted)
-                    .position(x: g.size.width * 0.58, y: g.size.height * 0.58 + 48)
+                    .position(x: apparentPoint.x, y: apparentPoint.y + 48)
 
                 Text("TRUE POSITION")
                     .font(TimelyUNATheme.smallCaptionFont)
                     .tracking(1.5)
                     .foregroundStyle(TimelyUNATheme.acid)
-                    .position(x: g.size.width * 0.78, y: g.size.height * 0.40 + 72)
+                    .position(x: actualPoint.x, y: actualPoint.y + 72)
 
-                // Beauteous Maximus launches at Apparent Now and crosses the TimelyUNA gap.
-                let gapStart = CGPoint(x: g.size.width * 0.58, y: g.size.height * 0.58)
-                let gapEnd = CGPoint(x: g.size.width * 0.78, y: g.size.height * 0.40)
+                // The canonical TimelyUNA Gap stays Apparent → Actual.
+                let gapStart = apparentPoint
+                let gapEnd = actualPoint
                 let gapProgress = ritualRocketProgress
                 let rocketPoint = CGPoint(
-                    x: gapStart.x + (gapEnd.x - gapStart.x) * gapProgress,
-                    y: gapStart.y + (gapEnd.y - gapStart.y) * gapProgress
+                    x: rocketStart.x + (gapEnd.x - rocketStart.x) * gapProgress,
+                    y: rocketStart.y + (gapEnd.y - rocketStart.y) * gapProgress
                 )
-                let rocketAngle = atan2(gapEnd.y - gapStart.y, gapEnd.x - gapStart.x)
+                let rocketAngle = atan2(gapEnd.y - rocketStart.y, gapEnd.x - rocketStart.x)
 
                 Path { path in
                     path.move(to: gapStart)
@@ -1112,17 +1274,34 @@ struct TrueHorizonView: View {
                     )
                 )
 
+                // Separate launch vector: Earth limb → Actual Now.
+                Path { path in
+                    path.move(to: rocketStart)
+                    path.addLine(to: gapEnd)
+                }
+                .stroke(
+                    TimelyUNATheme.orange.opacity(0.58),
+                    style: StrokeStyle(
+                        lineWidth: 1.5,
+                        lineCap: .round,
+                        dash: [4, 7],
+                        dashPhase: reduceMotion ? 0 : -CGFloat(simulation.rocketProgress) * 36
+                    )
+                )
+
                 VStack(spacing: 2) {
                     RitualRocketMark(lit: simulation.isRocketFlying || launchAnimating || simulation.showRocketHit)
                         .scaleEffect(0.72)
                         .rotationEffect(.radians(Double(rocketAngle + .pi / 2)))
                         .opacity(simulation.showRocketHit ? 0.45 : 1)
-                    Text(Self.rocketName)
-                        .font(TimelyUNATheme.smallCaptionFont)
-                        .tracking(0.8)
-                        .foregroundStyle(TimelyUNATheme.papyrus)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.65)
+                    if ritualRocketProgress > 0.14 {
+                        Text(Self.rocketName)
+                            .font(TimelyUNATheme.smallCaptionFont)
+                            .tracking(0.8)
+                            .foregroundStyle(TimelyUNATheme.papyrus)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.65)
+                    }
                 }
                 .position(rocketPoint)
                 .animation(
@@ -1151,7 +1330,7 @@ struct TrueHorizonView: View {
     private var ritualRocketStatus: String {
         if simulation.showRocketHit { return "ACTUAL NOW ACQUIRED" }
         if simulation.isRocketFlying || launchAnimating { return "CROSSING TIMELYUNA GAP" }
-        return "READY AT APPARENT NOW"
+        return "READY AT EARTH LIMB"
     }
 
     private func sunDisc(size: CGFloat, acid: Bool) -> some View {
@@ -1259,45 +1438,6 @@ struct TrueHorizonView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 16)
 
-            Spacer(minLength: 16)
-
-            Button {
-                AppHaptics.selection()
-                performRitual()
-            } label: {
-                HStack(spacing: 12) {
-                    ZStack {
-                        Circle()
-                            .stroke(TimelyUNATheme.ink, lineWidth: 1.5)
-                            .frame(width: 26, height: 26)
-                        Image(systemName: persistence.ritualCompleteToday ? "checkmark" : "arrow.up")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(TimelyUNATheme.ink)
-                    }
-                    Text(persistence.ritualCompleteToday ? "BEAUTEOUS MAXIMUS · MISSION COMPLETE" : "LAUNCH BEAUTEOUS MAXIMUS")
-                        .font(TimelyUNATheme.captionFont)
-                        .tracking(1.2)
-                        .foregroundStyle(TimelyUNATheme.ink)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.75)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 12)
-                .frame(minHeight: 48)
-                .background(
-                    persistence.ritualCompleteToday ? Color.white : TimelyUNATheme.acid,
-                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-                )
-                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            .disabled(persistence.ritualCompleteToday || simulation.isRocketFlying)
-            .accessibilityHint(
-                persistence.ritualCompleteToday
-                ? "Already completed today"
-                : "Launches Baby SPCX rocket Beauteous Maximus from Apparent Now across the TimelyUNA gap to Actual Now"
-            )
         }
         .padding(22)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -1544,14 +1684,21 @@ struct TrueHorizonView: View {
         launchAnimating = true
         simulation.launchRocket()
         persistence.completeRitual()
-        showToast("Beauteous Maximus crossed the TimelyUNA gap. Reality corrected.")
         if reduceMotion {
+            showToast("Beauteous Maximus acquired the Actual Now Sun. Reality corrected.")
             launchAnimating = false
             return
         }
         Task {
-            try? await Task.sleep(nanoseconds: 2_800_000_000)
-            await MainActor.run { launchAnimating = false }
+            // Match the toast to the visual intercept instead of announcing success at liftoff.
+            try? await Task.sleep(nanoseconds: 1_650_000_000)
+            await MainActor.run {
+                showToast("Beauteous Maximus acquired the Actual Now Sun. Reality corrected.")
+            }
+            try? await Task.sleep(nanoseconds: 1_150_000_000)
+            await MainActor.run {
+                launchAnimating = false
+            }
         }
     }
 
@@ -1563,7 +1710,7 @@ struct TrueHorizonView: View {
             let au = SolarFormat.au(snapshot.distanceAU)
             return "I saw the Sun where it actually is in TimelyUNA. Light delay \(delay) · Earth–Sun \(au) AU · true altitude \(alt). \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
         }
-        return "TimelyUNA — Apparent Now vs Actual Now, with Beauteous Maximus crossing the TimelyUNA Gap. \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
+        return "TimelyUNA — Apparent Now vs Actual Now, with Beauteous Maximus launching from Earth’s outer limb and acquiring the Actual Now Sun. \(ritual). Educational estimate. https://macsafedevelopersapple.io/"
     }
 
     private func showToast(_ message: String) {
