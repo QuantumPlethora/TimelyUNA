@@ -1371,7 +1371,7 @@ struct TrueHorizonView: View {
                     }
                 }
 
-                // Quiet reminder — authorization + scheduling
+                // Quantum Reminder — authorization + scheduling
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 12) {
                         reminderButton(trueSunrise: pair.trueSun)
@@ -1429,7 +1429,7 @@ struct TrueHorizonView: View {
             Task {
                 if sunriseReminder.isScheduled || persistence.sunriseReminderArmed {
                     await sunriseReminder.disarm(persistence: persistence)
-                    showToast("Sunrise reminder off")
+                    showToast("Quantum Reminder off")
                 } else {
                     await sunriseReminder.armQuietReminder(
                         trueSunrise: trueSunrise,
@@ -1441,7 +1441,7 @@ struct TrueHorizonView: View {
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: sunriseReminder.isScheduled ? "bell.fill" : "bell")
-                Text(sunriseReminder.isScheduled ? "Reminder armed" : "Set a quiet reminder")
+                Text(sunriseReminder.isScheduled ? "Quantum Reminder armed" : "Quantum Reminder")
                     .font(TimelyUNATheme.calloutFont)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
@@ -1457,7 +1457,7 @@ struct TrueHorizonView: View {
         }
         .buttonStyle(.plain)
         .disabled(trueSunrise == nil)
-        .accessibilityHint("Requests notification permission and schedules a quiet alert near true sunrise")
+        .accessibilityHint("Requests notification permission and schedules a Quantum Reminder alert near true sunrise")
     }
 
     // MARK: - Footer
