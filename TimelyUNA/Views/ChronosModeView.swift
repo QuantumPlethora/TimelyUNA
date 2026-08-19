@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ChronosModeView: View {
     @EnvironmentObject private var simulation: SimulationState
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
         ScrollView {
@@ -55,7 +56,7 @@ struct ChronosModeView: View {
 
                     VStack(alignment: .leading, spacing: 16) {
                         controls
-                        canvas.frame(height: 300)
+                        canvas.frame(height: compactCanvasHeight)
                     }
                 }
 
@@ -69,12 +70,33 @@ struct ChronosModeView: View {
                 }
             }
             .padding(.horizontal, 18)
-            .padding(.vertical, 16)
+            .padding(.top, 16)
+            // The shell owns the bottom tab bar. Extra trailing space lets the final
+            // reset control rest fully above it on compact iPhones.
+            .padding(.bottom, bottomScrollClearance)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollBounceBehavior(.basedOnSize)
         .background(TimelyUNATheme.background.ignoresSafeArea())
         .navigationTitle("Chronos Mode")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+
+    private var compactCanvasHeight: CGFloat {
+        #if os(iOS)
+        return horizontalSizeClass == .compact ? 340 : 300
+        #else
+        return 300
+        #endif
+    }
+
+    private var bottomScrollClearance: CGFloat {
+        #if os(iOS)
+        return horizontalSizeClass == .compact ? 112 : 36
+        #else
+        return 36
         #endif
     }
 
@@ -99,6 +121,11 @@ struct ChronosModeView: View {
                         .font(TimelyUNATheme.smallCaptionFont)
                         .tracking(1.2)
                         .foregroundStyle(TimelyUNATheme.accent)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.75)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity)
 
                     Text("65,000,000 LIGHT YEARS FROM EARTH")
                         .font(TimelyUNATheme.subheadingFont)
@@ -149,6 +176,7 @@ struct ChronosModeView: View {
     private var canvas: some View {
         VStack(spacing: 8) {
             ChronosCanvasView(phase: simulation.chronosPhase)
+                .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(TimelyUNATheme.accent, lineWidth: 2))
                 .shadow(

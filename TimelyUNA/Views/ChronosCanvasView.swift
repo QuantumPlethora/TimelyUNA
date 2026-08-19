@@ -50,9 +50,33 @@ struct ChronosCanvasView: View {
             lineWidth: 1
         )
 
-        drawText(context, "EARTH (65,000,000 ly away)", at: CGPoint(x: w * 0.55, y: h * 0.42 - 22), size: 12, color: TimelyUNATheme.accent, bold: true)
-        drawText(context, "You are looking at light that left during the age of dinosaurs", at: CGPoint(x: w * 0.5, y: h * 0.42 + 24), size: 10, color: TimelyUNATheme.accent.opacity(0.9), bold: false)
-        drawText(context, "QUANTUM VANTAGE POINT", at: CGPoint(x: 20, y: 24), size: 12, color: TimelyUNATheme.accentMuted, bold: false, centered: false)
+        drawWrappedText(
+            context,
+            "EARTH (65,000,000 ly away)",
+            in: CGRect(x: w * 0.28, y: h * 0.42 - 38, width: w * 0.68, height: 44),
+            size: 12,
+            color: TimelyUNATheme.accent,
+            bold: true,
+            centered: true
+        )
+        drawWrappedText(
+            context,
+            "You are looking at light that left during the age of dinosaurs",
+            in: CGRect(x: 18, y: h * 0.42 + 22, width: max(1, w - 36), height: 54),
+            size: 10,
+            color: TimelyUNATheme.accent.opacity(0.9),
+            bold: false,
+            centered: true
+        )
+        drawWrappedText(
+            context,
+            "QUANTUM VANTAGE POINT",
+            in: CGRect(x: 18, y: 18, width: max(1, w - 36), height: 28),
+            size: 12,
+            color: TimelyUNATheme.accentMuted,
+            bold: false,
+            centered: false
+        )
     }
 
     private func drawDinoEra(context: GraphicsContext, size: CGSize, time: Date) {
@@ -102,15 +126,47 @@ struct ChronosCanvasView: View {
             drawDino(context: context, type: dino.type, at: CGPoint(x: x, y: y), scale: max(0.8, w / 640))
         }
 
-        drawText(context, "CRETACEOUS EARTH • 65 MILLION YEARS AGO", at: CGPoint(x: 30, y: 28), size: 14, color: TimelyUNATheme.gold, bold: true, centered: false)
-        drawText(context, "You are seeing Earth as it was when T. rex walked", at: CGPoint(x: 30, y: 48), size: 12, color: Color(red: 1, green: 0.87, blue: 0.53), bold: false, centered: false)
-        drawText(context, "🦖 \"Rawr... the light finally arrived\"", at: CGPoint(x: w * 0.62, y: h * 0.25), size: 10, color: TimelyUNATheme.gold.opacity(0.75), bold: false)
-        drawText(context, "🦕 \"Took you long enough\"", at: CGPoint(x: w * 0.22, y: h * 0.74), size: 10, color: TimelyUNATheme.gold.opacity(0.75), bold: false)
-        drawText(
+        drawWrappedText(
+            context,
+            "CRETACEOUS EARTH • 65 MILLION YEARS AGO",
+            in: CGRect(x: 18, y: 18, width: max(1, w - 36), height: 48),
+            size: 14,
+            color: TimelyUNATheme.gold,
+            bold: true,
+            centered: true
+        )
+        drawWrappedText(
+            context,
+            "You are seeing Earth as it was when T. rex walked",
+            in: CGRect(x: 18, y: 58, width: max(1, w - 36), height: 44),
+            size: 11,
+            color: Color(red: 1, green: 0.87, blue: 0.53),
+            bold: false,
+            centered: true
+        )
+        drawWrappedText(
+            context,
+            "🦖 \"Rawr... the light finally arrived\"",
+            in: CGRect(x: w * 0.36, y: h * 0.20, width: max(1, w * 0.58), height: 48),
+            size: 10,
+            color: TimelyUNATheme.gold.opacity(0.75),
+            bold: false,
+            centered: true
+        )
+        drawWrappedText(
+            context,
+            "🦕 \"Took you long enough\"",
+            in: CGRect(x: 18, y: h * 0.70, width: max(1, w * 0.62), height: 38),
+            size: 10,
+            color: TimelyUNATheme.gold.opacity(0.75),
+            bold: false,
+            centered: false
+        )
+        drawWrappedText(
             context,
             "Note: Artistic interpretation. Real quantum telescopes are still in the realm of dreams.",
-            at: CGPoint(x: 20, y: h - 20),
-            size: 10,
+            in: CGRect(x: 18, y: h - 58, width: max(1, w - 36), height: 52),
+            size: 9,
             color: TimelyUNATheme.gold.opacity(0.85),
             bold: true,
             centered: false
@@ -138,22 +194,52 @@ struct ChronosCanvasView: View {
         }
     }
 
-    private func drawText(
+    /// Canvas text does not wrap automatically. Build measured lines that stay inside
+    /// the supplied rectangle so compact phones never crop educational copy.
+    private func drawWrappedText(
         _ context: GraphicsContext,
         _ text: String,
-        at point: CGPoint,
+        in rect: CGRect,
         size: CGFloat,
         color: Color,
         bold: Bool,
-        centered: Bool = true
+        centered: Bool
     ) {
         let font = Font.system(size: max(8, size), weight: bold ? .bold : .regular, design: .serif)
-        let resolved = context.resolve(Text(text).font(font).foregroundColor(color))
-        var origin = point
-        if centered {
-            origin.x -= resolved.measure(in: CGSize(width: 2000, height: 100)).width / 2
+        let words = text.split { $0.isWhitespace }.map(String.init)
+        guard !words.isEmpty else { return }
+
+        var lines: [String] = []
+        var currentLine = ""
+
+        for word in words {
+            let candidate = currentLine.isEmpty ? word : "\(currentLine) \(word)"
+            let candidateText = context.resolve(Text(candidate).font(font))
+            let candidateWidth = candidateText.measure(
+                in: CGSize(width: CGFloat.greatestFiniteMagnitude, height: 200)
+            ).width
+
+            if candidateWidth <= rect.width || currentLine.isEmpty {
+                currentLine = candidate
+            } else {
+                lines.append(currentLine)
+                currentLine = word
+            }
         }
-        context.draw(resolved, at: origin, anchor: .leading)
+
+        if !currentLine.isEmpty {
+            lines.append(currentLine)
+        }
+
+        let lineHeight = max(11, size * 1.28)
+        for (index, line) in lines.enumerated() {
+            let y = rect.minY + CGFloat(index) * lineHeight
+            guard y + lineHeight <= rect.maxY + 1 else { break }
+
+            let resolved = context.resolve(Text(line).font(font).foregroundColor(color))
+            let point = CGPoint(x: centered ? rect.midX : rect.minX, y: y)
+            context.draw(resolved, at: point, anchor: centered ? .top : .topLeading)
+        }
     }
 }
 
