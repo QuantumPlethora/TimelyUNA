@@ -28,8 +28,7 @@ enum Brand {
     static let productDescriptor =
         "Light-Spacetime Sextant"
 
-    static let tagline =
-        "Because the Sun is always late to its own Dawn—from our perspective."
+    static let tagline = "The Sun is late to its own Dawn."
 
     static let thesis =
         "We do not see the universe as it is. We see it as its light arrives."

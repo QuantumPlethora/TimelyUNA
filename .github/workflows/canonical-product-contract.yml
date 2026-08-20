@@ -1,0 +1,14 @@
+name: Canonical product contract
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    name: Verify canonical product contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run canonical product checks
+        run: bash scripts/verify_canonical_product.sh

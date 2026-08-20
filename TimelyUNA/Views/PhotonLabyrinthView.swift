@@ -16,7 +16,7 @@ struct PhotonLabyrinthView: View {
                     .foregroundStyle(TimelyUNATheme.gold)
                     .accessibilityAddTraits(.isHeader)
 
-                Text("Because the Sun is always late to its own dawn ☀️")
+                Text(Brand.tagline)
                     .font(papyrus(18).italic())
                     .foregroundStyle(TimelyUNATheme.papyrus)
                     .multilineTextAlignment(.center)

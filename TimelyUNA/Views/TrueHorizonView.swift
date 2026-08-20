@@ -59,6 +59,10 @@ struct TrueHorizonView: View {
                         .padding(.horizontal, pad)
                         .padding(.top, 6)
 
+                    todaysAlmanacStrip
+                        .padding(.horizontal, pad)
+                        .padding(.top, 14)
+
                     observerStrip(narrow: narrow)
                         .padding(.horizontal, pad)
                         .padding(.top, 14)
@@ -161,7 +165,7 @@ struct TrueHorizonView: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
 
-            Text("See the Sun where it truly is.")
+            Text(Brand.tagline)
                 .font(wide ? TimelyUNATheme.displayFont : (narrow ? TimelyUNATheme.sectionFont : TimelyUNATheme.titleFont))
                 .foregroundStyle(TimelyUNATheme.gold)
                 .fixedSize(horizontal: false, vertical: true)
@@ -189,6 +193,46 @@ struct TrueHorizonView: View {
                 }
             }
         }
+    }
+
+    /// First content card beneath persistent top chrome. Local fact only; no network.
+    private static let todaysAlmanacFact =
+        "The Sun and Moon each span about half a degree in the sky, so they look nearly the same size."
+
+    private var todaysAlmanacStrip: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "calendar")
+                .font(TimelyUNATheme.headlineFont)
+                .foregroundStyle(TimelyUNATheme.goldDeep)
+                .padding(.top, 2)
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("TODAY’S ALMANAC")
+                    .font(TimelyUNATheme.captionFont)
+                    .tracking(2.0)
+                    .foregroundStyle(TimelyUNATheme.goldDeep)
+
+                Text(Self.todaysAlmanacFact)
+                    .font(TimelyUNATheme.calloutFont)
+                    .foregroundStyle(TimelyUNATheme.papyrus)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            TimelyUNATheme.panel,
+            in: RoundedRectangle(cornerRadius: 17, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .stroke(TimelyUNATheme.line, lineWidth: 1)
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Today’s Almanac. \(Self.todaysAlmanacFact)")
     }
 
     private var streakBadge: some View {

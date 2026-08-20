@@ -6,6 +6,22 @@
 - [ ] Confirm `git status -sb` is clean before opening Xcode.
 - [ ] Open that checkout's `TimelyUNA.xcodeproj`; do not open an archived prototype or fallback copy.
 - [ ] Confirm the Xcode scheme is `TimelyUNA` and the display name is `TimelyUNA`.
+- [ ] Run `scripts/verify_canonical_product.sh` and require a pass.
+
+## Identity, icon, backdrop, almanac, and wording
+
+- [ ] `Brand.productDisplayName` is `TimelyUNA`.
+- [ ] `INFOPLIST_KEY_CFBundleDisplayName`, `INFOPLIST_KEY_CFBundleName`, and `PRODUCT_NAME` are `TimelyUNA`.
+- [ ] Opening identity is QuantumRootz → A QuantumRootz Studio → TimelyUNA → Light-Time Engine → Congruent with the Ancestors of the Cosmos.
+- [ ] Opening product title and installed app name do not say “True Horizon.”
+- [ ] `StartupTransitionView` shows `Brand.productDisplayName`.
+- [ ] App icon `AppIcon.png` Git blob hash is `82362197e863b747273af07e3611caaf6721a1c1`. Do not redraw, crop, recolor, replace, rename, or recompress it.
+- [ ] Transition backdrop `TimelyUNA-Transition-Backdrop.jpeg` Git blob hash is `d33706cb77f48d00619c5808e45376d2634767d6`. Do not redraw, crop, recolor, replace, rename, or recompress it.
+- [ ] `CrystalTabHost` uses `Image("TimelyUNATransitionBackdrop")` and waits until outgoing shards finish before revealing the destination.
+- [ ] Horizon start screen shows a `TODAY’S ALMANAC` card as the first content beneath persistent top chrome.
+- [ ] Almanac includes the approved fact: “The Sun and Moon each span about half a degree in the sky, so they look nearly the same size.”
+- [ ] `Brand.tagline` is exactly “The Sun is late to its own Dawn.” and that sentence is the prominent Horizon heading.
+- [ ] Brand.swift and TrueHorizonView.swift do not contain superseded Horizon wording (“Because”, “always”, “own horizon”, or extra qualifiers).
 
 ## Native build
 
