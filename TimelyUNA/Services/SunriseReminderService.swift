@@ -2,7 +2,7 @@ import Foundation
 import UserNotifications
 import Combine
 
-/// Quiet local notification near true sunrise (educational).
+/// Quantum Reminder local notification near true sunrise (educational).
 @MainActor
 final class SunriseReminderService: ObservableObject {
     static let notificationID = "truehorizon.true-sunrise.reminder"
@@ -17,7 +17,7 @@ final class SunriseReminderService: ObservableObject {
     @Published private(set) var authorization: Authorization = .notDetermined
     @Published private(set) var isScheduled: Bool = false
     @Published private(set) var scheduledFireDate: Date?
-    @Published private(set) var statusMessage: String = "Reminder off"
+    @Published private(set) var statusMessage: String = "Quantum Reminder off"
 
     private let center = UNUserNotificationCenter.current()
 
@@ -34,19 +34,19 @@ final class SunriseReminderService: ObservableObject {
            let next = trigger.nextTriggerDate() {
             isScheduled = true
             scheduledFireDate = next
-            statusMessage = "Quiet reminder armed · \(next.formatted(date: .omitted, time: .shortened))"
+            statusMessage = "Quantum Reminder armed · \(next.formatted(date: .omitted, time: .shortened))"
         } else if pending.contains(where: { $0.identifier == Self.notificationID }) {
             isScheduled = true
-            statusMessage = "Quiet reminder armed"
+            statusMessage = "Quantum Reminder armed"
         } else {
             isScheduled = false
             scheduledFireDate = nil
             if authorization == .denied {
                 statusMessage = "Notifications denied · enable in System Settings"
             } else if authorization == .authorized || authorization == .provisional {
-                statusMessage = "Reminder off"
+                statusMessage = "Quantum Reminder off"
             } else {
-                statusMessage = "Reminder off"
+                statusMessage = "Quantum Reminder off"
             }
         }
     }
@@ -92,7 +92,7 @@ final class SunriseReminderService: ObservableObject {
         persistence.setSunriseReminderArmed(false)
         isScheduled = false
         scheduledFireDate = nil
-        statusMessage = "Reminder off"
+        statusMessage = "Quantum Reminder off"
     }
 
     /// Reschedule if armed and a new true-sunrise time is available (e.g. after location lock).
@@ -143,7 +143,7 @@ final class SunriseReminderService: ObservableObject {
             try await center.add(request)
             isScheduled = true
             scheduledFireDate = effective
-            statusMessage = "Quiet reminder armed · \(effective.formatted(date: .omitted, time: .shortened))"
+            statusMessage = "Quantum Reminder armed · \(effective.formatted(date: .omitted, time: .shortened))"
         } catch {
             isScheduled = false
             scheduledFireDate = nil
