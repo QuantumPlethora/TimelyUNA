@@ -108,8 +108,8 @@ struct ContentView: View {
         .safeAreaInset(edge: .bottom, spacing: 0) {
             CosmicTabBar(selection: $selectedTab, compact: true)
                 .background {
-                    // Extend solid bar into the home-indicator region without covering content.
-                    Color.black
+                    // Keep the home-indicator region legible without adding another glass layer.
+                    Color.black.opacity(0.72)
                         .ignoresSafeArea(edges: .bottom)
                         .allowsHitTesting(false)
                 }
@@ -264,6 +264,7 @@ private struct CosmicTabBar: View {
             }
             // Horizontal-only scrolling; vertical page scroll is owned by tab content ScrollViews.
             .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
+            .timelyUNAGlassGroup(spacing: 6)
             .onAppear {
                 DispatchQueue.main.async {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -278,13 +279,13 @@ private struct CosmicTabBar: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .background(
-            Color.black.opacity(0.92),
-            in: RoundedRectangle(cornerRadius: 20, style: .continuous)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(TimelyUNATheme.line, lineWidth: 1)
+        .timelyUNAGlassSurface(
+            cornerRadius: 20,
+            tint: TimelyUNATheme.gold,
+            backing: .black,
+            backingOpacity: 0.58,
+            stroke: TimelyUNATheme.goldDeep,
+            strokeOpacity: 0.42
         )
         // Edge affordance: soft fade hints that more tabs exist off-screen.
         .overlay(alignment: .leading) {
@@ -308,7 +309,7 @@ private struct CosmicTabBar: View {
         .padding(.horizontal, 8)
         .padding(.top, 6)
         .padding(.bottom, 6)
-        .background(Color.black)
+        .background(Color.black.opacity(0.18))
     }
 
     private var wideTopBar: some View {
@@ -319,9 +320,16 @@ private struct CosmicTabBar: View {
                 }
             }
             .padding(4)
+            .timelyUNAGlassGroup(spacing: 4)
         }
-        .background(Color.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(TimelyUNATheme.line, lineWidth: 1))
+        .timelyUNAGlassSurface(
+            cornerRadius: 20,
+            tint: TimelyUNATheme.gold,
+            backing: .black,
+            backingOpacity: 0.44,
+            stroke: TimelyUNATheme.goldDeep,
+            strokeOpacity: 0.42
+        )
         .padding(.horizontal, 14)
         .padding(.top, 8)
         .padding(.bottom, 4)
@@ -345,16 +353,15 @@ private struct CosmicTabBar: View {
             .frame(minWidth: compact ? 64 : 66, minHeight: 44)
             .frame(height: compact ? 48 : 50)
             .padding(.horizontal, compact ? 6 : 0)
-            .background(
-                selection == tab ? TimelyUNATheme.acid.opacity(0.18) : .clear,
-                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .timelyUNAGlassSurface(
+                cornerRadius: 14,
+                tint: selection == tab ? TimelyUNATheme.acid : TimelyUNATheme.gold,
+                backing: selection == tab ? TimelyUNATheme.acid : .black,
+                backingOpacity: selection == tab ? 0.20 : 0.08,
+                stroke: selection == tab ? TimelyUNATheme.acid : TimelyUNATheme.line,
+                strokeOpacity: selection == tab ? 0.58 : 0.16,
+                isInteractive: true
             )
-            .overlay {
-                if selection == tab {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(TimelyUNATheme.acid.opacity(0.45), lineWidth: 1)
-                }
-            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -519,7 +526,15 @@ struct CosmicButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 12)
             .padding(.vertical, 13)
-            .background(TimelyUNATheme.acid.opacity(configuration.isPressed ? 0.72 : 1), in: RoundedRectangle(cornerRadius: 17))
+            .timelyUNAGlassSurface(
+                cornerRadius: 17,
+                tint: TimelyUNATheme.acid,
+                backing: TimelyUNATheme.acid,
+                backingOpacity: configuration.isPressed ? 0.64 : 0.82,
+                stroke: TimelyUNATheme.acid,
+                strokeOpacity: 0.72,
+                isInteractive: true
+            )
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
     }
 }

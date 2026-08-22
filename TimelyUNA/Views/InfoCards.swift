@@ -52,16 +52,15 @@ struct AncientButtonStyle: ButtonStyle {
             .padding(.vertical, 16)
             .padding(.horizontal, 20)
             .frame(maxWidth: .infinity)
-            .background(
-                filled
-                    ? AnyShapeStyle(TimelyUNATheme.accent)
-                    : AnyShapeStyle(TimelyUNATheme.background)
+            .timelyUNAGlassSurface(
+                cornerRadius: 14,
+                tint: filled ? TimelyUNATheme.acid : TimelyUNATheme.gold,
+                backing: filled ? TimelyUNATheme.accent : TimelyUNATheme.background,
+                backingOpacity: filled ? 0.78 : 0.46,
+                stroke: TimelyUNATheme.accent,
+                strokeOpacity: filled ? 0.86 : 0.72,
+                isInteractive: true
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(TimelyUNATheme.accent, lineWidth: 2)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 14))
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .opacity(configuration.isPressed ? 0.9 : 1)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)

@@ -55,6 +55,113 @@ enum TimelyUNATheme {
     static let heroMetricFont = Font.custom("Papyrus", size: 42, relativeTo: .largeTitle)
 }
 
+enum TimelyUNAGlass {
+    static let tabCornerRadius: CGFloat = 18
+    static let controlCornerRadius: CGFloat = 16
+    static let compactCornerRadius: CGFloat = 13
+}
+
+extension View {
+    func timelyUNAGlassGroup(spacing: CGFloat = 8) -> some View {
+        modifier(TimelyUNAGlassGroupModifier(spacing: spacing))
+    }
+
+    func timelyUNAGlassSurface(
+        cornerRadius: CGFloat = TimelyUNAGlass.controlCornerRadius,
+        tint: Color = TimelyUNATheme.gold,
+        backing: Color = .black,
+        backingOpacity: Double = 0.34,
+        stroke: Color = TimelyUNATheme.line,
+        strokeOpacity: Double = 1,
+        isInteractive: Bool = false
+    ) -> some View {
+        modifier(
+            TimelyUNAGlassSurfaceModifier(
+                cornerRadius: cornerRadius,
+                tint: tint,
+                backing: backing,
+                backingOpacity: backingOpacity,
+                stroke: stroke,
+                strokeOpacity: strokeOpacity,
+                isInteractive: isInteractive
+            )
+        )
+    }
+}
+
+private struct TimelyUNAGlassGroupModifier: ViewModifier {
+    let spacing: CGFloat
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, macOS 26.0, *) {
+            GlassEffectContainer(spacing: spacing) {
+                content
+            }
+        } else {
+            content
+        }
+    }
+}
+
+private struct TimelyUNAGlassSurfaceModifier: ViewModifier {
+    let cornerRadius: CGFloat
+    let tint: Color
+    let backing: Color
+    let backingOpacity: Double
+    let stroke: Color
+    let strokeOpacity: Double
+    let isInteractive: Bool
+
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+
+    private var usesSolidFallback: Bool {
+        reduceTransparency || colorSchemeContrast == .increased
+    }
+
+    private var effectiveBackingOpacity: Double {
+        if usesSolidFallback {
+            min(1, max(backingOpacity, 0.82))
+        } else {
+            backingOpacity
+        }
+    }
+
+    private var effectiveStrokeOpacity: Double {
+        if colorSchemeContrast == .increased {
+            return min(1, max(strokeOpacity, 0.92))
+        }
+        return strokeOpacity
+    }
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+
+        if usesSolidFallback {
+            content
+                .background(backing.opacity(effectiveBackingOpacity), in: shape)
+                .overlay(shape.stroke(stroke.opacity(effectiveStrokeOpacity), lineWidth: 1.25))
+        } else if #available(iOS 26.0, macOS 26.0, *) {
+            content
+                .background(backing.opacity(effectiveBackingOpacity), in: shape)
+                .glassEffect(
+                    .regular
+                        .tint(tint.opacity(0.42))
+                        .interactive(isInteractive),
+                    in: .rect(cornerRadius: cornerRadius)
+                )
+                .overlay(shape.stroke(stroke.opacity(effectiveStrokeOpacity), lineWidth: 1))
+        } else {
+            content
+                .background(.ultraThinMaterial, in: shape)
+                .background(backing.opacity(effectiveBackingOpacity), in: shape)
+                .overlay(shape.stroke(stroke.opacity(effectiveStrokeOpacity), lineWidth: 1))
+        }
+    }
+}
+
 /// One medium impact for deliberate button and tab activations.
 /// UIKit honors the device's system haptic settings; macOS is a silent no-op.
 @MainActor

@@ -1017,7 +1017,15 @@ struct TrueHorizonView: View {
                 .foregroundStyle(TimelyUNATheme.ink)
                 .padding(.horizontal, 16)
                 .frame(minHeight: 40)
-                .background(TimelyUNATheme.gold, in: Capsule())
+                .timelyUNAGlassSurface(
+                    cornerRadius: 20,
+                    tint: TimelyUNATheme.gold,
+                    backing: TimelyUNATheme.gold,
+                    backingOpacity: 0.78,
+                    stroke: TimelyUNATheme.gold,
+                    strokeOpacity: 0.72,
+                    isInteractive: true
+                )
                 .disabled(!simulation.lightLineFinished)
                 .accessibilityLabel("Replay LightLine")
             }
@@ -1151,11 +1159,20 @@ struct TrueHorizonView: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 14)
             .frame(minHeight: 56)
-            .background(
-                persistence.ritualCompleteToday && !simulation.isRocketFlying
-                    ? Color.white
+            .timelyUNAGlassSurface(
+                cornerRadius: 12,
+                tint: persistence.ritualCompleteToday && !simulation.isRocketFlying
+                    ? TimelyUNATheme.gold
                     : TimelyUNATheme.acid,
-                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                backing: persistence.ritualCompleteToday && !simulation.isRocketFlying
+                    ? .white
+                    : TimelyUNATheme.acid,
+                backingOpacity: persistence.ritualCompleteToday && !simulation.isRocketFlying ? 0.84 : 0.82,
+                stroke: persistence.ritualCompleteToday && !simulation.isRocketFlying
+                    ? TimelyUNATheme.gold
+                    : TimelyUNATheme.acid,
+                strokeOpacity: 0.74,
+                isInteractive: true
             )
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
@@ -1638,9 +1655,14 @@ struct TrueHorizonView: View {
             .foregroundStyle(TimelyUNATheme.ink)
             .padding(.horizontal, 14)
             .frame(minHeight: 44)
-            .background(
-                sunriseReminder.isScheduled ? TimelyUNATheme.acid : TimelyUNATheme.gold,
-                in: Capsule()
+            .timelyUNAGlassSurface(
+                cornerRadius: 22,
+                tint: sunriseReminder.isScheduled ? TimelyUNATheme.acid : TimelyUNATheme.gold,
+                backing: sunriseReminder.isScheduled ? TimelyUNATheme.acid : TimelyUNATheme.gold,
+                backingOpacity: 0.78,
+                stroke: sunriseReminder.isScheduled ? TimelyUNATheme.acid : TimelyUNATheme.gold,
+                strokeOpacity: 0.72,
+                isInteractive: true
             )
             .contentShape(Capsule())
         }

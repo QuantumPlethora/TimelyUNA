@@ -642,7 +642,15 @@ struct ARSunRocketView: View {
                 }
             }
             .foregroundStyle(fg)
-            .background(bg, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .timelyUNAGlassSurface(
+                cornerRadius: 12,
+                tint: emphasis == .accent ? TimelyUNATheme.acid : TimelyUNATheme.gold,
+                backing: bg,
+                backingOpacity: 1,
+                stroke: emphasis == .neutral ? TimelyUNATheme.line : TimelyUNATheme.gold,
+                strokeOpacity: emphasis == .neutral ? 0.32 : 0.5,
+                isInteractive: true
+            )
         }
         .buttonStyle(.plain)
         .accessibilityLabel(title)
@@ -1032,7 +1040,14 @@ struct ARSunRocketView: View {
             Divider().overlay(TimelyUNATheme.line.opacity(0.5))
             educationalMagnificationRow
         }
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .timelyUNAGlassSurface(
+            cornerRadius: 12,
+            tint: TimelyUNATheme.gold,
+            backing: .black,
+            backingOpacity: 0.18,
+            stroke: TimelyUNATheme.line,
+            strokeOpacity: 0.44
+        )
     }
 
     private func standardToggleRow(title: String, isOn: Binding<Bool>) -> some View {
@@ -1238,9 +1253,14 @@ struct ARSunRocketView: View {
                 .foregroundStyle(TimelyUNATheme.ink)
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: 48)
-                .background(
-                    launchButtonBackground,
-                    in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .timelyUNAGlassSurface(
+                    cornerRadius: 14,
+                    tint: launchButtonBackground,
+                    backing: launchButtonBackground,
+                    backingOpacity: 0.82,
+                    stroke: launchButtonBackground,
+                    strokeOpacity: 0.72,
+                    isInteractive: true
                 )
                 .scaleEffect(launch.phase == .charging ? 0.97 : 1.0)
                 .animation(.easeInOut(duration: 0.12), value: launch.phase)

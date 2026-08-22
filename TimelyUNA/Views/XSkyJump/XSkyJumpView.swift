@@ -475,9 +475,14 @@ struct XSkyJumpView: View {
             .foregroundStyle(TimelyUNATheme.ink)
             .frame(maxWidth: .infinity)
             .frame(minHeight: 48)
-            .background(
-                state.isJumping ? TimelyUNATheme.muted : TimelyUNATheme.acid,
-                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .timelyUNAGlassSurface(
+                cornerRadius: 14,
+                tint: state.isJumping ? TimelyUNATheme.muted : TimelyUNATheme.acid,
+                backing: state.isJumping ? TimelyUNATheme.muted : TimelyUNATheme.acid,
+                backingOpacity: state.isJumping ? 0.62 : 0.82,
+                stroke: state.isJumping ? TimelyUNATheme.muted : TimelyUNATheme.acid,
+                strokeOpacity: 0.72,
+                isInteractive: true
             )
         }
         .buttonStyle(.plain)
@@ -506,8 +511,15 @@ struct XSkyJumpView: View {
                 .padding(.horizontal, 12)
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: 44)
-                .background(Color.black.opacity(0.35), in: Capsule())
-                .overlay(Capsule().stroke(TimelyUNATheme.line, lineWidth: 1))
+                .timelyUNAGlassSurface(
+                    cornerRadius: 22,
+                    tint: TimelyUNATheme.gold,
+                    backing: .black,
+                    backingOpacity: 0.28,
+                    stroke: TimelyUNATheme.line,
+                    strokeOpacity: 0.86,
+                    isInteractive: true
+                )
         }
         .buttonStyle(.plain)
         .disabled(state.isJumping)
@@ -523,7 +535,15 @@ struct XSkyJumpView: View {
                 .foregroundStyle(binding.wrappedValue ? TimelyUNATheme.ink : TimelyUNATheme.papyrus)
                 .padding(.horizontal, 12)
                 .frame(minHeight: 44)
-                .background(binding.wrappedValue ? color : Color.white.opacity(0.1), in: Capsule())
+                .timelyUNAGlassSurface(
+                    cornerRadius: 22,
+                    tint: binding.wrappedValue ? color : TimelyUNATheme.gold,
+                    backing: binding.wrappedValue ? color : .black,
+                    backingOpacity: binding.wrappedValue ? 0.78 : 0.18,
+                    stroke: binding.wrappedValue ? color : TimelyUNATheme.line,
+                    strokeOpacity: binding.wrappedValue ? 0.7 : 0.34,
+                    isInteractive: true
+                )
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(title) \(binding.wrappedValue ? "on" : "off")")
